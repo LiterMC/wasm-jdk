@@ -189,17 +189,17 @@ func (*IRfdiv) Execute(vm VM) error {
 }
 
 type IRfload struct {
-	index byte
+	Index uint16
 }
 
 func (*IRfload) Op() ops.Op    { return ops.Fload }
 func (*IRfload) Operands() int { return 1 }
 func (ir *IRfload) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRfload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32((uint16)(ir.index))
+	val := stack.GetVarInt32((uint16)(ir.Index))
 	stack.PushInt32(val)
 	return nil
 }
@@ -291,18 +291,18 @@ func (*IRfrem) Execute(vm VM) error {
 }
 
 type IRfstore struct {
-	index byte
+	Index uint16
 }
 
 func (*IRfstore) Op() ops.Op    { return ops.Fstore }
 func (*IRfstore) Operands() int { return 1 }
 func (ir *IRfstore) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRfstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
-	stack.SetVarInt32((uint16)(ir.index), val)
+	stack.SetVarInt32((uint16)(ir.Index), val)
 	return nil
 }
 

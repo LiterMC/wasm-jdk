@@ -226,35 +226,35 @@ func (*IRidiv) Execute(vm VM) error {
 }
 
 type IRiinc struct {
-	index uint16
+	Index uint16
 	value int16
 }
 
 func (*IRiinc) Op() ops.Op    { return ops.Iinc }
 func (*IRiinc) Operands() int { return 2 }
 func (ir *IRiinc) Parse(operands []byte) {
-	ir.index = (uint16)(operands[0])
+	ir.Index = (uint16)(operands[0])
 	ir.value = (int16)((int8)(operands[1]))
 }
 func (ir *IRiinc) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32(ir.index)
-	stack.SetVarInt32(ir.index, val+(int32)(ir.value))
+	val := stack.GetVarInt32(ir.Index)
+	stack.SetVarInt32(ir.Index, val+(int32)(ir.value))
 	return nil
 }
 
 type IRiload struct {
-	index byte
+	Index uint16
 }
 
 func (*IRiload) Op() ops.Op    { return ops.Iload }
 func (*IRiload) Operands() int { return 1 }
 func (ir *IRiload) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRiload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32((uint16)(ir.index))
+	val := stack.GetVarInt32((uint16)(ir.Index))
 	stack.PushInt32(val)
 	return nil
 }
@@ -385,18 +385,18 @@ func (*IRishr) Execute(vm VM) error {
 }
 
 type IRistore struct {
-	index byte
+	Index uint16
 }
 
 func (*IRistore) Op() ops.Op    { return ops.Istore }
 func (*IRistore) Operands() int { return 1 }
 func (ir *IRistore) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRistore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
-	stack.SetVarInt32((uint16)(ir.index), val)
+	stack.SetVarInt32((uint16)(ir.Index), val)
 	return nil
 }
 
@@ -488,27 +488,27 @@ func (*IRixor) Execute(vm VM) error {
 }
 
 type IRldc struct {
-	index byte
+	Index byte
 }
 
 func (*IRldc) Op() ops.Op    { return ops.Ldc }
 func (*IRldc) Operands() int { return 1 }
 func (ir *IRldc) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = operands[0]
 }
 func (ir *IRldc) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst((uint16)(ir.index), vm.GetStack())
+	return vm.GetCurrentClass().GetAndPushConst((uint16)(ir.Index), vm.GetStack())
 }
 
 type IRldc_w struct {
-	index uint16
+	Index uint16
 }
 
 func (*IRldc_w) Op() ops.Op    { return ops.Ldc_w }
 func (*IRldc_w) Operands() int { return 2 }
 func (ir *IRldc_w) Parse(operands []byte) {
-	ir.index = bytesToUint16(operands)
+	ir.Index = bytesToUint16(operands)
 }
 func (ir *IRldc_w) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst(ir.index, vm.GetStack())
+	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
 }

@@ -63,17 +63,17 @@ func (*IRaconst_null) Execute(vm VM) error {
 }
 
 type IRaload struct {
-	index byte
+	Index uint16
 }
 
 func (*IRaload) Op() ops.Op    { return ops.Aload }
 func (*IRaload) Operands() int { return 1 }
 func (ir *IRaload) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	ref := stack.GetVarRef((uint16)(ir.index))
+	ref := stack.GetVarRef((uint16)(ir.Index))
 	stack.PushRef(ref)
 	return nil
 }
@@ -127,13 +127,13 @@ func (*IRaload_3) Execute(vm VM) error {
 }
 
 type IRanewarray struct {
-	class uint16
+	Class uint16
 }
 
 func (*IRanewarray) Op() ops.Op    { return ops.Anewarray }
 func (*IRanewarray) Operands() int { return 2 }
 func (ir *IRanewarray) Parse(operands []byte) {
-	ir.class = bytesToUint16(operands)
+	ir.Class = bytesToUint16(operands)
 }
 func (ir *IRanewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
@@ -141,7 +141,7 @@ func (ir *IRanewarray) Execute(vm VM) error {
 	if count < 0 {
 		return errs.NegativeArraySizeException
 	}
-	class, err := vm.GetClassByIndex(ir.class)
+	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
 	}
@@ -167,18 +167,18 @@ func (*IRarraylength) Execute(vm VM) error {
 }
 
 type IRastore struct {
-	index byte
+	Index uint16
 }
 
 func (*IRastore) Op() ops.Op    { return ops.Astore }
 func (*IRastore) Operands() int { return 1 }
 func (ir *IRastore) Parse(operands []byte) {
-	ir.index = operands[0]
+	ir.Index = (uint16)(operands[0])
 }
 func (ir *IRastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
-	stack.SetVarRef((uint16)(ir.index), ref)
+	stack.SetVarRef((uint16)(ir.Index), ref)
 	return nil
 }
 
@@ -249,17 +249,17 @@ func (*IRathrow) Execute(vm VM) error {
 }
 
 type IRcheckcast struct {
-	class uint16
+	Class uint16
 }
 
 func (*IRcheckcast) Op() ops.Op    { return ops.Checkcast }
 func (*IRcheckcast) Operands() int { return 2 }
 func (ir *IRcheckcast) Parse(operands []byte) {
-	ir.class = bytesToUint16(operands)
+	ir.Class = bytesToUint16(operands)
 }
 func (ir *IRcheckcast) Execute(vm VM) error {
 	ref := vm.GetStack().PeekRef()
-	class, err := vm.GetClassByIndex(ir.class)
+	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
 	}
@@ -270,13 +270,13 @@ func (ir *IRcheckcast) Execute(vm VM) error {
 }
 
 type IRgetfield struct {
-	field uint16
+	Field uint16
 }
 
 func (*IRgetfield) Op() ops.Op    { return ops.Getfield }
 func (*IRgetfield) Operands() int { return 2 }
 func (ir *IRgetfield) Parse(operands []byte) {
-	ir.field = bytesToUint16(operands)
+	ir.Field = bytesToUint16(operands)
 }
 func (ir *IRgetfield) Execute(vm VM) error {
 	stack := vm.GetStack()
@@ -284,7 +284,7 @@ func (ir *IRgetfield) Execute(vm VM) error {
 	if ref == nil {
 		return errs.NullPointerException
 	}
-	field := vm.GetCurrentClass().GetField(ir.field)
+	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -297,17 +297,17 @@ func (ir *IRgetfield) Execute(vm VM) error {
 }
 
 type IRgetstatic struct {
-	field uint16
+	Field uint16
 }
 
 func (*IRgetstatic) Op() ops.Op    { return ops.Getstatic }
 func (*IRgetstatic) Operands() int { return 2 }
 func (ir *IRgetstatic) Parse(operands []byte) {
-	ir.field = bytesToUint16(operands)
+	ir.Field = bytesToUint16(operands)
 }
 func (ir *IRgetstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ir.field)
+	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -320,18 +320,18 @@ func (ir *IRgetstatic) Execute(vm VM) error {
 }
 
 type IRinstanceof struct {
-	class uint16
+	Class uint16
 }
 
 func (*IRinstanceof) Op() ops.Op    { return ops.Instanceof }
 func (*IRinstanceof) Operands() int { return 2 }
 func (ir *IRinstanceof) Parse(operands []byte) {
-	ir.class = bytesToUint16(operands)
+	ir.Class = bytesToUint16(operands)
 }
 func (ir *IRinstanceof) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
-	class, err := vm.GetClassByIndex(ir.class)
+	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
 	}
@@ -344,19 +344,19 @@ func (ir *IRinstanceof) Execute(vm VM) error {
 }
 
 type IRinvokedynamic struct {
-	method uint16
+	Method uint16
 }
 
 func (*IRinvokedynamic) Op() ops.Op    { return ops.Invokedynamic }
 func (*IRinvokedynamic) Operands() int { return 4 }
 func (ir *IRinvokedynamic) Parse(operands []byte) {
-	ir.method = bytesToUint16(operands)
+	ir.Method = bytesToUint16(operands)
 	if operands[2] != 0 || operands[3] != 0 {
 		panic("ir.invokedynamic: operands [2] and [3] must be 0")
 	}
 }
 func (ir *IRinvokedynamic) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ir.method)
+	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		// TODO: Seems not correct here
 		return errs.BootstrapMethodError
@@ -366,15 +366,15 @@ func (ir *IRinvokedynamic) Execute(vm VM) error {
 }
 
 type IRinvokeinterface struct {
-	method uint16
-	count  byte // not in use
+	Method uint16
+	Count  byte // not in use
 }
 
 func (*IRinvokeinterface) Op() ops.Op    { return ops.Invokeinterface }
 func (*IRinvokeinterface) Operands() int { return 4 }
 func (ir *IRinvokeinterface) Parse(operands []byte) {
-	ir.method = bytesToUint16(operands)
-	ir.count = operands[2]
+	ir.Method = bytesToUint16(operands)
+	ir.Count = operands[2]
 	if operands[3] != 0 {
 		panic("ir.invokeinterface: operands [3] must be 0")
 	}
@@ -382,7 +382,7 @@ func (ir *IRinvokeinterface) Parse(operands []byte) {
 func (ir *IRinvokeinterface) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
-	method := vm.GetCurrentClass().GetMethod(ir.method)
+	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -395,18 +395,18 @@ func (ir *IRinvokeinterface) Execute(vm VM) error {
 }
 
 type IRinvokespecial struct {
-	method uint16
+	Method uint16
 }
 
 func (*IRinvokespecial) Op() ops.Op    { return ops.Invokespecial }
 func (*IRinvokespecial) Operands() int { return 2 }
 func (ir *IRinvokespecial) Parse(operands []byte) {
-	ir.method = bytesToUint16(operands)
+	ir.Method = bytesToUint16(operands)
 }
 func (ir *IRinvokespecial) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
-	method := vm.GetCurrentClass().GetMethod(ir.method)
+	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -419,16 +419,16 @@ func (ir *IRinvokespecial) Execute(vm VM) error {
 }
 
 type IRinvokestatic struct {
-	method uint16
+	Method uint16
 }
 
 func (*IRinvokestatic) Op() ops.Op    { return ops.Invokestatic }
 func (*IRinvokestatic) Operands() int { return 2 }
 func (ir *IRinvokestatic) Parse(operands []byte) {
-	ir.method = bytesToUint16(operands)
+	ir.Method = bytesToUint16(operands)
 }
 func (ir *IRinvokestatic) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ir.method)
+	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -441,18 +441,18 @@ func (ir *IRinvokestatic) Execute(vm VM) error {
 }
 
 type IRinvokevirtual struct {
-	method uint16
+	Method uint16
 }
 
 func (*IRinvokevirtual) Op() ops.Op    { return ops.Invokevirtual }
 func (*IRinvokevirtual) Operands() int { return 2 }
 func (ir *IRinvokevirtual) Parse(operands []byte) {
-	ir.method = bytesToUint16(operands)
+	ir.Method = bytesToUint16(operands)
 }
 func (ir *IRinvokevirtual) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
-	method := vm.GetCurrentClass().GetMethod(ir.method)
+	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -465,27 +465,27 @@ func (ir *IRinvokevirtual) Execute(vm VM) error {
 }
 
 type IRmultianewarray struct {
-	class      uint16
-	dimensions byte
+	Class      uint16
+	Dimensions byte
 }
 
 func (*IRmultianewarray) Op() ops.Op    { return ops.Multianewarray }
 func (*IRmultianewarray) Operands() int { return 3 }
 func (ir *IRmultianewarray) Parse(operands []byte) {
-	ir.class = bytesToUint16(operands)
-	ir.dimensions = operands[2]
-	if ir.dimensions < 1 {
-		panic("multianewarray: dimensions is less than 1")
+	ir.Class = bytesToUint16(operands)
+	ir.Dimensions = operands[2]
+	if ir.Dimensions < 1 {
+		panic("ir.multianewarray: dimensions is less than 1")
 	}
 }
 func (ir *IRmultianewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
-	class, err := vm.GetClassByIndex(ir.class)
+	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
 	}
-	counts := make([]int32, ir.dimensions)
-	for i := range ir.dimensions {
+	counts := make([]int32, ir.Dimensions)
+	for i := range ir.Dimensions {
 		count := stack.PopInt32()
 		if count < 0 {
 			return errs.NegativeArraySizeException
@@ -498,16 +498,16 @@ func (ir *IRmultianewarray) Execute(vm VM) error {
 }
 
 type IRnew struct {
-	class uint16
+	Class uint16
 }
 
 func (*IRnew) Op() ops.Op    { return ops.New }
 func (*IRnew) Operands() int { return 2 }
 func (ir *IRnew) Parse(operands []byte) {
-	ir.class = bytesToUint16(operands)
+	ir.Class = bytesToUint16(operands)
 }
 func (ir *IRnew) Execute(vm VM) error {
-	class, err := vm.GetClassByIndex(ir.class)
+	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
 	}
@@ -542,20 +542,20 @@ func (ir *IRnewarray) Execute(vm VM) error {
 	case 7, 11: // T_DOUBLE, T_LONG
 		arr = arrayToRef(vm.NewArrInt64(count))
 	default:
-		panic(fmt.Errorf("newarray: unknown atype %d", ir.atype))
+		panic(fmt.Errorf("ir.newarray: unknown atype %d", ir.atype))
 	}
 	stack.PushRef(arr)
 	return nil
 }
 
 type IRputfield struct {
-	field uint16
+	Field uint16
 }
 
 func (*IRputfield) Op() ops.Op    { return ops.Putfield }
 func (*IRputfield) Operands() int { return 2 }
 func (ir *IRputfield) Parse(operands []byte) {
-	ir.field = bytesToUint16(operands)
+	ir.Field = bytesToUint16(operands)
 }
 func (ir *IRputfield) Execute(vm VM) error {
 	stack := vm.GetStack()
@@ -563,7 +563,7 @@ func (ir *IRputfield) Execute(vm VM) error {
 	if ref == nil {
 		return errs.NullPointerException
 	}
-	field := vm.GetCurrentClass().GetField(ir.field)
+	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -576,17 +576,17 @@ func (ir *IRputfield) Execute(vm VM) error {
 }
 
 type IRputstatic struct {
-	field uint16
+	Field uint16
 }
 
 func (*IRputstatic) Op() ops.Op    { return ops.Putstatic }
 func (*IRputstatic) Operands() int { return 2 }
 func (ir *IRputstatic) Parse(operands []byte) {
-	ir.field = bytesToUint16(operands)
+	ir.Field = bytesToUint16(operands)
 }
 func (ir *IRputstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ir.field)
+	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
