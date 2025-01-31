@@ -537,6 +537,8 @@ func (ir *IRwide) Execute(vm VM) error {
 		return (&IRlstore{Index: ir.Index}).Execute(vm)
 	case ops.Dstore:
 		return (&IRdstore{Index: ir.Index}).Execute(vm)
+	case ops.Iinc:
+		return (&IRiinc{Index: ir.Index, Const: (int16)(ir.Const)}).Execute(vm)
 	default:
 		panic(fmt.Errorf("ir.wide: unexpected opcode %d", ir.OpCode))
 	}

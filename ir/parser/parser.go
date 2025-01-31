@@ -2,6 +2,7 @@
 package parser
 
 import (
+	"fmt"
 	"io"
 
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -16,4 +17,14 @@ type ByteReader interface {
 type IRParser interface {
 	Op() ops.Op
 	Parse(br ByteReader) (ir.IR, error)
+}
+
+var parsers = make(map[ops.Op]IRParser)
+
+func RegisterParser(p IRParser) {
+	op := p.Op()
+	if _, ok := parsers[op]; ok {
+		panic(fmt.Errorf("Parser with opcode %d is already exists", op))
+	}
+	parsers[op] = p
 }

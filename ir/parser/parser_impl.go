@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"fmt"
 	"slices"
 
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -231,7 +232,7 @@ func (*ParserIRlookupswitch) Op() ops.Op { return ops.Lookupswitch }
 func (*ParserIRlookupswitch) Parse(br ByteReader) (ir.IR, error) {
 	var err error
 	ir := new(ir.IRlookupswitch)
-	if ir.DefaultOffset, err = readInt32(br); err != nil{
+	if ir.DefaultOffset, err = readInt32(br); err != nil {
 		return nil, err
 	}
 	indexCount, err := readInt32(br)
@@ -274,6 +275,34 @@ func (*ParserIRtableswitch) Parse(br ByteReader) (ir.IR, error) {
 		if ir.Offsets[i], err = readInt32(br); err != nil {
 			return nil, err
 		}
+	}
+	return ir, nil
+}
+
+type ParserIRwide struct{}
+
+func (*ParserIRwide) Op() ops.Op { return ops.Wide }
+func (*ParserIRwide) Parse(br ByteReader) (ir.IR, error) {
+	ir := new(ir.IRwide)
+	b, err := br.ReadByte()
+	if err != nil {
+		return nil, err
+	}
+	ir.OpCode = (ops.Op)(b)
+	switch ir.OpCode {
+	case ops.Iload, ops.Fload, ops.Aload, ops.Lload, ops.Dload, ops.Istore, ops.Fstore, ops.Astore, ops.Lstore, ops.Dstore:
+		if ir.Index, err = readUint16(br); err != nil {
+			return nil, err
+		}
+	case ops.Iinc:
+		if ir.Index, err = readUint16(br); err != nil {
+			return nil, err
+		}
+		if ir.Const, err = readUint16(br); err != nil {
+			return nil, err
+		}
+	default:
+		return nil, fmt.Errorf("parser: wide: unexpected opcode %d", ir.OpCode)
 	}
 	return ir, nil
 }
@@ -693,4 +722,59 @@ func (*ParserIRlstore) Parse(br ByteReader) (ir.IR, error) {
 	}
 	ir.Index = (uint16)(b)
 	return ir, nil
+}
+
+func init() {
+	RegisterParser((*ParserIRgoto)(nil))
+	RegisterParser((*ParserIRgoto_w)(nil))
+	RegisterParser((*ParserIRif_acmpeq)(nil))
+	RegisterParser((*ParserIRif_acmpne)(nil))
+	RegisterParser((*ParserIRif_icmpeq)(nil))
+	RegisterParser((*ParserIRif_icmpge)(nil))
+	RegisterParser((*ParserIRif_icmpgt)(nil))
+	RegisterParser((*ParserIRif_icmple)(nil))
+	RegisterParser((*ParserIRif_icmplt)(nil))
+	RegisterParser((*ParserIRif_icmpne)(nil))
+	RegisterParser((*ParserIRifeq)(nil))
+	RegisterParser((*ParserIRifge)(nil))
+	RegisterParser((*ParserIRifgt)(nil))
+	RegisterParser((*ParserIRifle)(nil))
+	RegisterParser((*ParserIRiflt)(nil))
+	RegisterParser((*ParserIRifne)(nil))
+	RegisterParser((*ParserIRifnonnull)(nil))
+	RegisterParser((*ParserIRifnull)(nil))
+	RegisterParser((*ParserIRlookupswitch)(nil))
+	RegisterParser((*ParserIRtableswitch)(nil))
+	RegisterParser((*ParserIRwide)(nil))
+	RegisterParser((*ParserIRaload)(nil))
+	RegisterParser((*ParserIRanewarray)(nil))
+	RegisterParser((*ParserIRastore)(nil))
+	RegisterParser((*ParserIRcheckcast)(nil))
+	RegisterParser((*ParserIRgetfield)(nil))
+	RegisterParser((*ParserIRgetstatic)(nil))
+	RegisterParser((*ParserIRinstanceof)(nil))
+	RegisterParser((*ParserIRinvokedynamic)(nil))
+	RegisterParser((*ParserIRinvokeinterface)(nil))
+	RegisterParser((*ParserIRinvokespecial)(nil))
+	RegisterParser((*ParserIRinvokestatic)(nil))
+	RegisterParser((*ParserIRinvokevirtual)(nil))
+	RegisterParser((*ParserIRmultianewarray)(nil))
+	RegisterParser((*ParserIRnew)(nil))
+	RegisterParser((*ParserIRnewarray)(nil))
+	RegisterParser((*ParserIRputfield)(nil))
+	RegisterParser((*ParserIRputstatic)(nil))
+	RegisterParser((*ParserIRbipush)(nil))
+	RegisterParser((*ParserIRsipush)(nil))
+	RegisterParser((*ParserIRdload)(nil))
+	RegisterParser((*ParserIRdstore)(nil))
+	RegisterParser((*ParserIRfload)(nil))
+	RegisterParser((*ParserIRfstore)(nil))
+	RegisterParser((*ParserIRiinc)(nil))
+	RegisterParser((*ParserIRiload)(nil))
+	RegisterParser((*ParserIRistore)(nil))
+	RegisterParser((*ParserIRldc)(nil))
+	RegisterParser((*ParserIRldc_w)(nil))
+	RegisterParser((*ParserIRldc2_w)(nil))
+	RegisterParser((*ParserIRlload)(nil))
+	RegisterParser((*ParserIRlstore)(nil))
 }

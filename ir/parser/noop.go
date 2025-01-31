@@ -168,3 +168,9 @@ var noOpParsers = []noOperandParser{
 	noOperandParser{Singleton: (*ir.IRlushr)(nil)},
 	noOperandParser{Singleton: (*ir.IRlxor)(nil)},
 }
+
+func init() {
+	for i, _ := range noOpParsers {
+		RegisterParser(&noOpParsers[i])
+	}
+}
