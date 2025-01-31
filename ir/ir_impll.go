@@ -150,9 +150,9 @@ type IRldc2_w struct {
 }
 
 func (*IRldc2_w) Op() ops.Op    { return ops.Ldc2_w }
-func (*IRldc2_w) Operanfs() int { return 2 }
-func (ir *IRldc2_w) Parse(operanfs []byte) {
-	ir.index = ((uint16)(operanfs[0]) << 8) | (uint16)(operanfs[1])
+func (*IRldc2_w) Operands() int { return 2 }
+func (ir *IRldc2_w) Parse(operands []byte) {
+	ir.index = bytesToUint16(operands)
 }
 func (ir *IRldc2_w) Execute(vm VM) error {
 	return vm.GetCurrentClass().GetAndPushConst(ir.index, vm.GetStack())
@@ -295,7 +295,7 @@ func (*IRlshl) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt64()
-	stack.PushInt32(a << (b & 0x3f))
+	stack.PushInt64(a << (b & 0x3f))
 	return nil
 }
 
@@ -308,7 +308,7 @@ func (*IRlshr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt64()
-	stack.PushInt32(a >> (b & 0x3f))
+	stack.PushInt64(a >> (b & 0x3f))
 	return nil
 }
 
@@ -317,9 +317,9 @@ type IRlstore struct {
 }
 
 func (*IRlstore) Op() ops.Op    { return ops.Lstore }
-func (*IRlstore) Operanfs() int { return 1 }
-func (ir *IRlstore) Parse(operanfs []byte) {
-	ir.index = operanfs[0]
+func (*IRlstore) Operands() int { return 1 }
+func (ir *IRlstore) Parse(operands []byte) {
+	ir.index = operands[0]
 }
 func (ir *IRlstore) Execute(vm VM) error {
 	stack := vm.GetStack()
@@ -398,7 +398,7 @@ func (*IRlushr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt64()
-	stack.PushInt32((int64)((uint64)(a) >> (b & 0x1f)))
+	stack.PushInt64((int64)((uint64)(a) >> (b & 0x1f)))
 	return nil
 }
 

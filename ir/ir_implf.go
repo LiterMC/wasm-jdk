@@ -295,9 +295,9 @@ type IRfstore struct {
 }
 
 func (*IRfstore) Op() ops.Op    { return ops.Fstore }
-func (*IRfstore) Operanfs() int { return 1 }
-func (ir *IRfstore) Parse(operanfs []byte) {
-	ir.index = operanfs[0]
+func (*IRfstore) Operands() int { return 1 }
+func (ir *IRfstore) Parse(operands []byte) {
+	ir.index = operands[0]
 }
 func (ir *IRfstore) Execute(vm VM) error {
 	stack := vm.GetStack()
