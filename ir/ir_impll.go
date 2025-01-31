@@ -259,3 +259,158 @@ func (*IRlneg) Execute(vm VM) error {
 	stack.PushInt64(-a)
 	return nil
 }
+
+type IRlor struct{}
+
+func (*IRlor) Op() ops.Op            { return ops.Lor }
+func (*IRlor) Operands() int         { return 0 }
+func (*IRlor) Parse(operands []byte) {}
+func (*IRlor) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt64()
+	a := stack.PopInt64()
+	stack.PushInt64(a | b)
+	return nil
+}
+
+type IRlrem struct{}
+
+func (*IRlrem) Op() ops.Op            { return ops.Lrem }
+func (*IRlrem) Operands() int         { return 0 }
+func (*IRlrem) Parse(operands []byte) {}
+func (*IRlrem) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt64()
+	a := stack.PopInt64()
+	stack.PushInt64(a % b)
+	return nil
+}
+
+type IRlshl struct{}
+
+func (*IRlshl) Op() ops.Op            { return ops.Lshl }
+func (*IRlshl) Operands() int         { return 0 }
+func (*IRlshl) Parse(operands []byte) {}
+func (*IRlshl) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt32()
+	a := stack.PopInt64()
+	stack.PushInt32(a << (b & 0x3f))
+	return nil
+}
+
+type IRlshr struct{}
+
+func (*IRlshr) Op() ops.Op            { return ops.Lshr }
+func (*IRlshr) Operands() int         { return 0 }
+func (*IRlshr) Parse(operands []byte) {}
+func (*IRlshr) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt32()
+	a := stack.PopInt64()
+	stack.PushInt32(a >> (b & 0x3f))
+	return nil
+}
+
+type IRlstore struct {
+	index byte
+}
+
+func (*IRlstore) Op() ops.Op    { return ops.Lstore }
+func (*IRlstore) Operanfs() int { return 1 }
+func (ir *IRlstore) Parse(operanfs []byte) {
+	ir.index = operanfs[0]
+}
+func (ir *IRlstore) Execute(vm VM) error {
+	stack := vm.GetStack()
+	val := stack.PopInt64()
+	stack.SetVarInt64((uint16)(ir.index), val)
+	return nil
+}
+
+type IRlstore_0 struct{}
+
+func (*IRlstore_0) Op() ops.Op            { return ops.Lstore_0 }
+func (*IRlstore_0) Operands() int         { return 0 }
+func (*IRlstore_0) Parse(operands []byte) {}
+func (*IRlstore_0) Execute(vm VM) error {
+	stack := vm.GetStack()
+	val := stack.PopInt64()
+	stack.SetVarInt64(0, val)
+	return nil
+}
+
+type IRlstore_1 struct{}
+
+func (*IRlstore_1) Op() ops.Op            { return ops.Lstore_1 }
+func (*IRlstore_1) Operands() int         { return 0 }
+func (*IRlstore_1) Parse(operands []byte) {}
+func (*IRlstore_1) Execute(vm VM) error {
+	stack := vm.GetStack()
+	val := stack.PopInt64()
+	stack.SetVarInt64(1, val)
+	return nil
+}
+
+type IRlstore_2 struct{}
+
+func (*IRlstore_2) Op() ops.Op            { return ops.Lstore_2 }
+func (*IRlstore_2) Operands() int         { return 0 }
+func (*IRlstore_2) Parse(operands []byte) {}
+func (*IRlstore_2) Execute(vm VM) error {
+	stack := vm.GetStack()
+	val := stack.PopInt64()
+	stack.SetVarInt64(2, val)
+	return nil
+}
+
+type IRlstore_3 struct{}
+
+func (*IRlstore_3) Op() ops.Op            { return ops.Lstore_3 }
+func (*IRlstore_3) Operands() int         { return 0 }
+func (*IRlstore_3) Parse(operands []byte) {}
+func (*IRlstore_3) Execute(vm VM) error {
+	stack := vm.GetStack()
+	val := stack.PopInt64()
+	stack.SetVarInt64(3, val)
+	return nil
+}
+
+type IRlsub struct{}
+
+func (*IRlsub) Op() ops.Op            { return ops.Lsub }
+func (*IRlsub) Operands() int         { return 0 }
+func (*IRlsub) Parse(operands []byte) {}
+func (*IRlsub) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt64()
+	a := stack.PopInt64()
+	stack.PushInt64(a - b)
+	return nil
+}
+
+type IRlushr struct{}
+
+func (*IRlushr) Op() ops.Op            { return ops.Lushr }
+func (*IRlushr) Operands() int         { return 0 }
+func (*IRlushr) Parse(operands []byte) {}
+func (*IRlushr) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt32()
+	a := stack.PopInt64()
+	stack.PushInt32((int64)((uint64)(a) >> (b & 0x1f)))
+	return nil
+}
+
+type IRlxor struct{}
+
+func (*IRlxor) Op() ops.Op            { return ops.Lxor }
+func (*IRlxor) Operands() int         { return 0 }
+func (*IRlxor) Parse(operands []byte) {}
+func (*IRlxor) Execute(vm VM) error {
+	stack := vm.GetStack()
+	b := stack.PopInt64()
+	a := stack.PopInt64()
+	stack.PushInt64(a ^ b)
+	return nil
+}

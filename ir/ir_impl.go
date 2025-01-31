@@ -466,3 +466,15 @@ func (*IRjsr_w) Op() ops.Op            { return ops.Jsr_w }
 func (*IRjsr_w) Operands() int         { return 0 }
 func (*IRjsr_w) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr_w) Execute(vm VM) error   { panic("deprecated") }
+
+lookupswitch
+
+type IRlreturn struct{}
+
+func (*IRlreturn) Op() ops.Op            { return ops.Lreturn }
+func (*IRlreturn) Operands() int         { return 0 }
+func (*IRlreturn) Parse(operands []byte) {}
+func (*IRlreturn) Execute(vm VM) error {
+	vm.Return()
+	return nil
+}
