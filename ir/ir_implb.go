@@ -45,9 +45,6 @@ type IRbipush struct {
 }
 
 func (*IRbipush) Op() ops.Op    { return ops.Bipush }
-func (ir *IRbipush) Parse(operands []byte) {
-	ir.value = (int8)(operands[0])
-}
 func (ir *IRbipush) Execute(vm VM) error {
 	vm.GetStack().PushInt32((int32)(ir.value))
 	return nil

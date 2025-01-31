@@ -1,3 +1,4 @@
+// This package declares standard Java class file parser
 package parser
 
 import (

@@ -169,9 +169,6 @@ type IRfload struct {
 }
 
 func (*IRfload) Op() ops.Op    { return ops.Fload }
-func (ir *IRfload) Parse(operands []byte) {
-	ir.Index = (uint16)(operands[0])
-}
 func (ir *IRfload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32((uint16)(ir.Index))
@@ -256,9 +253,6 @@ type IRfstore struct {
 }
 
 func (*IRfstore) Op() ops.Op    { return ops.Fstore }
-func (ir *IRfstore) Parse(operands []byte) {
-	ir.Index = (uint16)(operands[0])
-}
 func (ir *IRfstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()

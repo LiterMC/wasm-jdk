@@ -130,9 +130,6 @@ type IRldc2_w struct {
 }
 
 func (*IRldc2_w) Op() ops.Op    { return ops.Ldc2_w }
-func (ir *IRldc2_w) Parse(operands []byte) {
-	ir.Index = bytesToUint16(operands)
-}
 func (ir *IRldc2_w) Execute(vm VM) error {
 	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
 }
@@ -153,9 +150,6 @@ type IRlload struct {
 }
 
 func (*IRlload) Op() ops.Op    { return ops.Lload }
-func (ir *IRlload) Parse(operands []byte) {
-	ir.Index = (uint16)(operands[0])
-}
 func (ir *IRlload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64((uint16)(ir.Index))
@@ -273,9 +267,6 @@ type IRlstore struct {
 }
 
 func (*IRlstore) Op() ops.Op    { return ops.Lstore }
-func (ir *IRlstore) Parse(operands []byte) {
-	ir.Index = (uint16)(operands[0])
-}
 func (ir *IRlstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()

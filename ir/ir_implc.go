@@ -80,9 +80,6 @@ type IRsipush struct {
 }
 
 func (*IRsipush) Op() ops.Op    { return ops.Sipush }
-func (ir *IRsipush) Parse(operands []byte) {
-	ir.value = bytesToInt16(operands)
-}
 func (ir *IRsipush) Execute(vm VM) error {
 	vm.GetStack().PushInt32((int32)(ir.value))
 	return nil
