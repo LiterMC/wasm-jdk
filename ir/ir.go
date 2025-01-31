@@ -12,10 +12,6 @@ type Ref = unsafe.Pointer
 type IR interface {
 	// The operation code
 	Op() ops.Op
-	// The operands space in bytes
-	Operands() int
-	// Parse operands
-	Parse(operands []byte)
 	// Execute
 	Execute(vm VM) error
 }

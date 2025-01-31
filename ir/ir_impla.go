@@ -10,8 +10,6 @@ import (
 type IRaaload struct{}
 
 func (*IRaaload) Op() ops.Op            { return ops.Aaload }
-func (*IRaaload) Operands() int         { return 0 }
-func (*IRaaload) Parse(operands []byte) {}
 func (*IRaaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrRef()
@@ -29,8 +27,6 @@ func (*IRaaload) Execute(vm VM) error {
 type IRaastore struct{}
 
 func (*IRaastore) Op() ops.Op            { return ops.Aastore }
-func (*IRaastore) Operands() int         { return 0 }
-func (*IRaastore) Parse(operands []byte) {}
 func (*IRaastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrRef()
@@ -55,8 +51,6 @@ func (*IRaastore) Execute(vm VM) error {
 type IRaconst_null struct{}
 
 func (*IRaconst_null) Op() ops.Op            { return ops.Aconst_null }
-func (*IRaconst_null) Operands() int         { return 0 }
-func (*IRaconst_null) Parse(operands []byte) {}
 func (*IRaconst_null) Execute(vm VM) error {
 	vm.GetStack().PushRef(nil)
 	return nil
@@ -67,7 +61,6 @@ type IRaload struct {
 }
 
 func (*IRaload) Op() ops.Op    { return ops.Aload }
-func (*IRaload) Operands() int { return 1 }
 func (ir *IRaload) Parse(operands []byte) {
 	ir.Index = (uint16)(operands[0])
 }
@@ -81,8 +74,6 @@ func (ir *IRaload) Execute(vm VM) error {
 type IRaload_0 struct{}
 
 func (*IRaload_0) Op() ops.Op            { return ops.Aload_0 }
-func (*IRaload_0) Operands() int         { return 0 }
-func (*IRaload_0) Parse(operands []byte) {}
 func (*IRaload_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(0)
@@ -93,8 +84,6 @@ func (*IRaload_0) Execute(vm VM) error {
 type IRaload_1 struct{}
 
 func (*IRaload_1) Op() ops.Op            { return ops.Aload_1 }
-func (*IRaload_1) Operands() int         { return 0 }
-func (*IRaload_1) Parse(operands []byte) {}
 func (*IRaload_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
@@ -105,8 +94,6 @@ func (*IRaload_1) Execute(vm VM) error {
 type IRaload_2 struct{}
 
 func (*IRaload_2) Op() ops.Op            { return ops.Aload_2 }
-func (*IRaload_2) Operands() int         { return 0 }
-func (*IRaload_2) Parse(operands []byte) {}
 func (*IRaload_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(2)
@@ -117,8 +104,6 @@ func (*IRaload_2) Execute(vm VM) error {
 type IRaload_3 struct{}
 
 func (*IRaload_3) Op() ops.Op            { return ops.Aload_3 }
-func (*IRaload_3) Operands() int         { return 0 }
-func (*IRaload_3) Parse(operands []byte) {}
 func (*IRaload_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(3)
@@ -131,7 +116,6 @@ type IRanewarray struct {
 }
 
 func (*IRanewarray) Op() ops.Op    { return ops.Anewarray }
-func (*IRanewarray) Operands() int { return 2 }
 func (ir *IRanewarray) Parse(operands []byte) {
 	ir.Class = bytesToUint16(operands)
 }
@@ -153,8 +137,6 @@ func (ir *IRanewarray) Execute(vm VM) error {
 type IRarraylength struct{}
 
 func (*IRarraylength) Op() ops.Op            { return ops.Arraylength }
-func (*IRarraylength) Operands() int         { return 0 }
-func (*IRarraylength) Parse(operands []byte) {}
 func (*IRarraylength) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
@@ -171,7 +153,6 @@ type IRastore struct {
 }
 
 func (*IRastore) Op() ops.Op    { return ops.Astore }
-func (*IRastore) Operands() int { return 1 }
 func (ir *IRastore) Parse(operands []byte) {
 	ir.Index = (uint16)(operands[0])
 }
@@ -185,8 +166,6 @@ func (ir *IRastore) Execute(vm VM) error {
 type IRastore_0 struct{}
 
 func (*IRastore_0) Op() ops.Op            { return ops.Astore_0 }
-func (*IRastore_0) Operands() int         { return 0 }
-func (*IRastore_0) Parse(operands []byte) {}
 func (*IRastore_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
@@ -197,8 +176,6 @@ func (*IRastore_0) Execute(vm VM) error {
 type IRastore_1 struct{}
 
 func (*IRastore_1) Op() ops.Op            { return ops.Astore_1 }
-func (*IRastore_1) Operands() int         { return 0 }
-func (*IRastore_1) Parse(operands []byte) {}
 func (*IRastore_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
@@ -209,8 +186,6 @@ func (*IRastore_1) Execute(vm VM) error {
 type IRastore_2 struct{}
 
 func (*IRastore_2) Op() ops.Op            { return ops.Astore_2 }
-func (*IRastore_2) Operands() int         { return 0 }
-func (*IRastore_2) Parse(operands []byte) {}
 func (*IRastore_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
@@ -221,8 +196,6 @@ func (*IRastore_2) Execute(vm VM) error {
 type IRastore_3 struct{}
 
 func (*IRastore_3) Op() ops.Op            { return ops.Astore_3 }
-func (*IRastore_3) Operands() int         { return 0 }
-func (*IRastore_3) Parse(operands []byte) {}
 func (*IRastore_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
@@ -233,8 +206,6 @@ func (*IRastore_3) Execute(vm VM) error {
 type IRathrow struct{}
 
 func (*IRathrow) Op() ops.Op            { return ops.Athrow }
-func (*IRathrow) Operands() int         { return 0 }
-func (*IRathrow) Parse(operands []byte) {}
 func (*IRathrow) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	if ref == nil {
@@ -253,7 +224,6 @@ type IRcheckcast struct {
 }
 
 func (*IRcheckcast) Op() ops.Op    { return ops.Checkcast }
-func (*IRcheckcast) Operands() int { return 2 }
 func (ir *IRcheckcast) Parse(operands []byte) {
 	ir.Class = bytesToUint16(operands)
 }
@@ -274,7 +244,6 @@ type IRgetfield struct {
 }
 
 func (*IRgetfield) Op() ops.Op    { return ops.Getfield }
-func (*IRgetfield) Operands() int { return 2 }
 func (ir *IRgetfield) Parse(operands []byte) {
 	ir.Field = bytesToUint16(operands)
 }
@@ -301,7 +270,6 @@ type IRgetstatic struct {
 }
 
 func (*IRgetstatic) Op() ops.Op    { return ops.Getstatic }
-func (*IRgetstatic) Operands() int { return 2 }
 func (ir *IRgetstatic) Parse(operands []byte) {
 	ir.Field = bytesToUint16(operands)
 }
@@ -324,7 +292,6 @@ type IRinstanceof struct {
 }
 
 func (*IRinstanceof) Op() ops.Op    { return ops.Instanceof }
-func (*IRinstanceof) Operands() int { return 2 }
 func (ir *IRinstanceof) Parse(operands []byte) {
 	ir.Class = bytesToUint16(operands)
 }
@@ -348,7 +315,6 @@ type IRinvokedynamic struct {
 }
 
 func (*IRinvokedynamic) Op() ops.Op    { return ops.Invokedynamic }
-func (*IRinvokedynamic) Operands() int { return 4 }
 func (ir *IRinvokedynamic) Parse(operands []byte) {
 	ir.Method = bytesToUint16(operands)
 	if operands[2] != 0 || operands[3] != 0 {
@@ -371,7 +337,6 @@ type IRinvokeinterface struct {
 }
 
 func (*IRinvokeinterface) Op() ops.Op    { return ops.Invokeinterface }
-func (*IRinvokeinterface) Operands() int { return 4 }
 func (ir *IRinvokeinterface) Parse(operands []byte) {
 	ir.Method = bytesToUint16(operands)
 	ir.Count = operands[2]
@@ -399,7 +364,6 @@ type IRinvokespecial struct {
 }
 
 func (*IRinvokespecial) Op() ops.Op    { return ops.Invokespecial }
-func (*IRinvokespecial) Operands() int { return 2 }
 func (ir *IRinvokespecial) Parse(operands []byte) {
 	ir.Method = bytesToUint16(operands)
 }
@@ -423,7 +387,6 @@ type IRinvokestatic struct {
 }
 
 func (*IRinvokestatic) Op() ops.Op    { return ops.Invokestatic }
-func (*IRinvokestatic) Operands() int { return 2 }
 func (ir *IRinvokestatic) Parse(operands []byte) {
 	ir.Method = bytesToUint16(operands)
 }
@@ -445,7 +408,6 @@ type IRinvokevirtual struct {
 }
 
 func (*IRinvokevirtual) Op() ops.Op    { return ops.Invokevirtual }
-func (*IRinvokevirtual) Operands() int { return 2 }
 func (ir *IRinvokevirtual) Parse(operands []byte) {
 	ir.Method = bytesToUint16(operands)
 }
@@ -470,7 +432,6 @@ type IRmultianewarray struct {
 }
 
 func (*IRmultianewarray) Op() ops.Op    { return ops.Multianewarray }
-func (*IRmultianewarray) Operands() int { return 3 }
 func (ir *IRmultianewarray) Parse(operands []byte) {
 	ir.Class = bytesToUint16(operands)
 	ir.Dimensions = operands[2]
@@ -502,7 +463,6 @@ type IRnew struct {
 }
 
 func (*IRnew) Op() ops.Op    { return ops.New }
-func (*IRnew) Operands() int { return 2 }
 func (ir *IRnew) Parse(operands []byte) {
 	ir.Class = bytesToUint16(operands)
 }
@@ -521,7 +481,6 @@ type IRnewarray struct {
 }
 
 func (*IRnewarray) Op() ops.Op    { return ops.Newarray }
-func (*IRnewarray) Operands() int { return 2 }
 func (ir *IRnewarray) Parse(operands []byte) {
 	ir.atype = operands[0]
 }
@@ -553,7 +512,6 @@ type IRputfield struct {
 }
 
 func (*IRputfield) Op() ops.Op    { return ops.Putfield }
-func (*IRputfield) Operands() int { return 2 }
 func (ir *IRputfield) Parse(operands []byte) {
 	ir.Field = bytesToUint16(operands)
 }
@@ -580,7 +538,6 @@ type IRputstatic struct {
 }
 
 func (*IRputstatic) Op() ops.Op    { return ops.Putstatic }
-func (*IRputstatic) Operands() int { return 2 }
 func (ir *IRputstatic) Parse(operands []byte) {
 	ir.Field = bytesToUint16(operands)
 }

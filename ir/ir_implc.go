@@ -8,8 +8,6 @@ import (
 type IRcaload struct{}
 
 func (*IRcaload) Op() ops.Op            { return ops.Caload }
-func (*IRcaload) Operands() int         { return 0 }
-func (*IRcaload) Parse(operands []byte) {}
 func (*IRcaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -27,8 +25,6 @@ func (*IRcaload) Execute(vm VM) error {
 type IRcastore struct{}
 
 func (*IRcastore) Op() ops.Op            { return ops.Castore }
-func (*IRcastore) Operands() int         { return 0 }
-func (*IRcastore) Parse(operands []byte) {}
 func (*IRcastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -47,8 +43,6 @@ func (*IRcastore) Execute(vm VM) error {
 type IRsaload struct{}
 
 func (*IRsaload) Op() ops.Op            { return ops.Saload }
-func (*IRsaload) Operands() int         { return 0 }
-func (*IRsaload) Parse(operands []byte) {}
 func (*IRsaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -66,8 +60,6 @@ func (*IRsaload) Execute(vm VM) error {
 type IRsastore struct{}
 
 func (*IRsastore) Op() ops.Op            { return ops.Sastore }
-func (*IRsastore) Operands() int         { return 0 }
-func (*IRsastore) Parse(operands []byte) {}
 func (*IRsastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -88,7 +80,6 @@ type IRsipush struct {
 }
 
 func (*IRsipush) Op() ops.Op    { return ops.Sipush }
-func (*IRsipush) Operands() int { return 2 }
 func (ir *IRsipush) Parse(operands []byte) {
 	ir.value = bytesToInt16(operands)
 }

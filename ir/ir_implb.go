@@ -8,8 +8,6 @@ import (
 type IRbaload struct{}
 
 func (*IRbaload) Op() ops.Op            { return ops.Baload }
-func (*IRbaload) Operands() int         { return 0 }
-func (*IRbaload) Parse(operands []byte) {}
 func (*IRbaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt8()
@@ -27,8 +25,6 @@ func (*IRbaload) Execute(vm VM) error {
 type IRbastore struct{}
 
 func (*IRbastore) Op() ops.Op            { return ops.Bastore }
-func (*IRbastore) Operands() int         { return 0 }
-func (*IRbastore) Parse(operands []byte) {}
 func (*IRbastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt8()
@@ -49,7 +45,6 @@ type IRbipush struct {
 }
 
 func (*IRbipush) Op() ops.Op    { return ops.Bipush }
-func (*IRbipush) Operands() int { return 1 }
 func (ir *IRbipush) Parse(operands []byte) {
 	ir.value = (int8)(operands[0])
 }

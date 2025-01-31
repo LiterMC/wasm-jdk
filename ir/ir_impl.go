@@ -11,8 +11,6 @@ import (
 type IRareturn struct{}
 
 func (*IRareturn) Op() ops.Op            { return ops.Areturn }
-func (*IRareturn) Operands() int         { return 0 }
-func (*IRareturn) Parse(operands []byte) {}
 func (*IRareturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -21,8 +19,6 @@ func (*IRareturn) Execute(vm VM) error {
 type IRdreturn struct{}
 
 func (*IRdreturn) Op() ops.Op            { return ops.Dreturn }
-func (*IRdreturn) Operands() int         { return 0 }
-func (*IRdreturn) Parse(operands []byte) {}
 func (*IRdreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -31,8 +27,6 @@ func (*IRdreturn) Execute(vm VM) error {
 type IRdup struct{}
 
 func (*IRdup) Op() ops.Op            { return ops.Dup }
-func (*IRdup) Operands() int         { return 0 }
-func (*IRdup) Parse(operands []byte) {}
 func (*IRdup) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PeekInt32()
@@ -43,8 +37,6 @@ func (*IRdup) Execute(vm VM) error {
 type IRdup_x1 struct{}
 
 func (*IRdup_x1) Op() ops.Op            { return ops.Dup_x1 }
-func (*IRdup_x1) Operands() int         { return 0 }
-func (*IRdup_x1) Parse(operands []byte) {}
 func (*IRdup_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -58,8 +50,6 @@ func (*IRdup_x1) Execute(vm VM) error {
 type IRdup_x2 struct{}
 
 func (*IRdup_x2) Op() ops.Op            { return ops.Dup_x2 }
-func (*IRdup_x2) Operands() int         { return 0 }
-func (*IRdup_x2) Parse(operands []byte) {}
 func (*IRdup_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -73,8 +63,6 @@ func (*IRdup_x2) Execute(vm VM) error {
 type IRdup2 struct{}
 
 func (*IRdup2) Op() ops.Op            { return ops.Dup2 }
-func (*IRdup2) Operands() int         { return 0 }
-func (*IRdup2) Parse(operands []byte) {}
 func (*IRdup2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PeekInt64()
@@ -85,8 +73,6 @@ func (*IRdup2) Execute(vm VM) error {
 type IRdup2_x1 struct{}
 
 func (*IRdup2_x1) Op() ops.Op            { return ops.Dup2_x1 }
-func (*IRdup2_x1) Operands() int         { return 0 }
-func (*IRdup2_x1) Parse(operands []byte) {}
 func (*IRdup2_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt64()
@@ -100,8 +86,6 @@ func (*IRdup2_x1) Execute(vm VM) error {
 type IRdup2_x2 struct{}
 
 func (*IRdup2_x2) Op() ops.Op            { return ops.Dup2_x2 }
-func (*IRdup2_x2) Operands() int         { return 0 }
-func (*IRdup2_x2) Parse(operands []byte) {}
 func (*IRdup2_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt64()
@@ -115,8 +99,6 @@ func (*IRdup2_x2) Execute(vm VM) error {
 type IRfreturn struct{}
 
 func (*IRfreturn) Op() ops.Op            { return ops.Freturn }
-func (*IRfreturn) Operands() int         { return 0 }
-func (*IRfreturn) Parse(operands []byte) {}
 func (*IRfreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -127,7 +109,6 @@ type IRgoto struct {
 }
 
 func (*IRgoto) Op() ops.Op    { return ops.Goto }
-func (*IRgoto) Operands() int { return 2 }
 func (ir *IRgoto) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -141,7 +122,6 @@ type IRgoto_w struct {
 }
 
 func (*IRgoto_w) Op() ops.Op    { return ops.Goto_w }
-func (*IRgoto_w) Operands() int { return 2 }
 func (ir *IRgoto_w) Parse(operands []byte) {
 	ir.Offset = bytesToInt32(operands)
 }
@@ -155,7 +135,6 @@ type IRif_acmpeq struct {
 }
 
 func (*IRif_acmpeq) Op() ops.Op    { return ops.If_acmpeq }
-func (*IRif_acmpeq) Operands() int { return 2 }
 func (ir *IRif_acmpeq) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -174,7 +153,6 @@ type IRif_acmpne struct {
 }
 
 func (*IRif_acmpne) Op() ops.Op    { return ops.If_acmpne }
-func (*IRif_acmpne) Operands() int { return 2 }
 func (ir *IRif_acmpne) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -193,7 +171,6 @@ type IRif_icmpeq struct {
 }
 
 func (*IRif_icmpeq) Op() ops.Op    { return ops.If_icmpeq }
-func (*IRif_icmpeq) Operands() int { return 2 }
 func (ir *IRif_icmpeq) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -212,7 +189,6 @@ type IRif_icmpge struct {
 }
 
 func (*IRif_icmpge) Op() ops.Op    { return ops.If_icmpge }
-func (*IRif_icmpge) Operands() int { return 2 }
 func (ir *IRif_icmpge) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -231,7 +207,6 @@ type IRif_icmpgt struct {
 }
 
 func (*IRif_icmpgt) Op() ops.Op    { return ops.If_icmpgt }
-func (*IRif_icmpgt) Operands() int { return 2 }
 func (ir *IRif_icmpgt) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -250,7 +225,6 @@ type IRif_icmple struct {
 }
 
 func (*IRif_icmple) Op() ops.Op    { return ops.If_icmple }
-func (*IRif_icmple) Operands() int { return 2 }
 func (ir *IRif_icmple) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -269,7 +243,6 @@ type IRif_icmplt struct {
 }
 
 func (*IRif_icmplt) Op() ops.Op    { return ops.If_icmplt }
-func (*IRif_icmplt) Operands() int { return 2 }
 func (ir *IRif_icmplt) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -288,7 +261,6 @@ type IRif_icmpne struct {
 }
 
 func (*IRif_icmpne) Op() ops.Op    { return ops.If_icmpne }
-func (*IRif_icmpne) Operands() int { return 2 }
 func (ir *IRif_icmpne) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -307,7 +279,6 @@ type IRifeq struct {
 }
 
 func (*IRifeq) Op() ops.Op    { return ops.Ifeq }
-func (*IRifeq) Operands() int { return 2 }
 func (ir *IRifeq) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -325,7 +296,6 @@ type IRifge struct {
 }
 
 func (*IRifge) Op() ops.Op    { return ops.Ifge }
-func (*IRifge) Operands() int { return 2 }
 func (ir *IRifge) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -343,7 +313,6 @@ type IRifgt struct {
 }
 
 func (*IRifgt) Op() ops.Op    { return ops.Ifgt }
-func (*IRifgt) Operands() int { return 2 }
 func (ir *IRifgt) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -361,7 +330,6 @@ type IRifle struct {
 }
 
 func (*IRifle) Op() ops.Op    { return ops.Ifle }
-func (*IRifle) Operands() int { return 2 }
 func (ir *IRifle) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -379,7 +347,6 @@ type IRiflt struct {
 }
 
 func (*IRiflt) Op() ops.Op    { return ops.Iflt }
-func (*IRiflt) Operands() int { return 2 }
 func (ir *IRiflt) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -397,7 +364,6 @@ type IRifne struct {
 }
 
 func (*IRifne) Op() ops.Op    { return ops.Ifne }
-func (*IRifne) Operands() int { return 2 }
 func (ir *IRifne) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -415,7 +381,6 @@ type IRifnonnull struct {
 }
 
 func (*IRifnonnull) Op() ops.Op    { return ops.Ifnonnull }
-func (*IRifnonnull) Operands() int { return 2 }
 func (ir *IRifnonnull) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -433,7 +398,6 @@ type IRifnull struct {
 }
 
 func (*IRifnull) Op() ops.Op    { return ops.Ifnull }
-func (*IRifnull) Operands() int { return 2 }
 func (ir *IRifnull) Parse(operands []byte) {
 	ir.Offset = bytesToInt16(operands)
 }
@@ -449,8 +413,6 @@ func (ir *IRifnull) Execute(vm VM) error {
 type IRireturn struct{}
 
 func (*IRireturn) Op() ops.Op            { return ops.Ireturn }
-func (*IRireturn) Operands() int         { return 0 }
-func (*IRireturn) Parse(operands []byte) {}
 func (*IRireturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -459,14 +421,12 @@ func (*IRireturn) Execute(vm VM) error {
 type IRjsr struct{}
 
 func (*IRjsr) Op() ops.Op            { return ops.Jsr }
-func (*IRjsr) Operands() int         { return 2 }
 func (*IRjsr) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr) Execute(vm VM) error   { panic("deprecated") }
 
 type IRjsr_w struct{}
 
 func (*IRjsr_w) Op() ops.Op            { return ops.Jsr_w }
-func (*IRjsr_w) Operands() int         { return 4 }
 func (*IRjsr_w) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr_w) Execute(vm VM) error   { panic("deprecated") }
 
@@ -501,7 +461,6 @@ func (c CaseEntry) Cmp(o CaseEntry) int {
 }
 
 func (*IRlookupswitch) Op() ops.Op    { return ops.Lookupswitch }
-func (*IRlookupswitch) Operands() int { return -1 /* dynamic */ }
 func (ir *IRlookupswitch) Parse(operands []byte) {
 	ir.DefaultOffset = bytesToInt32(operands[0:4])
 	indexCount := bytesToInt32(operands[4:8])
@@ -527,8 +486,6 @@ func (ir *IRlookupswitch) Execute(vm VM) error {
 type IRlreturn struct{}
 
 func (*IRlreturn) Op() ops.Op            { return ops.Lreturn }
-func (*IRlreturn) Operands() int         { return 0 }
-func (*IRlreturn) Parse(operands []byte) {}
 func (*IRlreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -537,8 +494,6 @@ func (*IRlreturn) Execute(vm VM) error {
 type IRmonitorenter struct{}
 
 func (*IRmonitorenter) Op() ops.Op            { return ops.Monitorenter }
-func (*IRmonitorenter) Operands() int         { return 0 }
-func (*IRmonitorenter) Parse(operands []byte) {}
 func (*IRmonitorenter) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorLock(ref)
@@ -547,8 +502,6 @@ func (*IRmonitorenter) Execute(vm VM) error {
 type IRmonitorexit struct{}
 
 func (*IRmonitorexit) Op() ops.Op            { return ops.Monitorexit }
-func (*IRmonitorexit) Operands() int         { return 0 }
-func (*IRmonitorexit) Parse(operands []byte) {}
 func (*IRmonitorexit) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorUnlock(ref)
@@ -557,15 +510,11 @@ func (*IRmonitorexit) Execute(vm VM) error {
 type IRnop struct{}
 
 func (*IRnop) Op() ops.Op            { return ops.Nop }
-func (*IRnop) Operands() int         { return 0 }
-func (*IRnop) Parse(operands []byte) {}
 func (*IRnop) Execute(vm VM) error   { return nil }
 
 type IRpop struct{}
 
 func (*IRpop) Op() ops.Op            { return ops.Pop }
-func (*IRpop) Operands() int         { return 0 }
-func (*IRpop) Parse(operands []byte) {}
 func (*IRpop) Execute(vm VM) error {
 	vm.GetStack().PopInt32()
 	return nil
@@ -574,8 +523,6 @@ func (*IRpop) Execute(vm VM) error {
 type IRpop2 struct{}
 
 func (*IRpop2) Op() ops.Op            { return ops.Pop2 }
-func (*IRpop2) Operands() int         { return 0 }
-func (*IRpop2) Parse(operands []byte) {}
 func (*IRpop2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	stack.PopInt32()
@@ -586,15 +533,12 @@ func (*IRpop2) Execute(vm VM) error {
 type IRret struct{}
 
 func (*IRret) Op() ops.Op            { return ops.Ret }
-func (*IRret) Operands() int         { return 1 }
 func (*IRret) Parse(operands []byte) { panic("deprecated") }
 func (*IRret) Execute(vm VM) error   { panic("deprecated") }
 
 type IRreturn struct{}
 
 func (*IRreturn) Op() ops.Op            { return ops.Return }
-func (*IRreturn) Operands() int         { return 0 }
-func (*IRreturn) Parse(operands []byte) {}
 func (*IRreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -603,8 +547,6 @@ func (*IRreturn) Execute(vm VM) error {
 type IRswap struct{}
 
 func (*IRswap) Op() ops.Op            { return ops.Swap }
-func (*IRswap) Operands() int         { return 0 }
-func (*IRswap) Parse(operands []byte) {}
 func (*IRswap) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
