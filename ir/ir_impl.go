@@ -10,7 +10,7 @@ import (
 
 type IRareturn struct{}
 
-func (*IRareturn) Op() ops.Op            { return ops.Areturn }
+func (*IRareturn) Op() ops.Op { return ops.Areturn }
 func (*IRareturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -18,7 +18,7 @@ func (*IRareturn) Execute(vm VM) error {
 
 type IRdreturn struct{}
 
-func (*IRdreturn) Op() ops.Op            { return ops.Dreturn }
+func (*IRdreturn) Op() ops.Op { return ops.Dreturn }
 func (*IRdreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -26,7 +26,7 @@ func (*IRdreturn) Execute(vm VM) error {
 
 type IRdup struct{}
 
-func (*IRdup) Op() ops.Op            { return ops.Dup }
+func (*IRdup) Op() ops.Op { return ops.Dup }
 func (*IRdup) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PeekInt32()
@@ -36,7 +36,7 @@ func (*IRdup) Execute(vm VM) error {
 
 type IRdup_x1 struct{}
 
-func (*IRdup_x1) Op() ops.Op            { return ops.Dup_x1 }
+func (*IRdup_x1) Op() ops.Op { return ops.Dup_x1 }
 func (*IRdup_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -49,7 +49,7 @@ func (*IRdup_x1) Execute(vm VM) error {
 
 type IRdup_x2 struct{}
 
-func (*IRdup_x2) Op() ops.Op            { return ops.Dup_x2 }
+func (*IRdup_x2) Op() ops.Op { return ops.Dup_x2 }
 func (*IRdup_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -62,7 +62,7 @@ func (*IRdup_x2) Execute(vm VM) error {
 
 type IRdup2 struct{}
 
-func (*IRdup2) Op() ops.Op            { return ops.Dup2 }
+func (*IRdup2) Op() ops.Op { return ops.Dup2 }
 func (*IRdup2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PeekInt64()
@@ -72,7 +72,7 @@ func (*IRdup2) Execute(vm VM) error {
 
 type IRdup2_x1 struct{}
 
-func (*IRdup2_x1) Op() ops.Op            { return ops.Dup2_x1 }
+func (*IRdup2_x1) Op() ops.Op { return ops.Dup2_x1 }
 func (*IRdup2_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt64()
@@ -85,7 +85,7 @@ func (*IRdup2_x1) Execute(vm VM) error {
 
 type IRdup2_x2 struct{}
 
-func (*IRdup2_x2) Op() ops.Op            { return ops.Dup2_x2 }
+func (*IRdup2_x2) Op() ops.Op { return ops.Dup2_x2 }
 func (*IRdup2_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt64()
@@ -98,7 +98,7 @@ func (*IRdup2_x2) Execute(vm VM) error {
 
 type IRfreturn struct{}
 
-func (*IRfreturn) Op() ops.Op            { return ops.Freturn }
+func (*IRfreturn) Op() ops.Op { return ops.Freturn }
 func (*IRfreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -108,7 +108,7 @@ type IRgoto struct {
 	Offset int16
 }
 
-func (*IRgoto) Op() ops.Op    { return ops.Goto }
+func (*IRgoto) Op() ops.Op { return ops.Goto }
 func (ir *IRgoto) Execute(vm VM) error {
 	vm.Goto((int32)(ir.Offset))
 	return nil
@@ -118,7 +118,7 @@ type IRgoto_w struct {
 	Offset int32
 }
 
-func (*IRgoto_w) Op() ops.Op    { return ops.Goto_w }
+func (*IRgoto_w) Op() ops.Op { return ops.Goto_w }
 func (ir *IRgoto_w) Execute(vm VM) error {
 	vm.Goto(ir.Offset)
 	return nil
@@ -128,7 +128,7 @@ type IRif_acmpeq struct {
 	Offset int16
 }
 
-func (*IRif_acmpeq) Op() ops.Op    { return ops.If_acmpeq }
+func (*IRif_acmpeq) Op() ops.Op { return ops.If_acmpeq }
 func (ir *IRif_acmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
@@ -143,7 +143,7 @@ type IRif_acmpne struct {
 	Offset int16
 }
 
-func (*IRif_acmpne) Op() ops.Op    { return ops.If_acmpne }
+func (*IRif_acmpne) Op() ops.Op { return ops.If_acmpne }
 func (ir *IRif_acmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
@@ -158,7 +158,7 @@ type IRif_icmpeq struct {
 	Offset int16
 }
 
-func (*IRif_icmpeq) Op() ops.Op    { return ops.If_icmpeq }
+func (*IRif_icmpeq) Op() ops.Op { return ops.If_icmpeq }
 func (ir *IRif_icmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -173,7 +173,7 @@ type IRif_icmpge struct {
 	Offset int16
 }
 
-func (*IRif_icmpge) Op() ops.Op    { return ops.If_icmpge }
+func (*IRif_icmpge) Op() ops.Op { return ops.If_icmpge }
 func (ir *IRif_icmpge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -188,7 +188,7 @@ type IRif_icmpgt struct {
 	Offset int16
 }
 
-func (*IRif_icmpgt) Op() ops.Op    { return ops.If_icmpgt }
+func (*IRif_icmpgt) Op() ops.Op { return ops.If_icmpgt }
 func (ir *IRif_icmpgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -203,7 +203,7 @@ type IRif_icmple struct {
 	Offset int16
 }
 
-func (*IRif_icmple) Op() ops.Op    { return ops.If_icmple }
+func (*IRif_icmple) Op() ops.Op { return ops.If_icmple }
 func (ir *IRif_icmple) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -218,7 +218,7 @@ type IRif_icmplt struct {
 	Offset int16
 }
 
-func (*IRif_icmplt) Op() ops.Op    { return ops.If_icmplt }
+func (*IRif_icmplt) Op() ops.Op { return ops.If_icmplt }
 func (ir *IRif_icmplt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -233,7 +233,7 @@ type IRif_icmpne struct {
 	Offset int16
 }
 
-func (*IRif_icmpne) Op() ops.Op    { return ops.If_icmpne }
+func (*IRif_icmpne) Op() ops.Op { return ops.If_icmpne }
 func (ir *IRif_icmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -248,7 +248,7 @@ type IRifeq struct {
 	Offset int16
 }
 
-func (*IRifeq) Op() ops.Op    { return ops.Ifeq }
+func (*IRifeq) Op() ops.Op { return ops.Ifeq }
 func (ir *IRifeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -262,7 +262,7 @@ type IRifge struct {
 	Offset int16
 }
 
-func (*IRifge) Op() ops.Op    { return ops.Ifge }
+func (*IRifge) Op() ops.Op { return ops.Ifge }
 func (ir *IRifge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -276,7 +276,7 @@ type IRifgt struct {
 	Offset int16
 }
 
-func (*IRifgt) Op() ops.Op    { return ops.Ifgt }
+func (*IRifgt) Op() ops.Op { return ops.Ifgt }
 func (ir *IRifgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -290,7 +290,7 @@ type IRifle struct {
 	Offset int16
 }
 
-func (*IRifle) Op() ops.Op    { return ops.Ifle }
+func (*IRifle) Op() ops.Op { return ops.Ifle }
 func (ir *IRifle) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -304,7 +304,7 @@ type IRiflt struct {
 	Offset int16
 }
 
-func (*IRiflt) Op() ops.Op    { return ops.Iflt }
+func (*IRiflt) Op() ops.Op { return ops.Iflt }
 func (ir *IRiflt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -318,7 +318,7 @@ type IRifne struct {
 	Offset int16
 }
 
-func (*IRifne) Op() ops.Op    { return ops.Ifne }
+func (*IRifne) Op() ops.Op { return ops.Ifne }
 func (ir *IRifne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -332,7 +332,7 @@ type IRifnonnull struct {
 	Offset int16
 }
 
-func (*IRifnonnull) Op() ops.Op    { return ops.Ifnonnull }
+func (*IRifnonnull) Op() ops.Op { return ops.Ifnonnull }
 func (ir *IRifnonnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
@@ -346,7 +346,7 @@ type IRifnull struct {
 	Offset int16
 }
 
-func (*IRifnull) Op() ops.Op    { return ops.Ifnull }
+func (*IRifnull) Op() ops.Op { return ops.Ifnull }
 func (ir *IRifnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
@@ -358,7 +358,7 @@ func (ir *IRifnull) Execute(vm VM) error {
 
 type IRireturn struct{}
 
-func (*IRireturn) Op() ops.Op            { return ops.Ireturn }
+func (*IRireturn) Op() ops.Op { return ops.Ireturn }
 func (*IRireturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -406,7 +406,7 @@ func (c CaseEntry) Cmp(o CaseEntry) int {
 	return c.CmpKey(o.K)
 }
 
-func (*IRlookupswitch) Op() ops.Op    { return ops.Lookupswitch }
+func (*IRlookupswitch) Op() ops.Op { return ops.Lookupswitch }
 func (ir *IRlookupswitch) Execute(vm VM) error {
 	key := vm.GetStack().PopInt32()
 	offset := ir.DefaultOffset
@@ -419,7 +419,7 @@ func (ir *IRlookupswitch) Execute(vm VM) error {
 
 type IRlreturn struct{}
 
-func (*IRlreturn) Op() ops.Op            { return ops.Lreturn }
+func (*IRlreturn) Op() ops.Op { return ops.Lreturn }
 func (*IRlreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -427,7 +427,7 @@ func (*IRlreturn) Execute(vm VM) error {
 
 type IRmonitorenter struct{}
 
-func (*IRmonitorenter) Op() ops.Op            { return ops.Monitorenter }
+func (*IRmonitorenter) Op() ops.Op { return ops.Monitorenter }
 func (*IRmonitorenter) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorLock(ref)
@@ -435,7 +435,7 @@ func (*IRmonitorenter) Execute(vm VM) error {
 
 type IRmonitorexit struct{}
 
-func (*IRmonitorexit) Op() ops.Op            { return ops.Monitorexit }
+func (*IRmonitorexit) Op() ops.Op { return ops.Monitorexit }
 func (*IRmonitorexit) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorUnlock(ref)
@@ -443,12 +443,12 @@ func (*IRmonitorexit) Execute(vm VM) error {
 
 type IRnop struct{}
 
-func (*IRnop) Op() ops.Op            { return ops.Nop }
-func (*IRnop) Execute(vm VM) error   { return nil }
+func (*IRnop) Op() ops.Op          { return ops.Nop }
+func (*IRnop) Execute(vm VM) error { return nil }
 
 type IRpop struct{}
 
-func (*IRpop) Op() ops.Op            { return ops.Pop }
+func (*IRpop) Op() ops.Op { return ops.Pop }
 func (*IRpop) Execute(vm VM) error {
 	vm.GetStack().PopInt32()
 	return nil
@@ -456,7 +456,7 @@ func (*IRpop) Execute(vm VM) error {
 
 type IRpop2 struct{}
 
-func (*IRpop2) Op() ops.Op            { return ops.Pop2 }
+func (*IRpop2) Op() ops.Op { return ops.Pop2 }
 func (*IRpop2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	stack.PopInt32()
@@ -472,7 +472,7 @@ func (*IRret) Execute(vm VM) error   { panic("deprecated") }
 
 type IRreturn struct{}
 
-func (*IRreturn) Op() ops.Op            { return ops.Return }
+func (*IRreturn) Op() ops.Op { return ops.Return }
 func (*IRreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
@@ -480,7 +480,7 @@ func (*IRreturn) Execute(vm VM) error {
 
 type IRswap struct{}
 
-func (*IRswap) Op() ops.Op            { return ops.Swap }
+func (*IRswap) Op() ops.Op { return ops.Swap }
 func (*IRswap) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()

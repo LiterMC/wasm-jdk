@@ -7,7 +7,7 @@ import (
 
 type IRcaload struct{}
 
-func (*IRcaload) Op() ops.Op            { return ops.Caload }
+func (*IRcaload) Op() ops.Op { return ops.Caload }
 func (*IRcaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -24,7 +24,7 @@ func (*IRcaload) Execute(vm VM) error {
 
 type IRcastore struct{}
 
-func (*IRcastore) Op() ops.Op            { return ops.Castore }
+func (*IRcastore) Op() ops.Op { return ops.Castore }
 func (*IRcastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -42,7 +42,7 @@ func (*IRcastore) Execute(vm VM) error {
 
 type IRsaload struct{}
 
-func (*IRsaload) Op() ops.Op            { return ops.Saload }
+func (*IRsaload) Op() ops.Op { return ops.Saload }
 func (*IRsaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -59,7 +59,7 @@ func (*IRsaload) Execute(vm VM) error {
 
 type IRsastore struct{}
 
-func (*IRsastore) Op() ops.Op            { return ops.Sastore }
+func (*IRsastore) Op() ops.Op { return ops.Sastore }
 func (*IRsastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
@@ -79,7 +79,7 @@ type IRsipush struct {
 	Value int16
 }
 
-func (*IRsipush) Op() ops.Op    { return ops.Sipush }
+func (*IRsipush) Op() ops.Op { return ops.Sipush }
 func (ir *IRsipush) Execute(vm VM) error {
 	vm.GetStack().PushInt32((int32)(ir.Value))
 	return nil

@@ -7,7 +7,7 @@ import (
 
 type IRl2d struct{}
 
-func (*IRl2d) Op() ops.Op            { return ops.L2d }
+func (*IRl2d) Op() ops.Op { return ops.L2d }
 func (*IRl2d) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt64()
@@ -17,7 +17,7 @@ func (*IRl2d) Execute(vm VM) error {
 
 type IRl2f struct{}
 
-func (*IRl2f) Op() ops.Op            { return ops.L2f }
+func (*IRl2f) Op() ops.Op { return ops.L2f }
 func (*IRl2f) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt64()
@@ -27,7 +27,7 @@ func (*IRl2f) Execute(vm VM) error {
 
 type IRl2i struct{}
 
-func (*IRl2i) Op() ops.Op            { return ops.L2i }
+func (*IRl2i) Op() ops.Op { return ops.L2i }
 func (*IRl2i) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt64()
@@ -37,7 +37,7 @@ func (*IRl2i) Execute(vm VM) error {
 
 type IRladd struct{}
 
-func (*IRladd) Op() ops.Op            { return ops.Ladd }
+func (*IRladd) Op() ops.Op { return ops.Ladd }
 func (*IRladd) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -48,7 +48,7 @@ func (*IRladd) Execute(vm VM) error {
 
 type IRlaload struct{}
 
-func (*IRlaload) Op() ops.Op            { return ops.Laload }
+func (*IRlaload) Op() ops.Op { return ops.Laload }
 func (*IRlaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt64()
@@ -65,7 +65,7 @@ func (*IRlaload) Execute(vm VM) error {
 
 type IRland struct{}
 
-func (*IRland) Op() ops.Op            { return ops.Land }
+func (*IRland) Op() ops.Op { return ops.Land }
 func (*IRland) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -76,7 +76,7 @@ func (*IRland) Execute(vm VM) error {
 
 type IRlastore struct{}
 
-func (*IRlastore) Op() ops.Op            { return ops.Lastore }
+func (*IRlastore) Op() ops.Op { return ops.Lastore }
 func (*IRlastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt64()
@@ -94,7 +94,7 @@ func (*IRlastore) Execute(vm VM) error {
 
 type IRlcmp struct{}
 
-func (*IRlcmp) Op() ops.Op            { return ops.Lcmp }
+func (*IRlcmp) Op() ops.Op { return ops.Lcmp }
 func (*IRlcmp) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -111,7 +111,7 @@ func (*IRlcmp) Execute(vm VM) error {
 
 type IRlconst_0 struct{}
 
-func (*IRlconst_0) Op() ops.Op            { return ops.Lconst_0 }
+func (*IRlconst_0) Op() ops.Op { return ops.Lconst_0 }
 func (*IRlconst_0) Execute(vm VM) error {
 	vm.GetStack().PushInt64(0)
 	return nil
@@ -119,7 +119,7 @@ func (*IRlconst_0) Execute(vm VM) error {
 
 type IRlconst_1 struct{}
 
-func (*IRlconst_1) Op() ops.Op            { return ops.Lconst_1 }
+func (*IRlconst_1) Op() ops.Op { return ops.Lconst_1 }
 func (*IRlconst_1) Execute(vm VM) error {
 	vm.GetStack().PushInt64(1)
 	return nil
@@ -129,14 +129,14 @@ type IRldc2_w struct {
 	Index uint16
 }
 
-func (*IRldc2_w) Op() ops.Op    { return ops.Ldc2_w }
+func (*IRldc2_w) Op() ops.Op { return ops.Ldc2_w }
 func (ir *IRldc2_w) Execute(vm VM) error {
 	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
 }
 
 type IRldiv struct{}
 
-func (*IRldiv) Op() ops.Op            { return ops.Ldiv }
+func (*IRldiv) Op() ops.Op { return ops.Ldiv }
 func (*IRldiv) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -149,7 +149,7 @@ type IRlload struct {
 	Index uint16
 }
 
-func (*IRlload) Op() ops.Op    { return ops.Lload }
+func (*IRlload) Op() ops.Op { return ops.Lload }
 func (ir *IRlload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64((uint16)(ir.Index))
@@ -159,7 +159,7 @@ func (ir *IRlload) Execute(vm VM) error {
 
 type IRlload_0 struct{}
 
-func (*IRlload_0) Op() ops.Op            { return ops.Lload_0 }
+func (*IRlload_0) Op() ops.Op { return ops.Lload_0 }
 func (*IRlload_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(0)
@@ -169,7 +169,7 @@ func (*IRlload_0) Execute(vm VM) error {
 
 type IRlload_1 struct{}
 
-func (*IRlload_1) Op() ops.Op            { return ops.Lload_1 }
+func (*IRlload_1) Op() ops.Op { return ops.Lload_1 }
 func (*IRlload_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(1)
@@ -179,7 +179,7 @@ func (*IRlload_1) Execute(vm VM) error {
 
 type IRlload_2 struct{}
 
-func (*IRlload_2) Op() ops.Op            { return ops.Lload_2 }
+func (*IRlload_2) Op() ops.Op { return ops.Lload_2 }
 func (*IRlload_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(2)
@@ -189,7 +189,7 @@ func (*IRlload_2) Execute(vm VM) error {
 
 type IRlload_3 struct{}
 
-func (*IRlload_3) Op() ops.Op            { return ops.Lload_3 }
+func (*IRlload_3) Op() ops.Op { return ops.Lload_3 }
 func (*IRlload_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(3)
@@ -199,7 +199,7 @@ func (*IRlload_3) Execute(vm VM) error {
 
 type IRlmul struct{}
 
-func (*IRlmul) Op() ops.Op            { return ops.Lmul }
+func (*IRlmul) Op() ops.Op { return ops.Lmul }
 func (*IRlmul) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -210,7 +210,7 @@ func (*IRlmul) Execute(vm VM) error {
 
 type IRlneg struct{}
 
-func (*IRlneg) Op() ops.Op            { return ops.Lneg }
+func (*IRlneg) Op() ops.Op { return ops.Lneg }
 func (*IRlneg) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt64()
@@ -220,7 +220,7 @@ func (*IRlneg) Execute(vm VM) error {
 
 type IRlor struct{}
 
-func (*IRlor) Op() ops.Op            { return ops.Lor }
+func (*IRlor) Op() ops.Op { return ops.Lor }
 func (*IRlor) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -231,7 +231,7 @@ func (*IRlor) Execute(vm VM) error {
 
 type IRlrem struct{}
 
-func (*IRlrem) Op() ops.Op            { return ops.Lrem }
+func (*IRlrem) Op() ops.Op { return ops.Lrem }
 func (*IRlrem) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -242,7 +242,7 @@ func (*IRlrem) Execute(vm VM) error {
 
 type IRlshl struct{}
 
-func (*IRlshl) Op() ops.Op            { return ops.Lshl }
+func (*IRlshl) Op() ops.Op { return ops.Lshl }
 func (*IRlshl) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -253,7 +253,7 @@ func (*IRlshl) Execute(vm VM) error {
 
 type IRlshr struct{}
 
-func (*IRlshr) Op() ops.Op            { return ops.Lshr }
+func (*IRlshr) Op() ops.Op { return ops.Lshr }
 func (*IRlshr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -266,7 +266,7 @@ type IRlstore struct {
 	Index uint16
 }
 
-func (*IRlstore) Op() ops.Op    { return ops.Lstore }
+func (*IRlstore) Op() ops.Op { return ops.Lstore }
 func (ir *IRlstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
@@ -276,7 +276,7 @@ func (ir *IRlstore) Execute(vm VM) error {
 
 type IRlstore_0 struct{}
 
-func (*IRlstore_0) Op() ops.Op            { return ops.Lstore_0 }
+func (*IRlstore_0) Op() ops.Op { return ops.Lstore_0 }
 func (*IRlstore_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
@@ -286,7 +286,7 @@ func (*IRlstore_0) Execute(vm VM) error {
 
 type IRlstore_1 struct{}
 
-func (*IRlstore_1) Op() ops.Op            { return ops.Lstore_1 }
+func (*IRlstore_1) Op() ops.Op { return ops.Lstore_1 }
 func (*IRlstore_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
@@ -296,7 +296,7 @@ func (*IRlstore_1) Execute(vm VM) error {
 
 type IRlstore_2 struct{}
 
-func (*IRlstore_2) Op() ops.Op            { return ops.Lstore_2 }
+func (*IRlstore_2) Op() ops.Op { return ops.Lstore_2 }
 func (*IRlstore_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
@@ -306,7 +306,7 @@ func (*IRlstore_2) Execute(vm VM) error {
 
 type IRlstore_3 struct{}
 
-func (*IRlstore_3) Op() ops.Op            { return ops.Lstore_3 }
+func (*IRlstore_3) Op() ops.Op { return ops.Lstore_3 }
 func (*IRlstore_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
@@ -316,7 +316,7 @@ func (*IRlstore_3) Execute(vm VM) error {
 
 type IRlsub struct{}
 
-func (*IRlsub) Op() ops.Op            { return ops.Lsub }
+func (*IRlsub) Op() ops.Op { return ops.Lsub }
 func (*IRlsub) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()
@@ -327,7 +327,7 @@ func (*IRlsub) Execute(vm VM) error {
 
 type IRlushr struct{}
 
-func (*IRlushr) Op() ops.Op            { return ops.Lushr }
+func (*IRlushr) Op() ops.Op { return ops.Lushr }
 func (*IRlushr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -338,7 +338,7 @@ func (*IRlushr) Execute(vm VM) error {
 
 type IRlxor struct{}
 
-func (*IRlxor) Op() ops.Op            { return ops.Lxor }
+func (*IRlxor) Op() ops.Op { return ops.Lxor }
 func (*IRlxor) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt64()

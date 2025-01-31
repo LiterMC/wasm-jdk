@@ -7,7 +7,7 @@ import (
 
 type IRi2b struct{}
 
-func (*IRi2b) Op() ops.Op            { return ops.I2b }
+func (*IRi2b) Op() ops.Op { return ops.I2b }
 func (*IRi2b) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -17,7 +17,7 @@ func (*IRi2b) Execute(vm VM) error {
 
 type IRi2c struct{}
 
-func (*IRi2c) Op() ops.Op            { return ops.I2c }
+func (*IRi2c) Op() ops.Op { return ops.I2c }
 func (*IRi2c) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -27,7 +27,7 @@ func (*IRi2c) Execute(vm VM) error {
 
 type IRi2d struct{}
 
-func (*IRi2d) Op() ops.Op            { return ops.I2d }
+func (*IRi2d) Op() ops.Op { return ops.I2d }
 func (*IRi2d) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -37,7 +37,7 @@ func (*IRi2d) Execute(vm VM) error {
 
 type IRi2f struct{}
 
-func (*IRi2f) Op() ops.Op            { return ops.I2f }
+func (*IRi2f) Op() ops.Op { return ops.I2f }
 func (*IRi2f) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -47,7 +47,7 @@ func (*IRi2f) Execute(vm VM) error {
 
 type IRi2l struct{}
 
-func (*IRi2l) Op() ops.Op            { return ops.I2l }
+func (*IRi2l) Op() ops.Op { return ops.I2l }
 func (*IRi2l) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -57,7 +57,7 @@ func (*IRi2l) Execute(vm VM) error {
 
 type IRi2s struct{}
 
-func (*IRi2s) Op() ops.Op            { return ops.I2s }
+func (*IRi2s) Op() ops.Op { return ops.I2s }
 func (*IRi2s) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
@@ -67,7 +67,7 @@ func (*IRi2s) Execute(vm VM) error {
 
 type IRiadd struct{}
 
-func (*IRiadd) Op() ops.Op            { return ops.Iadd }
+func (*IRiadd) Op() ops.Op { return ops.Iadd }
 func (*IRiadd) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -78,7 +78,7 @@ func (*IRiadd) Execute(vm VM) error {
 
 type IRiaload struct{}
 
-func (*IRiaload) Op() ops.Op            { return ops.Iaload }
+func (*IRiaload) Op() ops.Op { return ops.Iaload }
 func (*IRiaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt32()
@@ -95,7 +95,7 @@ func (*IRiaload) Execute(vm VM) error {
 
 type IRiand struct{}
 
-func (*IRiand) Op() ops.Op            { return ops.Iand }
+func (*IRiand) Op() ops.Op { return ops.Iand }
 func (*IRiand) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -106,7 +106,7 @@ func (*IRiand) Execute(vm VM) error {
 
 type IRiastore struct{}
 
-func (*IRiastore) Op() ops.Op            { return ops.Iastore }
+func (*IRiastore) Op() ops.Op { return ops.Iastore }
 func (*IRiastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt32()
@@ -124,7 +124,7 @@ func (*IRiastore) Execute(vm VM) error {
 
 type IRiconst_m1 struct{}
 
-func (*IRiconst_m1) Op() ops.Op            { return ops.Iconst_m1 }
+func (*IRiconst_m1) Op() ops.Op { return ops.Iconst_m1 }
 func (*IRiconst_m1) Execute(vm VM) error {
 	vm.GetStack().PushInt32(-1)
 	return nil
@@ -132,7 +132,7 @@ func (*IRiconst_m1) Execute(vm VM) error {
 
 type IRiconst_0 struct{}
 
-func (*IRiconst_0) Op() ops.Op            { return ops.Iconst_0 }
+func (*IRiconst_0) Op() ops.Op { return ops.Iconst_0 }
 func (*IRiconst_0) Execute(vm VM) error {
 	vm.GetStack().PushInt32(0)
 	return nil
@@ -140,7 +140,7 @@ func (*IRiconst_0) Execute(vm VM) error {
 
 type IRiconst_1 struct{}
 
-func (*IRiconst_1) Op() ops.Op            { return ops.Iconst_1 }
+func (*IRiconst_1) Op() ops.Op { return ops.Iconst_1 }
 func (*IRiconst_1) Execute(vm VM) error {
 	vm.GetStack().PushInt32(1)
 	return nil
@@ -148,7 +148,7 @@ func (*IRiconst_1) Execute(vm VM) error {
 
 type IRiconst_2 struct{}
 
-func (*IRiconst_2) Op() ops.Op            { return ops.Iconst_2 }
+func (*IRiconst_2) Op() ops.Op { return ops.Iconst_2 }
 func (*IRiconst_2) Execute(vm VM) error {
 	vm.GetStack().PushInt32(2)
 	return nil
@@ -156,7 +156,7 @@ func (*IRiconst_2) Execute(vm VM) error {
 
 type IRiconst_3 struct{}
 
-func (*IRiconst_3) Op() ops.Op            { return ops.Iconst_3 }
+func (*IRiconst_3) Op() ops.Op { return ops.Iconst_3 }
 func (*IRiconst_3) Execute(vm VM) error {
 	vm.GetStack().PushInt32(3)
 	return nil
@@ -164,7 +164,7 @@ func (*IRiconst_3) Execute(vm VM) error {
 
 type IRiconst_4 struct{}
 
-func (*IRiconst_4) Op() ops.Op            { return ops.Iconst_4 }
+func (*IRiconst_4) Op() ops.Op { return ops.Iconst_4 }
 func (*IRiconst_4) Execute(vm VM) error {
 	vm.GetStack().PushInt32(4)
 	return nil
@@ -172,7 +172,7 @@ func (*IRiconst_4) Execute(vm VM) error {
 
 type IRiconst_5 struct{}
 
-func (*IRiconst_5) Op() ops.Op            { return ops.Iconst_5 }
+func (*IRiconst_5) Op() ops.Op { return ops.Iconst_5 }
 func (*IRiconst_5) Execute(vm VM) error {
 	vm.GetStack().PushInt32(5)
 	return nil
@@ -180,7 +180,7 @@ func (*IRiconst_5) Execute(vm VM) error {
 
 type IRidiv struct{}
 
-func (*IRidiv) Op() ops.Op            { return ops.Idiv }
+func (*IRidiv) Op() ops.Op { return ops.Idiv }
 func (*IRidiv) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -194,7 +194,7 @@ type IRiinc struct {
 	Const int16
 }
 
-func (*IRiinc) Op() ops.Op    { return ops.Iinc }
+func (*IRiinc) Op() ops.Op { return ops.Iinc }
 func (ir *IRiinc) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(ir.Index)
@@ -206,7 +206,7 @@ type IRiload struct {
 	Index uint16
 }
 
-func (*IRiload) Op() ops.Op    { return ops.Iload }
+func (*IRiload) Op() ops.Op { return ops.Iload }
 func (ir *IRiload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32((uint16)(ir.Index))
@@ -216,7 +216,7 @@ func (ir *IRiload) Execute(vm VM) error {
 
 type IRiload_0 struct{}
 
-func (*IRiload_0) Op() ops.Op            { return ops.Iload_0 }
+func (*IRiload_0) Op() ops.Op { return ops.Iload_0 }
 func (*IRiload_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(0)
@@ -226,7 +226,7 @@ func (*IRiload_0) Execute(vm VM) error {
 
 type IRiload_1 struct{}
 
-func (*IRiload_1) Op() ops.Op            { return ops.Iload_1 }
+func (*IRiload_1) Op() ops.Op { return ops.Iload_1 }
 func (*IRiload_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(1)
@@ -236,7 +236,7 @@ func (*IRiload_1) Execute(vm VM) error {
 
 type IRiload_2 struct{}
 
-func (*IRiload_2) Op() ops.Op            { return ops.Iload_2 }
+func (*IRiload_2) Op() ops.Op { return ops.Iload_2 }
 func (*IRiload_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(2)
@@ -246,7 +246,7 @@ func (*IRiload_2) Execute(vm VM) error {
 
 type IRiload_3 struct{}
 
-func (*IRiload_3) Op() ops.Op            { return ops.Iload_3 }
+func (*IRiload_3) Op() ops.Op { return ops.Iload_3 }
 func (*IRiload_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(3)
@@ -256,7 +256,7 @@ func (*IRiload_3) Execute(vm VM) error {
 
 type IRimul struct{}
 
-func (*IRimul) Op() ops.Op            { return ops.Imul }
+func (*IRimul) Op() ops.Op { return ops.Imul }
 func (*IRimul) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -267,7 +267,7 @@ func (*IRimul) Execute(vm VM) error {
 
 type IRineg struct{}
 
-func (*IRineg) Op() ops.Op            { return ops.Ineg }
+func (*IRineg) Op() ops.Op { return ops.Ineg }
 func (*IRineg) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
@@ -277,7 +277,7 @@ func (*IRineg) Execute(vm VM) error {
 
 type IRior struct{}
 
-func (*IRior) Op() ops.Op            { return ops.Ior }
+func (*IRior) Op() ops.Op { return ops.Ior }
 func (*IRior) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -288,7 +288,7 @@ func (*IRior) Execute(vm VM) error {
 
 type IRirem struct{}
 
-func (*IRirem) Op() ops.Op            { return ops.Irem }
+func (*IRirem) Op() ops.Op { return ops.Irem }
 func (*IRirem) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -299,7 +299,7 @@ func (*IRirem) Execute(vm VM) error {
 
 type IRishl struct{}
 
-func (*IRishl) Op() ops.Op            { return ops.Ishl }
+func (*IRishl) Op() ops.Op { return ops.Ishl }
 func (*IRishl) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -310,7 +310,7 @@ func (*IRishl) Execute(vm VM) error {
 
 type IRishr struct{}
 
-func (*IRishr) Op() ops.Op            { return ops.Ishr }
+func (*IRishr) Op() ops.Op { return ops.Ishr }
 func (*IRishr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -323,7 +323,7 @@ type IRistore struct {
 	Index uint16
 }
 
-func (*IRistore) Op() ops.Op    { return ops.Istore }
+func (*IRistore) Op() ops.Op { return ops.Istore }
 func (ir *IRistore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
@@ -333,7 +333,7 @@ func (ir *IRistore) Execute(vm VM) error {
 
 type IRistore_0 struct{}
 
-func (*IRistore_0) Op() ops.Op            { return ops.Istore_0 }
+func (*IRistore_0) Op() ops.Op { return ops.Istore_0 }
 func (*IRistore_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
@@ -343,7 +343,7 @@ func (*IRistore_0) Execute(vm VM) error {
 
 type IRistore_1 struct{}
 
-func (*IRistore_1) Op() ops.Op            { return ops.Istore_1 }
+func (*IRistore_1) Op() ops.Op { return ops.Istore_1 }
 func (*IRistore_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
@@ -353,7 +353,7 @@ func (*IRistore_1) Execute(vm VM) error {
 
 type IRistore_2 struct{}
 
-func (*IRistore_2) Op() ops.Op            { return ops.Istore_2 }
+func (*IRistore_2) Op() ops.Op { return ops.Istore_2 }
 func (*IRistore_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
@@ -363,7 +363,7 @@ func (*IRistore_2) Execute(vm VM) error {
 
 type IRistore_3 struct{}
 
-func (*IRistore_3) Op() ops.Op            { return ops.Istore_3 }
+func (*IRistore_3) Op() ops.Op { return ops.Istore_3 }
 func (*IRistore_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
@@ -373,7 +373,7 @@ func (*IRistore_3) Execute(vm VM) error {
 
 type IRisub struct{}
 
-func (*IRisub) Op() ops.Op            { return ops.Isub }
+func (*IRisub) Op() ops.Op { return ops.Isub }
 func (*IRisub) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -384,7 +384,7 @@ func (*IRisub) Execute(vm VM) error {
 
 type IRiushr struct{}
 
-func (*IRiushr) Op() ops.Op            { return ops.Iushr }
+func (*IRiushr) Op() ops.Op { return ops.Iushr }
 func (*IRiushr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -395,7 +395,7 @@ func (*IRiushr) Execute(vm VM) error {
 
 type IRixor struct{}
 
-func (*IRixor) Op() ops.Op            { return ops.Ixor }
+func (*IRixor) Op() ops.Op { return ops.Ixor }
 func (*IRixor) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
@@ -408,7 +408,7 @@ type IRldc struct {
 	Index byte
 }
 
-func (*IRldc) Op() ops.Op    { return ops.Ldc }
+func (*IRldc) Op() ops.Op { return ops.Ldc }
 func (ir *IRldc) Execute(vm VM) error {
 	return vm.GetCurrentClass().GetAndPushConst((uint16)(ir.Index), vm.GetStack())
 }
@@ -417,7 +417,7 @@ type IRldc_w struct {
 	Index uint16
 }
 
-func (*IRldc_w) Op() ops.Op    { return ops.Ldc_w }
+func (*IRldc_w) Op() ops.Op { return ops.Ldc_w }
 func (ir *IRldc_w) Execute(vm VM) error {
 	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
 }
