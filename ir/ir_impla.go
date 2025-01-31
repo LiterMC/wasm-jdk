@@ -424,7 +424,7 @@ func (ir *IRnew) Execute(vm VM) error {
 }
 
 type IRnewarray struct {
-	atype byte
+	Atype byte
 }
 
 func (*IRnewarray) Op() ops.Op    { return ops.Newarray }
@@ -435,7 +435,7 @@ func (ir *IRnewarray) Execute(vm VM) error {
 		return errs.NegativeArraySizeException
 	}
 	var arr Ref
-	switch ir.atype {
+	switch ir.Atype {
 	case 4, 8: // T_BOOLEAN, T_BYTE
 		arr = arrayToRef(vm.NewArrInt8(count))
 	case 5, 9: // T_CHAR, T_SHORT
@@ -445,7 +445,7 @@ func (ir *IRnewarray) Execute(vm VM) error {
 	case 7, 11: // T_DOUBLE, T_LONG
 		arr = arrayToRef(vm.NewArrInt64(count))
 	default:
-		panic(fmt.Errorf("ir.newarray: unknown atype %d", ir.atype))
+		panic(fmt.Errorf("ir.newarray: unknown atype %d", ir.Atype))
 	}
 	stack.PushRef(arr)
 	return nil

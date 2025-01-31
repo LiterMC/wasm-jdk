@@ -76,11 +76,11 @@ func (*IRsastore) Execute(vm VM) error {
 }
 
 type IRsipush struct {
-	value int16
+	Value int16
 }
 
 func (*IRsipush) Op() ops.Op    { return ops.Sipush }
 func (ir *IRsipush) Execute(vm VM) error {
-	vm.GetStack().PushInt32((int32)(ir.value))
+	vm.GetStack().PushInt32((int32)(ir.Value))
 	return nil
 }

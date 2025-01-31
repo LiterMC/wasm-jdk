@@ -8,7 +8,12 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
+type ByteReader interface {
+	io.ByteReader
+	io.Reader
+}
+
 type IRParser interface {
 	Op() ops.Op
-	Parse(br io.ByteReader) (ir.IR, error)
+	Parse(br ByteReader) (ir.IR, error)
 }

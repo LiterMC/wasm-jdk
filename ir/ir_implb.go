@@ -41,11 +41,11 @@ func (*IRbastore) Execute(vm VM) error {
 }
 
 type IRbipush struct {
-	value int8
+	Value int8
 }
 
 func (*IRbipush) Op() ops.Op    { return ops.Bipush }
 func (ir *IRbipush) Execute(vm VM) error {
-	vm.GetStack().PushInt32((int32)(ir.value))
+	vm.GetStack().PushInt32((int32)(ir.Value))
 	return nil
 }

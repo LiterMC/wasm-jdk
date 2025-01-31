@@ -191,14 +191,14 @@ func (*IRidiv) Execute(vm VM) error {
 
 type IRiinc struct {
 	Index uint16
-	value int16
+	Const int16
 }
 
 func (*IRiinc) Op() ops.Op    { return ops.Iinc }
 func (ir *IRiinc) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt32(ir.Index)
-	stack.SetVarInt32(ir.Index, val+(int32)(ir.value))
+	stack.SetVarInt32(ir.Index, val+(int32)(ir.Const))
 	return nil
 }
 

@@ -1,8 +1,6 @@
 package parser
 
 import (
-	"io"
-
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -17,7 +15,7 @@ func (p *noOperandParser) Op() ops.Op {
 	return p.Singleton.Op()
 }
 
-func (p *noOperandParser) Parse(br io.ByteReader) (ir.IR, error) {
+func (p *noOperandParser) Parse(br ByteReader) (ir.IR, error) {
 	return p.Singleton, nil
 }
 
