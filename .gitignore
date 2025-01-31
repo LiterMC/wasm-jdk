@@ -1,0 +1,13 @@
+
+# Mac OS
+.DS_Store
+
+# runtime
+/test
+
+# binaries
+/output
+/build
+
+# workspace
+go.work
