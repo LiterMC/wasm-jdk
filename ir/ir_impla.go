@@ -1,6 +1,8 @@
 package ir
 
 import (
+	"fmt"
+
 	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -459,5 +461,139 @@ func (ir *IRinvokevirtual) Execute(vm VM) error {
 	}
 	// TODO: access control
 	vm.Invoke(method, ref)
+	return nil
+}
+
+type IRmultianewarray struct {
+	class      uint16
+	dimensions byte
+}
+
+func (*IRmultianewarray) Op() ops.Op    { return ops.Multianewarray }
+func (*IRmultianewarray) Operands() int { return 3 }
+func (ir *IRmultianewarray) Parse(operands []byte) {
+	ir.class = bytesToUint16(operands)
+	ir.dimensions = operands[2]
+	if ir.dimensions < 1 {
+		panic("multianewarray: dimensions is less than 1")
+	}
+}
+func (ir *IRmultianewarray) Execute(vm VM) error {
+	stack := vm.GetStack()
+	class, err := vm.GetClassByIndex(ir.class)
+	if err != nil {
+		return err
+	}
+	counts := make([]int32, ir.dimensions)
+	for i := range ir.dimensions {
+		count := stack.PopInt32()
+		if count < 0 {
+			return errs.NegativeArraySizeException
+		}
+		counts[i] = count
+	}
+	arr := vm.NewArrRefMultiDim(class, counts)
+	stack.PushRef(arrayToRef(arr))
+	return nil
+}
+
+type IRnew struct {
+	class uint16
+}
+
+func (*IRnew) Op() ops.Op    { return ops.New }
+func (*IRnew) Operands() int { return 2 }
+func (ir *IRnew) Parse(operands []byte) {
+	ir.class = bytesToUint16(operands)
+}
+func (ir *IRnew) Execute(vm VM) error {
+	class, err := vm.GetClassByIndex(ir.class)
+	if err != nil {
+		return err
+	}
+	ref := vm.New(class)
+	vm.GetStack().PushRef(ref)
+	return nil
+}
+
+type IRnewarray struct {
+	atype byte
+}
+
+func (*IRnewarray) Op() ops.Op    { return ops.Newarray }
+func (*IRnewarray) Operands() int { return 2 }
+func (ir *IRnewarray) Parse(operands []byte) {
+	ir.atype = operands[0]
+}
+func (ir *IRnewarray) Execute(vm VM) error {
+	stack := vm.GetStack()
+	count := stack.PopInt32()
+	if count < 0 {
+		return errs.NegativeArraySizeException
+	}
+	var arr Ref
+	switch ir.atype {
+	case 4, 8: // T_BOOLEAN, T_BYTE
+		arr = arrayToRef(vm.NewArrInt8(count))
+	case 5, 9: // T_CHAR, T_SHORT
+		arr = arrayToRef(vm.NewArrInt16(count))
+	case 6, 10: // T_FLOAT, T_INT
+		arr = arrayToRef(vm.NewArrInt32(count))
+	case 7, 11: // T_DOUBLE, T_LONG
+		arr = arrayToRef(vm.NewArrInt64(count))
+	default:
+		panic(fmt.Errorf("newarray: unknown atype %d", ir.atype))
+	}
+	stack.PushRef(arr)
+	return nil
+}
+
+type IRputfield struct {
+	field uint16
+}
+
+func (*IRputfield) Op() ops.Op    { return ops.Putfield }
+func (*IRputfield) Operands() int { return 2 }
+func (ir *IRputfield) Parse(operands []byte) {
+	ir.field = bytesToUint16(operands)
+}
+func (ir *IRputfield) Execute(vm VM) error {
+	stack := vm.GetStack()
+	ref := stack.PopRef()
+	if ref == nil {
+		return errs.NullPointerException
+	}
+	field := vm.GetCurrentClass().GetField(ir.field)
+	if field == nil {
+		return errs.NoSuchFieldError
+	}
+	if field.IsStatic() {
+		return errs.IncompatibleClassChangeError
+	}
+	// TODO: access control
+	field.PopAndSet(ref, stack)
+	return nil
+}
+
+type IRputstatic struct {
+	field uint16
+}
+
+func (*IRputstatic) Op() ops.Op    { return ops.Putstatic }
+func (*IRputstatic) Operands() int { return 2 }
+func (ir *IRputstatic) Parse(operands []byte) {
+	ir.field = bytesToUint16(operands)
+}
+func (ir *IRputstatic) Execute(vm VM) error {
+	stack := vm.GetStack()
+	field := vm.GetCurrentClass().GetField(ir.field)
+	if field == nil {
+		return errs.NoSuchFieldError
+	}
+	if !field.IsStatic() {
+		return errs.IncompatibleClassChangeError
+	}
+	// TODO: access control
+	field.PopAndSet(nil, stack)
 	return nil
 }

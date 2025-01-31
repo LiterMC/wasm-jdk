@@ -458,14 +458,14 @@ func (*IRireturn) Execute(vm VM) error {
 type IRjsr struct{}
 
 func (*IRjsr) Op() ops.Op            { return ops.Jsr }
-func (*IRjsr) Operands() int         { return 0 }
+func (*IRjsr) Operands() int         { return 2 }
 func (*IRjsr) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr) Execute(vm VM) error   { panic("deprecated") }
 
 type IRjsr_w struct{}
 
 func (*IRjsr_w) Op() ops.Op            { return ops.Jsr_w }
-func (*IRjsr_w) Operands() int         { return 0 }
+func (*IRjsr_w) Operands() int         { return 4 }
 func (*IRjsr_w) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr_w) Execute(vm VM) error   { panic("deprecated") }
 
@@ -532,3 +532,85 @@ func (*IRlreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
+
+type IRmonitorenter struct{}
+
+func (*IRmonitorenter) Op() ops.Op            { return ops.Monitorenter }
+func (*IRmonitorenter) Operands() int         { return 0 }
+func (*IRmonitorenter) Parse(operands []byte) {}
+func (*IRmonitorenter) Execute(vm VM) error {
+	ref := vm.GetStack().PopRef()
+	return vm.MonitorLock(ref)
+}
+
+type IRmonitorexit struct{}
+
+func (*IRmonitorexit) Op() ops.Op            { return ops.Monitorexit }
+func (*IRmonitorexit) Operands() int         { return 0 }
+func (*IRmonitorexit) Parse(operands []byte) {}
+func (*IRmonitorexit) Execute(vm VM) error {
+	ref := vm.GetStack().PopRef()
+	return vm.MonitorUnlock(ref)
+}
+
+type IRnop struct{}
+
+func (*IRnop) Op() ops.Op            { return ops.Nop }
+func (*IRnop) Operands() int         { return 0 }
+func (*IRnop) Parse(operands []byte) {}
+func (*IRnop) Execute(vm VM) error   { return nil }
+
+type IRpop struct{}
+
+func (*IRpop) Op() ops.Op            { return ops.Pop }
+func (*IRpop) Operands() int         { return 0 }
+func (*IRpop) Parse(operands []byte) {}
+func (*IRpop) Execute(vm VM) error {
+	vm.GetStack().PopInt32()
+	return nil
+}
+
+type IRpop2 struct{}
+
+func (*IRpop2) Op() ops.Op            { return ops.Pop2 }
+func (*IRpop2) Operands() int         { return 0 }
+func (*IRpop2) Parse(operands []byte) {}
+func (*IRpop2) Execute(vm VM) error {
+	stack := vm.GetStack()
+	stack.PopInt32()
+	stack.PopInt32()
+	return nil
+}
+
+type IRret struct{}
+
+func (*IRret) Op() ops.Op            { return ops.Ret }
+func (*IRret) Operands() int         { return 1 }
+func (*IRret) Parse(operands []byte) { panic("deprecated") }
+func (*IRret) Execute(vm VM) error   { panic("deprecated") }
+
+type IRreturn struct{}
+
+func (*IRreturn) Op() ops.Op            { return ops.Return }
+func (*IRreturn) Operands() int         { return 0 }
+func (*IRreturn) Parse(operands []byte) {}
+func (*IRreturn) Execute(vm VM) error {
+	vm.Return()
+	return nil
+}
+
+type IRswap struct{}
+
+func (*IRswap) Op() ops.Op            { return ops.Swap }
+func (*IRswap) Operands() int         { return 0 }
+func (*IRswap) Parse(operands []byte) {}
+func (*IRswap) Execute(vm VM) error {
+	stack := vm.GetStack()
+	a := stack.PopInt32()
+	b := stack.PopInt32()
+	stack.PushInt32(a)
+	stack.PushInt32(b)
+	return nil
+}
+
+type tableswitch

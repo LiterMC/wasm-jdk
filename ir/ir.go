@@ -23,11 +23,13 @@ type IR interface {
 type VM interface {
 	GetStack() Stack
 
+	New(Class) Ref
 	NewArrInt8(int32) []int8
 	NewArrInt16(int32) []int16
 	NewArrInt32(int32) []int32
 	NewArrInt64(int32) []int64
 	NewArrRef(Class, int32) []Ref
+	NewArrRefMultiDim(Class, []int32) []Ref
 
 	GetObjectClass() Class
 	GetThrowableClass() Class
@@ -41,6 +43,9 @@ type VM interface {
 	Return()
 	Throw(Ref)
 	Goto(int32)
+
+	MonitorLock(Ref) error
+	MonitorUnlock(Ref) error
 }
 
 type Stack interface {
@@ -101,7 +106,6 @@ type Class interface {
 	IsAssignableFrom(Class) bool
 	IsInstance(Ref) bool
 	Name() string
-	New() Ref
 	GetAndPushConst(uint16, Stack) error
 	GetField(uint16) Field
 	GetMethod(uint16) Method
@@ -115,6 +119,7 @@ type Field interface {
 	Name() string
 	Type() Class
 	GetAndPush(Ref, Stack)
+	PopAndSet(Ref, Stack)
 }
 
 type Method interface {
