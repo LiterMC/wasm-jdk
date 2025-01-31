@@ -2,6 +2,8 @@
 package ir
 
 import (
+	"slices"
+
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
@@ -467,7 +469,59 @@ func (*IRjsr_w) Operands() int         { return 0 }
 func (*IRjsr_w) Parse(operands []byte) { panic("deprecated") }
 func (*IRjsr_w) Execute(vm VM) error   { panic("deprecated") }
 
-lookupswitch
+// A lookupswitch is a variable-length instruction.
+// Immediately after the lookupswitch opcode, between zero and three bytes must act as padding,
+// such that defaultbyte1 begins at an address that is a multiple of four bytes
+// from the start of the current method (the opcode of its first instruction).
+//
+// IRlookupswitch's operands' length must determined by the parser.
+type IRlookupswitch struct {
+	defaultOffset int32
+	indexes       []caseEntry
+}
+
+type caseEntry struct {
+	key   int32
+	value int32
+}
+
+func (c caseEntry) CmpKey(k int32) int {
+	if c.key > k {
+		return 1
+	}
+	if c.key < k {
+		return -1
+	}
+	return 0
+}
+
+func (c caseEntry) Cmp(o caseEntry) int {
+	return c.CmpKey(o.key)
+}
+
+func (*IRlookupswitch) Op() ops.Op    { return ops.Lookupswitch }
+func (*IRlookupswitch) Operands() int { return -1 /* dynamic */ }
+func (ir *IRlookupswitch) Parse(operands []byte) {
+	ir.defaultOffset = bytesToInt32(operands[0:4])
+	indexCount := bytesToInt32(operands[4:8])
+	ir.indexes = make([]caseEntry, indexCount)
+	for i := range indexCount {
+		j := 8 + 8*i
+		k := bytesToInt32(operands[j : j+4])
+		v := bytesToInt32(operands[j+4 : j+8])
+		ir.indexes[i] = caseEntry{key: k, value: v}
+	}
+	slices.SortFunc(ir.indexes, caseEntry.Cmp)
+}
+func (ir *IRlookupswitch) Execute(vm VM) error {
+	key := vm.GetStack().PopInt32()
+	offset := ir.defaultOffset
+	if ind, ok := slices.BinarySearchFunc(ir.indexes, key, caseEntry.CmpKey); ok {
+		offset = ir.indexes[ind].value
+	}
+	vm.Goto(offset)
+	return nil
+}
 
 type IRlreturn struct{}
 
