@@ -14,14 +14,14 @@ type ByteReader interface {
 	io.Reader
 }
 
-type IRParser interface {
+type ICParser interface {
 	Op() ops.Op
-	Parse(br ByteReader) (ir.IR, error)
+	Parse(br ByteReader) (ir.IC, error)
 }
 
-var parsers = make(map[ops.Op]IRParser)
+var parsers = make(map[ops.Op]ICParser)
 
-func RegisterParser(p IRParser) {
+func RegisterParser(p ICParser) {
 	op := p.Op()
 	if _, ok := parsers[op]; ok {
 		panic(fmt.Errorf("Parser with opcode %d is already exists", op))
@@ -29,6 +29,6 @@ func RegisterParser(p IRParser) {
 	parsers[op] = p
 }
 
-func GetIRParser(b ops.Op) IRParser {
+func GetICParser(b ops.Op) ICParser {
 	return parsers[b]
 }

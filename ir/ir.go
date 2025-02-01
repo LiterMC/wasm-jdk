@@ -8,19 +8,19 @@ import (
 
 type Ref = unsafe.Pointer
 
-// Intermediate Representation
-type IR interface {
+// Intermediate Cide Representation
+type IC interface {
 	// The operation code
 	Op() ops.Op
 	// Execute
 	Execute(vm VM) error
 }
 
-type IRNode struct {
-	IR
+type ICNode struct {
+	IC
 	Offset int32
-	Next   *IRNode
-	Nexts  []*IRNode
+	Next   *ICNode
+	Nexts  []*ICNode
 }
 
 type VM interface {
@@ -46,7 +46,7 @@ type VM interface {
 	InvokeStatic(Method)
 	Return()
 	Throw(Ref)
-	Goto(*IRNode)
+	Goto(*ICNode)
 
 	MonitorLock(Ref) error
 	MonitorUnlock(Ref) error

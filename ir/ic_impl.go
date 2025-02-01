@@ -8,26 +8,26 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type IRareturn struct{}
+type ICareturn struct{}
 
-func (*IRareturn) Op() ops.Op { return ops.Areturn }
-func (*IRareturn) Execute(vm VM) error {
+func (*ICareturn) Op() ops.Op { return ops.Areturn }
+func (*ICareturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRdreturn struct{}
+type ICdreturn struct{}
 
-func (*IRdreturn) Op() ops.Op { return ops.Dreturn }
-func (*IRdreturn) Execute(vm VM) error {
+func (*ICdreturn) Op() ops.Op { return ops.Dreturn }
+func (*ICdreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRdup struct{}
+type ICdup struct{}
 
-func (*IRdup) Op() ops.Op { return ops.Dup }
-func (*IRdup) Execute(vm VM) error {
+func (*ICdup) Op() ops.Op { return ops.Dup }
+func (*ICdup) Execute(vm VM) error {
 	stack := vm.GetStack()
 	if stack.IsRef() {
 		val := stack.PeekRef()
@@ -39,10 +39,10 @@ func (*IRdup) Execute(vm VM) error {
 	return nil
 }
 
-type IRdup_x1 struct{}
+type ICdup_x1 struct{}
 
-func (*IRdup_x1) Op() ops.Op { return ops.Dup_x1 }
-func (*IRdup_x1) Execute(vm VM) error {
+func (*ICdup_x1) Op() ops.Op { return ops.Dup_x1 }
+func (*ICdup_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	var pushA func()
 	if stack.IsRef() {
@@ -65,10 +65,10 @@ func (*IRdup_x1) Execute(vm VM) error {
 	return nil
 }
 
-type IRdup_x2 struct{}
+type ICdup_x2 struct{}
 
-func (*IRdup_x2) Op() ops.Op { return ops.Dup_x2 }
-func (*IRdup_x2) Execute(vm VM) error {
+func (*ICdup_x2) Op() ops.Op { return ops.Dup_x2 }
+func (*ICdup_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	var pushA, pushB1, pushB2 func()
 	if stack.IsRef() {
@@ -99,20 +99,20 @@ func (*IRdup_x2) Execute(vm VM) error {
 	return nil
 }
 
-type IRdup2 struct{}
+type ICdup2 struct{}
 
-func (*IRdup2) Op() ops.Op { return ops.Dup2 }
-func (*IRdup2) Execute(vm VM) error {
+func (*ICdup2) Op() ops.Op { return ops.Dup2 }
+func (*ICdup2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PeekInt64()
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdup2_x1 struct{}
+type ICdup2_x1 struct{}
 
-func (*IRdup2_x1) Op() ops.Op { return ops.Dup2_x1 }
-func (*IRdup2_x1) Execute(vm VM) error {
+func (*ICdup2_x1) Op() ops.Op { return ops.Dup2_x1 }
+func (*ICdup2_x1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	var pushA1, pushA2, pushB func()
 	if stack.IsRef() {
@@ -144,10 +144,10 @@ func (*IRdup2_x1) Execute(vm VM) error {
 	return nil
 }
 
-type IRdup2_x2 struct{}
+type ICdup2_x2 struct{}
 
-func (*IRdup2_x2) Op() ops.Op { return ops.Dup2_x2 }
-func (*IRdup2_x2) Execute(vm VM) error {
+func (*ICdup2_x2) Op() ops.Op { return ops.Dup2_x2 }
+func (*ICdup2_x2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	var pushA1, pushA2, pushB1, pushB2 func()
 	if stack.IsRef() {
@@ -187,43 +187,43 @@ func (*IRdup2_x2) Execute(vm VM) error {
 	return nil
 }
 
-type IRfreturn struct{}
+type ICfreturn struct{}
 
-func (*IRfreturn) Op() ops.Op { return ops.Freturn }
-func (*IRfreturn) Execute(vm VM) error {
+func (*ICfreturn) Op() ops.Op { return ops.Freturn }
+func (*ICfreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRgoto struct {
+type ICgoto struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRgoto) Op() ops.Op { return ops.Goto }
-func (ir *IRgoto) Execute(vm VM) error {
+func (*ICgoto) Op() ops.Op { return ops.Goto }
+func (ir *ICgoto) Execute(vm VM) error {
 	vm.Goto(ir.Node)
 	return nil
 }
 
-type IRgoto_w struct {
+type ICgoto_w struct {
 	Offset int32
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRgoto_w) Op() ops.Op { return ops.Goto_w }
-func (ir *IRgoto_w) Execute(vm VM) error {
+func (*ICgoto_w) Op() ops.Op { return ops.Goto_w }
+func (ir *ICgoto_w) Execute(vm VM) error {
 	vm.Goto(ir.Node)
 	return nil
 }
 
-type IRif_acmpeq struct {
+type ICif_acmpeq struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_acmpeq) Op() ops.Op { return ops.If_acmpeq }
-func (ir *IRif_acmpeq) Execute(vm VM) error {
+func (*ICif_acmpeq) Op() ops.Op { return ops.If_acmpeq }
+func (ir *ICif_acmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
 	a := stack.PopRef()
@@ -233,13 +233,13 @@ func (ir *IRif_acmpeq) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_acmpne struct {
+type ICif_acmpne struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_acmpne) Op() ops.Op { return ops.If_acmpne }
-func (ir *IRif_acmpne) Execute(vm VM) error {
+func (*ICif_acmpne) Op() ops.Op { return ops.If_acmpne }
+func (ir *ICif_acmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
 	a := stack.PopRef()
@@ -249,13 +249,13 @@ func (ir *IRif_acmpne) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmpeq struct {
+type ICif_icmpeq struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmpeq) Op() ops.Op { return ops.If_icmpeq }
-func (ir *IRif_icmpeq) Execute(vm VM) error {
+func (*ICif_icmpeq) Op() ops.Op { return ops.If_icmpeq }
+func (ir *ICif_icmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -265,13 +265,13 @@ func (ir *IRif_icmpeq) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmpge struct {
+type ICif_icmpge struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmpge) Op() ops.Op { return ops.If_icmpge }
-func (ir *IRif_icmpge) Execute(vm VM) error {
+func (*ICif_icmpge) Op() ops.Op { return ops.If_icmpge }
+func (ir *ICif_icmpge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -281,13 +281,13 @@ func (ir *IRif_icmpge) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmpgt struct {
+type ICif_icmpgt struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmpgt) Op() ops.Op { return ops.If_icmpgt }
-func (ir *IRif_icmpgt) Execute(vm VM) error {
+func (*ICif_icmpgt) Op() ops.Op { return ops.If_icmpgt }
+func (ir *ICif_icmpgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -297,13 +297,13 @@ func (ir *IRif_icmpgt) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmple struct {
+type ICif_icmple struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmple) Op() ops.Op { return ops.If_icmple }
-func (ir *IRif_icmple) Execute(vm VM) error {
+func (*ICif_icmple) Op() ops.Op { return ops.If_icmple }
+func (ir *ICif_icmple) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -313,13 +313,13 @@ func (ir *IRif_icmple) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmplt struct {
+type ICif_icmplt struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmplt) Op() ops.Op { return ops.If_icmplt }
-func (ir *IRif_icmplt) Execute(vm VM) error {
+func (*ICif_icmplt) Op() ops.Op { return ops.If_icmplt }
+func (ir *ICif_icmplt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -329,13 +329,13 @@ func (ir *IRif_icmplt) Execute(vm VM) error {
 	return nil
 }
 
-type IRif_icmpne struct {
+type ICif_icmpne struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRif_icmpne) Op() ops.Op { return ops.If_icmpne }
-func (ir *IRif_icmpne) Execute(vm VM) error {
+func (*ICif_icmpne) Op() ops.Op { return ops.If_icmpne }
+func (ir *ICif_icmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
@@ -345,13 +345,13 @@ func (ir *IRif_icmpne) Execute(vm VM) error {
 	return nil
 }
 
-type IRifeq struct {
+type ICifeq struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifeq) Op() ops.Op { return ops.Ifeq }
-func (ir *IRifeq) Execute(vm VM) error {
+func (*ICifeq) Op() ops.Op { return ops.Ifeq }
+func (ir *ICifeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a == 0 {
@@ -360,13 +360,13 @@ func (ir *IRifeq) Execute(vm VM) error {
 	return nil
 }
 
-type IRifge struct {
+type ICifge struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifge) Op() ops.Op { return ops.Ifge }
-func (ir *IRifge) Execute(vm VM) error {
+func (*ICifge) Op() ops.Op { return ops.Ifge }
+func (ir *ICifge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a >= 0 {
@@ -375,13 +375,13 @@ func (ir *IRifge) Execute(vm VM) error {
 	return nil
 }
 
-type IRifgt struct {
+type ICifgt struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifgt) Op() ops.Op { return ops.Ifgt }
-func (ir *IRifgt) Execute(vm VM) error {
+func (*ICifgt) Op() ops.Op { return ops.Ifgt }
+func (ir *ICifgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a > 0 {
@@ -390,13 +390,13 @@ func (ir *IRifgt) Execute(vm VM) error {
 	return nil
 }
 
-type IRifle struct {
+type ICifle struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifle) Op() ops.Op { return ops.Ifle }
-func (ir *IRifle) Execute(vm VM) error {
+func (*ICifle) Op() ops.Op { return ops.Ifle }
+func (ir *ICifle) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a <= 0 {
@@ -405,13 +405,13 @@ func (ir *IRifle) Execute(vm VM) error {
 	return nil
 }
 
-type IRiflt struct {
+type ICiflt struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRiflt) Op() ops.Op { return ops.Iflt }
-func (ir *IRiflt) Execute(vm VM) error {
+func (*ICiflt) Op() ops.Op { return ops.Iflt }
+func (ir *ICiflt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a < 0 {
@@ -420,13 +420,13 @@ func (ir *IRiflt) Execute(vm VM) error {
 	return nil
 }
 
-type IRifne struct {
+type ICifne struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifne) Op() ops.Op { return ops.Ifne }
-func (ir *IRifne) Execute(vm VM) error {
+func (*ICifne) Op() ops.Op { return ops.Ifne }
+func (ir *ICifne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a != 0 {
@@ -435,13 +435,13 @@ func (ir *IRifne) Execute(vm VM) error {
 	return nil
 }
 
-type IRifnonnull struct {
+type ICifnonnull struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifnonnull) Op() ops.Op { return ops.Ifnonnull }
-func (ir *IRifnonnull) Execute(vm VM) error {
+func (*ICifnonnull) Op() ops.Op { return ops.Ifnonnull }
+func (ir *ICifnonnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
 	if a != nil {
@@ -450,13 +450,13 @@ func (ir *IRifnonnull) Execute(vm VM) error {
 	return nil
 }
 
-type IRifnull struct {
+type ICifnull struct {
 	Offset int16
-	Node   *IRNode
+	Node   *ICNode
 }
 
-func (*IRifnull) Op() ops.Op { return ops.Ifnull }
-func (ir *IRifnull) Execute(vm VM) error {
+func (*ICifnull) Op() ops.Op { return ops.Ifnull }
+func (ir *ICifnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
 	if a == nil {
@@ -465,42 +465,42 @@ func (ir *IRifnull) Execute(vm VM) error {
 	return nil
 }
 
-type IRireturn struct{}
+type ICireturn struct{}
 
-func (*IRireturn) Op() ops.Op { return ops.Ireturn }
-func (*IRireturn) Execute(vm VM) error {
+func (*ICireturn) Op() ops.Op { return ops.Ireturn }
+func (*ICireturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRjsr struct{}
+type ICjsr struct{}
 
-func (*IRjsr) Op() ops.Op            { return ops.Jsr }
-func (*IRjsr) Parse(operands []byte) { panic("deprecated") }
-func (*IRjsr) Execute(vm VM) error   { panic("deprecated") }
+func (*ICjsr) Op() ops.Op            { return ops.Jsr }
+func (*ICjsr) Parse(operands []byte) { panic("deprecated") }
+func (*ICjsr) Execute(vm VM) error   { panic("deprecated") }
 
-type IRjsr_w struct{}
+type ICjsr_w struct{}
 
-func (*IRjsr_w) Op() ops.Op            { return ops.Jsr_w }
-func (*IRjsr_w) Parse(operands []byte) { panic("deprecated") }
-func (*IRjsr_w) Execute(vm VM) error   { panic("deprecated") }
+func (*ICjsr_w) Op() ops.Op            { return ops.Jsr_w }
+func (*ICjsr_w) Parse(operands []byte) { panic("deprecated") }
+func (*ICjsr_w) Execute(vm VM) error   { panic("deprecated") }
 
 // A lookupswitch is a variable-length instruction.
 // Immediately after the lookupswitch opcode, between zero and three bytes must act as padding,
 // such that defaultbyte1 begins at an address that is a multiple of four bytes
 // from the start of the current method (the opcode of its first instruction).
 //
-// IRlookupswitch's operands' length must determined by the parser.
-type IRlookupswitch struct {
+// IClookupswitch's operands' length must determined by the parser.
+type IClookupswitch struct {
 	DefaultOffset int32
-	DefaultNode   *IRNode
+	DefaultNode   *ICNode
 	Indexes       []CaseEntry
 }
 
 type CaseEntry struct {
 	K int32
 	V int32
-	N *IRNode
+	N *ICNode
 }
 
 func (c CaseEntry) CmpKey(k int32) int {
@@ -517,8 +517,8 @@ func (c CaseEntry) Cmp(o CaseEntry) int {
 	return c.CmpKey(o.K)
 }
 
-func (*IRlookupswitch) Op() ops.Op { return ops.Lookupswitch }
-func (ir *IRlookupswitch) Execute(vm VM) error {
+func (*IClookupswitch) Op() ops.Op { return ops.Lookupswitch }
+func (ir *IClookupswitch) Execute(vm VM) error {
 	key := vm.GetStack().PopInt32()
 	node := ir.DefaultNode
 	if ind, ok := slices.BinarySearchFunc(ir.Indexes, key, CaseEntry.CmpKey); ok {
@@ -528,71 +528,71 @@ func (ir *IRlookupswitch) Execute(vm VM) error {
 	return nil
 }
 
-type IRlreturn struct{}
+type IClreturn struct{}
 
-func (*IRlreturn) Op() ops.Op { return ops.Lreturn }
-func (*IRlreturn) Execute(vm VM) error {
+func (*IClreturn) Op() ops.Op { return ops.Lreturn }
+func (*IClreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRmonitorenter struct{}
+type ICmonitorenter struct{}
 
-func (*IRmonitorenter) Op() ops.Op { return ops.Monitorenter }
-func (*IRmonitorenter) Execute(vm VM) error {
+func (*ICmonitorenter) Op() ops.Op { return ops.Monitorenter }
+func (*ICmonitorenter) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorLock(ref)
 }
 
-type IRmonitorexit struct{}
+type ICmonitorexit struct{}
 
-func (*IRmonitorexit) Op() ops.Op { return ops.Monitorexit }
-func (*IRmonitorexit) Execute(vm VM) error {
+func (*ICmonitorexit) Op() ops.Op { return ops.Monitorexit }
+func (*ICmonitorexit) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	return vm.MonitorUnlock(ref)
 }
 
-type IRnop struct{}
+type ICnop struct{}
 
-func (*IRnop) Op() ops.Op          { return ops.Nop }
-func (*IRnop) Execute(vm VM) error { return nil }
+func (*ICnop) Op() ops.Op          { return ops.Nop }
+func (*ICnop) Execute(vm VM) error { return nil }
 
-type IRpop struct{}
+type ICpop struct{}
 
-func (*IRpop) Op() ops.Op { return ops.Pop }
-func (*IRpop) Execute(vm VM) error {
+func (*ICpop) Op() ops.Op { return ops.Pop }
+func (*ICpop) Execute(vm VM) error {
 	vm.GetStack().PopInt32()
 	return nil
 }
 
-type IRpop2 struct{}
+type ICpop2 struct{}
 
-func (*IRpop2) Op() ops.Op { return ops.Pop2 }
-func (*IRpop2) Execute(vm VM) error {
+func (*ICpop2) Op() ops.Op { return ops.Pop2 }
+func (*ICpop2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	stack.PopInt32()
 	stack.PopInt32()
 	return nil
 }
 
-type IRret struct{}
+type ICret struct{}
 
-func (*IRret) Op() ops.Op            { return ops.Ret }
-func (*IRret) Parse(operands []byte) { panic("deprecated") }
-func (*IRret) Execute(vm VM) error   { panic("deprecated") }
+func (*ICret) Op() ops.Op            { return ops.Ret }
+func (*ICret) Parse(operands []byte) { panic("deprecated") }
+func (*ICret) Execute(vm VM) error   { panic("deprecated") }
 
-type IRreturn struct{}
+type ICreturn struct{}
 
-func (*IRreturn) Op() ops.Op { return ops.Return }
-func (*IRreturn) Execute(vm VM) error {
+func (*ICreturn) Op() ops.Op { return ops.Return }
+func (*ICreturn) Execute(vm VM) error {
 	vm.Return()
 	return nil
 }
 
-type IRswap struct{}
+type ICswap struct{}
 
-func (*IRswap) Op() ops.Op { return ops.Swap }
-func (*IRswap) Execute(vm VM) error {
+func (*ICswap) Op() ops.Op { return ops.Swap }
+func (*ICswap) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	b := stack.PopInt32()
@@ -601,16 +601,16 @@ func (*IRswap) Execute(vm VM) error {
 	return nil
 }
 
-type IRtableswitch struct {
+type ICtableswitch struct {
 	DefaultOffset int32
-	DefaultNode   *IRNode
+	DefaultNode   *ICNode
 	Low, High     int32
 	Offsets       []int32
-	Nodes         []*IRNode
+	Nodes         []*ICNode
 }
 
-func (*IRtableswitch) Op() ops.Op { return ops.Tableswitch }
-func (ir *IRtableswitch) Execute(vm VM) error {
+func (*ICtableswitch) Op() ops.Op { return ops.Tableswitch }
+func (ir *ICtableswitch) Execute(vm VM) error {
 	key := vm.GetStack().PopInt32()
 	node := ir.DefaultNode
 	if ir.Low <= key && key <= ir.High {
@@ -621,37 +621,37 @@ func (ir *IRtableswitch) Execute(vm VM) error {
 	return nil
 }
 
-type IRwide struct {
+type ICwide struct {
 	OpCode ops.Op
 	Index  uint16
 	Const  uint16
 }
 
-func (*IRwide) Op() ops.Op { return ops.Wide }
-func (ir *IRwide) Execute(vm VM) error {
+func (*ICwide) Op() ops.Op { return ops.Wide }
+func (ir *ICwide) Execute(vm VM) error {
 	switch ir.OpCode {
 	case ops.Iload:
-		return (&IRiload{Index: ir.Index}).Execute(vm)
+		return (&ICiload{Index: ir.Index}).Execute(vm)
 	case ops.Fload:
-		return (&IRfload{Index: ir.Index}).Execute(vm)
+		return (&ICfload{Index: ir.Index}).Execute(vm)
 	case ops.Aload:
-		return (&IRaload{Index: ir.Index}).Execute(vm)
+		return (&ICaload{Index: ir.Index}).Execute(vm)
 	case ops.Lload:
-		return (&IRlload{Index: ir.Index}).Execute(vm)
+		return (&IClload{Index: ir.Index}).Execute(vm)
 	case ops.Dload:
-		return (&IRdload{Index: ir.Index}).Execute(vm)
+		return (&ICdload{Index: ir.Index}).Execute(vm)
 	case ops.Istore:
-		return (&IRistore{Index: ir.Index}).Execute(vm)
+		return (&ICistore{Index: ir.Index}).Execute(vm)
 	case ops.Fstore:
-		return (&IRfstore{Index: ir.Index}).Execute(vm)
+		return (&ICfstore{Index: ir.Index}).Execute(vm)
 	case ops.Astore:
-		return (&IRastore{Index: ir.Index}).Execute(vm)
+		return (&ICastore{Index: ir.Index}).Execute(vm)
 	case ops.Lstore:
-		return (&IRlstore{Index: ir.Index}).Execute(vm)
+		return (&IClstore{Index: ir.Index}).Execute(vm)
 	case ops.Dstore:
-		return (&IRdstore{Index: ir.Index}).Execute(vm)
+		return (&ICdstore{Index: ir.Index}).Execute(vm)
 	case ops.Iinc:
-		return (&IRiinc{Index: ir.Index, Const: (int16)(ir.Const)}).Execute(vm)
+		return (&ICiinc{Index: ir.Index, Const: (int16)(ir.Const)}).Execute(vm)
 	default:
 		panic(fmt.Errorf("ir.wide: unexpected opcode %d", ir.OpCode))
 	}

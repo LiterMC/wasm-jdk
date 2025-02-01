@@ -7,20 +7,20 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type IRd2f struct{}
+type ICd2f struct{}
 
-func (*IRd2f) Op() ops.Op { return ops.D2f }
-func (*IRd2f) Execute(vm VM) error {
+func (*ICd2f) Op() ops.Op { return ops.D2f }
+func (*ICd2f) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopFloat64()
 	stack.PushFloat32((float32)(value))
 	return nil
 }
 
-type IRd2i struct{}
+type ICd2i struct{}
 
-func (*IRd2i) Op() ops.Op { return ops.D2i }
-func (*IRd2i) Execute(vm VM) error {
+func (*ICd2i) Op() ops.Op { return ops.D2i }
+func (*ICd2i) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopFloat64()
 	if value != value {
@@ -31,10 +31,10 @@ func (*IRd2i) Execute(vm VM) error {
 	return nil
 }
 
-type IRd2l struct{}
+type ICd2l struct{}
 
-func (*IRd2l) Op() ops.Op { return ops.D2l }
-func (*IRd2l) Execute(vm VM) error {
+func (*ICd2l) Op() ops.Op { return ops.D2l }
+func (*ICd2l) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopFloat64()
 	if value != value {
@@ -45,10 +45,10 @@ func (*IRd2l) Execute(vm VM) error {
 	return nil
 }
 
-type IRdadd struct{}
+type ICdadd struct{}
 
-func (*IRdadd) Op() ops.Op { return ops.Dadd }
-func (*IRdadd) Execute(vm VM) error {
+func (*ICdadd) Op() ops.Op { return ops.Dadd }
+func (*ICdadd) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -56,10 +56,10 @@ func (*IRdadd) Execute(vm VM) error {
 	return nil
 }
 
-type IRdaload struct{}
+type ICdaload struct{}
 
-func (*IRdaload) Op() ops.Op { return ops.Daload }
-func (*IRdaload) Execute(vm VM) error {
+func (*ICdaload) Op() ops.Op { return ops.Daload }
+func (*ICdaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrFloat64()
 	index := stack.PopInt32()
@@ -73,10 +73,10 @@ func (*IRdaload) Execute(vm VM) error {
 	return nil
 }
 
-type IRdastore struct{}
+type ICdastore struct{}
 
-func (*IRdastore) Op() ops.Op { return ops.Dastore }
-func (*IRdastore) Execute(vm VM) error {
+func (*ICdastore) Op() ops.Op { return ops.Dastore }
+func (*ICdastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrFloat64()
 	index := stack.PopInt32()
@@ -91,10 +91,10 @@ func (*IRdastore) Execute(vm VM) error {
 	return nil
 }
 
-type IRdcmpg struct{}
+type ICdcmpg struct{}
 
-func (*IRdcmpg) Op() ops.Op { return ops.Dcmpg }
-func (*IRdcmpg) Execute(vm VM) error {
+func (*ICdcmpg) Op() ops.Op { return ops.Dcmpg }
+func (*ICdcmpg) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -110,10 +110,10 @@ func (*IRdcmpg) Execute(vm VM) error {
 	return nil
 }
 
-type IRdcmpl struct{}
+type ICdcmpl struct{}
 
-func (*IRdcmpl) Op() ops.Op { return ops.Dcmpl }
-func (*IRdcmpl) Execute(vm VM) error {
+func (*ICdcmpl) Op() ops.Op { return ops.Dcmpl }
+func (*ICdcmpl) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -129,26 +129,26 @@ func (*IRdcmpl) Execute(vm VM) error {
 	return nil
 }
 
-type IRdconst_0 struct{}
+type ICdconst_0 struct{}
 
-func (*IRdconst_0) Op() ops.Op { return ops.Dconst_0 }
-func (*IRdconst_0) Execute(vm VM) error {
+func (*ICdconst_0) Op() ops.Op { return ops.Dconst_0 }
+func (*ICdconst_0) Execute(vm VM) error {
 	vm.GetStack().PushFloat64(0)
 	return nil
 }
 
-type IRdconst_1 struct{}
+type ICdconst_1 struct{}
 
-func (*IRdconst_1) Op() ops.Op { return ops.Dconst_1 }
-func (*IRdconst_1) Execute(vm VM) error {
+func (*ICdconst_1) Op() ops.Op { return ops.Dconst_1 }
+func (*ICdconst_1) Execute(vm VM) error {
 	vm.GetStack().PushFloat64(1)
 	return nil
 }
 
-type IRddiv struct{}
+type ICddiv struct{}
 
-func (*IRddiv) Op() ops.Op { return ops.Ddiv }
-func (*IRddiv) Execute(vm VM) error {
+func (*ICddiv) Op() ops.Op { return ops.Ddiv }
+func (*ICddiv) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -156,62 +156,62 @@ func (*IRddiv) Execute(vm VM) error {
 	return nil
 }
 
-type IRdload struct {
+type ICdload struct {
 	Index uint16
 }
 
-func (*IRdload) Op() ops.Op { return ops.Dload }
-func (ir *IRdload) Execute(vm VM) error {
+func (*ICdload) Op() ops.Op { return ops.Dload }
+func (ir *ICdload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64((uint16)(ir.Index))
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdload_0 struct{}
+type ICdload_0 struct{}
 
-func (*IRdload_0) Op() ops.Op { return ops.Dload_0 }
-func (*IRdload_0) Execute(vm VM) error {
+func (*ICdload_0) Op() ops.Op { return ops.Dload_0 }
+func (*ICdload_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(0)
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdload_1 struct{}
+type ICdload_1 struct{}
 
-func (*IRdload_1) Op() ops.Op { return ops.Dload_1 }
-func (*IRdload_1) Execute(vm VM) error {
+func (*ICdload_1) Op() ops.Op { return ops.Dload_1 }
+func (*ICdload_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(1)
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdload_2 struct{}
+type ICdload_2 struct{}
 
-func (*IRdload_2) Op() ops.Op { return ops.Dload_2 }
-func (*IRdload_2) Execute(vm VM) error {
+func (*ICdload_2) Op() ops.Op { return ops.Dload_2 }
+func (*ICdload_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(2)
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdload_3 struct{}
+type ICdload_3 struct{}
 
-func (*IRdload_3) Op() ops.Op { return ops.Dload_3 }
-func (*IRdload_3) Execute(vm VM) error {
+func (*ICdload_3) Op() ops.Op { return ops.Dload_3 }
+func (*ICdload_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.GetVarInt64(3)
 	stack.PushInt64(val)
 	return nil
 }
 
-type IRdmul struct{}
+type ICdmul struct{}
 
-func (*IRdmul) Op() ops.Op { return ops.Dmul }
-func (*IRdmul) Execute(vm VM) error {
+func (*ICdmul) Op() ops.Op { return ops.Dmul }
+func (*ICdmul) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -219,20 +219,20 @@ func (*IRdmul) Execute(vm VM) error {
 	return nil
 }
 
-type IRdneg struct{}
+type ICdneg struct{}
 
-func (*IRdneg) Op() ops.Op { return ops.Dneg }
-func (*IRdneg) Execute(vm VM) error {
+func (*ICdneg) Op() ops.Op { return ops.Dneg }
+func (*ICdneg) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopFloat64()
 	stack.PushFloat64(-a)
 	return nil
 }
 
-type IRdrem struct{}
+type ICdrem struct{}
 
-func (*IRdrem) Op() ops.Op { return ops.Drem }
-func (*IRdrem) Execute(vm VM) error {
+func (*ICdrem) Op() ops.Op { return ops.Drem }
+func (*ICdrem) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()
@@ -240,62 +240,62 @@ func (*IRdrem) Execute(vm VM) error {
 	return nil
 }
 
-type IRdstore struct {
+type ICdstore struct {
 	Index uint16
 }
 
-func (*IRdstore) Op() ops.Op { return ops.Dstore }
-func (ir *IRdstore) Execute(vm VM) error {
+func (*ICdstore) Op() ops.Op { return ops.Dstore }
+func (ir *ICdstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
 	stack.SetVarInt64((uint16)(ir.Index), val)
 	return nil
 }
 
-type IRdstore_0 struct{}
+type ICdstore_0 struct{}
 
-func (*IRdstore_0) Op() ops.Op { return ops.Dstore_0 }
-func (*IRdstore_0) Execute(vm VM) error {
+func (*ICdstore_0) Op() ops.Op { return ops.Dstore_0 }
+func (*ICdstore_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
 	stack.SetVarInt64(0, val)
 	return nil
 }
 
-type IRdstore_1 struct{}
+type ICdstore_1 struct{}
 
-func (*IRdstore_1) Op() ops.Op { return ops.Dstore_1 }
-func (*IRdstore_1) Execute(vm VM) error {
+func (*ICdstore_1) Op() ops.Op { return ops.Dstore_1 }
+func (*ICdstore_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
 	stack.SetVarInt64(1, val)
 	return nil
 }
 
-type IRdstore_2 struct{}
+type ICdstore_2 struct{}
 
-func (*IRdstore_2) Op() ops.Op { return ops.Dstore_2 }
-func (*IRdstore_2) Execute(vm VM) error {
+func (*ICdstore_2) Op() ops.Op { return ops.Dstore_2 }
+func (*ICdstore_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
 	stack.SetVarInt64(2, val)
 	return nil
 }
 
-type IRdstore_3 struct{}
+type ICdstore_3 struct{}
 
-func (*IRdstore_3) Op() ops.Op { return ops.Dstore_3 }
-func (*IRdstore_3) Execute(vm VM) error {
+func (*ICdstore_3) Op() ops.Op { return ops.Dstore_3 }
+func (*ICdstore_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
 	stack.SetVarInt64(3, val)
 	return nil
 }
 
-type IRdsub struct{}
+type ICdsub struct{}
 
-func (*IRdsub) Op() ops.Op { return ops.Dsub }
-func (*IRdsub) Execute(vm VM) error {
+func (*ICdsub) Op() ops.Op { return ops.Dsub }
+func (*ICdsub) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopFloat64()
 	a := stack.PopFloat64()

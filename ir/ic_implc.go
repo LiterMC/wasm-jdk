@@ -5,10 +5,10 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type IRcaload struct{}
+type ICcaload struct{}
 
-func (*IRcaload) Op() ops.Op { return ops.Caload }
-func (*IRcaload) Execute(vm VM) error {
+func (*ICcaload) Op() ops.Op { return ops.Caload }
+func (*ICcaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
 	index := stack.PopInt32()
@@ -22,10 +22,10 @@ func (*IRcaload) Execute(vm VM) error {
 	return nil
 }
 
-type IRcastore struct{}
+type ICcastore struct{}
 
-func (*IRcastore) Op() ops.Op { return ops.Castore }
-func (*IRcastore) Execute(vm VM) error {
+func (*ICcastore) Op() ops.Op { return ops.Castore }
+func (*ICcastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
 	index := stack.PopInt32()
@@ -40,10 +40,10 @@ func (*IRcastore) Execute(vm VM) error {
 	return nil
 }
 
-type IRsaload struct{}
+type ICsaload struct{}
 
-func (*IRsaload) Op() ops.Op { return ops.Saload }
-func (*IRsaload) Execute(vm VM) error {
+func (*ICsaload) Op() ops.Op { return ops.Saload }
+func (*ICsaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
 	index := stack.PopInt32()
@@ -57,10 +57,10 @@ func (*IRsaload) Execute(vm VM) error {
 	return nil
 }
 
-type IRsastore struct{}
+type ICsastore struct{}
 
-func (*IRsastore) Op() ops.Op { return ops.Sastore }
-func (*IRsastore) Execute(vm VM) error {
+func (*ICsastore) Op() ops.Op { return ops.Sastore }
+func (*ICsastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt16()
 	index := stack.PopInt32()
@@ -75,12 +75,12 @@ func (*IRsastore) Execute(vm VM) error {
 	return nil
 }
 
-type IRsipush struct {
+type ICsipush struct {
 	Value int16
 }
 
-func (*IRsipush) Op() ops.Op { return ops.Sipush }
-func (ir *IRsipush) Execute(vm VM) error {
+func (*ICsipush) Op() ops.Op { return ops.Sipush }
+func (ir *ICsipush) Execute(vm VM) error {
 	vm.GetStack().PushInt32((int32)(ir.Value))
 	return nil
 }

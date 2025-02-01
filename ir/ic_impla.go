@@ -7,10 +7,10 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type IRaaload struct{}
+type ICaaload struct{}
 
-func (*IRaaload) Op() ops.Op { return ops.Aaload }
-func (*IRaaload) Execute(vm VM) error {
+func (*ICaaload) Op() ops.Op { return ops.Aaload }
+func (*ICaaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrRef()
 	index := stack.PopInt32()
@@ -24,10 +24,10 @@ func (*IRaaload) Execute(vm VM) error {
 	return nil
 }
 
-type IRaastore struct{}
+type ICaastore struct{}
 
-func (*IRaastore) Op() ops.Op { return ops.Aastore }
-func (*IRaastore) Execute(vm VM) error {
+func (*ICaastore) Op() ops.Op { return ops.Aastore }
+func (*ICaastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrRef()
 	index := stack.PopInt32()
@@ -48,72 +48,72 @@ func (*IRaastore) Execute(vm VM) error {
 	return nil
 }
 
-type IRaconst_null struct{}
+type ICaconst_null struct{}
 
-func (*IRaconst_null) Op() ops.Op { return ops.Aconst_null }
-func (*IRaconst_null) Execute(vm VM) error {
+func (*ICaconst_null) Op() ops.Op { return ops.Aconst_null }
+func (*ICaconst_null) Execute(vm VM) error {
 	vm.GetStack().PushRef(nil)
 	return nil
 }
 
-type IRaload struct {
+type ICaload struct {
 	Index uint16
 }
 
-func (*IRaload) Op() ops.Op { return ops.Aload }
-func (ir *IRaload) Execute(vm VM) error {
+func (*ICaload) Op() ops.Op { return ops.Aload }
+func (ir *ICaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef((uint16)(ir.Index))
 	stack.PushRef(ref)
 	return nil
 }
 
-type IRaload_0 struct{}
+type ICaload_0 struct{}
 
-func (*IRaload_0) Op() ops.Op { return ops.Aload_0 }
-func (*IRaload_0) Execute(vm VM) error {
+func (*ICaload_0) Op() ops.Op { return ops.Aload_0 }
+func (*ICaload_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(0)
 	stack.PushRef(ref)
 	return nil
 }
 
-type IRaload_1 struct{}
+type ICaload_1 struct{}
 
-func (*IRaload_1) Op() ops.Op { return ops.Aload_1 }
-func (*IRaload_1) Execute(vm VM) error {
+func (*ICaload_1) Op() ops.Op { return ops.Aload_1 }
+func (*ICaload_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	stack.PushRef(ref)
 	return nil
 }
 
-type IRaload_2 struct{}
+type ICaload_2 struct{}
 
-func (*IRaload_2) Op() ops.Op { return ops.Aload_2 }
-func (*IRaload_2) Execute(vm VM) error {
+func (*ICaload_2) Op() ops.Op { return ops.Aload_2 }
+func (*ICaload_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(2)
 	stack.PushRef(ref)
 	return nil
 }
 
-type IRaload_3 struct{}
+type ICaload_3 struct{}
 
-func (*IRaload_3) Op() ops.Op { return ops.Aload_3 }
-func (*IRaload_3) Execute(vm VM) error {
+func (*ICaload_3) Op() ops.Op { return ops.Aload_3 }
+func (*ICaload_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(3)
 	stack.PushRef(ref)
 	return nil
 }
 
-type IRanewarray struct {
+type ICanewarray struct {
 	Class uint16
 }
 
-func (*IRanewarray) Op() ops.Op { return ops.Anewarray }
-func (ir *IRanewarray) Execute(vm VM) error {
+func (*ICanewarray) Op() ops.Op { return ops.Anewarray }
+func (ir *ICanewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
 	count := stack.PopInt32()
 	if count < 0 {
@@ -128,10 +128,10 @@ func (ir *IRanewarray) Execute(vm VM) error {
 	return nil
 }
 
-type IRarraylength struct{}
+type ICarraylength struct{}
 
-func (*IRarraylength) Op() ops.Op { return ops.Arraylength }
-func (*IRarraylength) Execute(vm VM) error {
+func (*ICarraylength) Op() ops.Op { return ops.Arraylength }
+func (*ICarraylength) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	if ref == nil {
@@ -142,62 +142,62 @@ func (*IRarraylength) Execute(vm VM) error {
 	return nil
 }
 
-type IRastore struct {
+type ICastore struct {
 	Index uint16
 }
 
-func (*IRastore) Op() ops.Op { return ops.Astore }
-func (ir *IRastore) Execute(vm VM) error {
+func (*ICastore) Op() ops.Op { return ops.Astore }
+func (ir *ICastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	stack.SetVarRef((uint16)(ir.Index), ref)
 	return nil
 }
 
-type IRastore_0 struct{}
+type ICastore_0 struct{}
 
-func (*IRastore_0) Op() ops.Op { return ops.Astore_0 }
-func (*IRastore_0) Execute(vm VM) error {
+func (*ICastore_0) Op() ops.Op { return ops.Astore_0 }
+func (*ICastore_0) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	stack.SetVarRef(0, ref)
 	return nil
 }
 
-type IRastore_1 struct{}
+type ICastore_1 struct{}
 
-func (*IRastore_1) Op() ops.Op { return ops.Astore_1 }
-func (*IRastore_1) Execute(vm VM) error {
+func (*ICastore_1) Op() ops.Op { return ops.Astore_1 }
+func (*ICastore_1) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	stack.SetVarRef(1, ref)
 	return nil
 }
 
-type IRastore_2 struct{}
+type ICastore_2 struct{}
 
-func (*IRastore_2) Op() ops.Op { return ops.Astore_2 }
-func (*IRastore_2) Execute(vm VM) error {
+func (*ICastore_2) Op() ops.Op { return ops.Astore_2 }
+func (*ICastore_2) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	stack.SetVarRef(2, ref)
 	return nil
 }
 
-type IRastore_3 struct{}
+type ICastore_3 struct{}
 
-func (*IRastore_3) Op() ops.Op { return ops.Astore_3 }
-func (*IRastore_3) Execute(vm VM) error {
+func (*ICastore_3) Op() ops.Op { return ops.Astore_3 }
+func (*ICastore_3) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	stack.SetVarRef(3, ref)
 	return nil
 }
 
-type IRathrow struct{}
+type ICathrow struct{}
 
-func (*IRathrow) Op() ops.Op { return ops.Athrow }
-func (*IRathrow) Execute(vm VM) error {
+func (*ICathrow) Op() ops.Op { return ops.Athrow }
+func (*ICathrow) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
 	if ref == nil {
 		return errs.NullPointerException
@@ -210,12 +210,12 @@ func (*IRathrow) Execute(vm VM) error {
 	return nil
 }
 
-type IRcheckcast struct {
+type ICcheckcast struct {
 	Class uint16
 }
 
-func (*IRcheckcast) Op() ops.Op { return ops.Checkcast }
-func (ir *IRcheckcast) Execute(vm VM) error {
+func (*ICcheckcast) Op() ops.Op { return ops.Checkcast }
+func (ir *ICcheckcast) Execute(vm VM) error {
 	ref := vm.GetStack().PeekRef()
 	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
@@ -227,12 +227,12 @@ func (ir *IRcheckcast) Execute(vm VM) error {
 	return nil
 }
 
-type IRgetfield struct {
+type ICgetfield struct {
 	Field uint16
 }
 
-func (*IRgetfield) Op() ops.Op { return ops.Getfield }
-func (ir *IRgetfield) Execute(vm VM) error {
+func (*ICgetfield) Op() ops.Op { return ops.Getfield }
+func (ir *ICgetfield) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	if ref == nil {
@@ -250,12 +250,12 @@ func (ir *IRgetfield) Execute(vm VM) error {
 	return nil
 }
 
-type IRgetstatic struct {
+type ICgetstatic struct {
 	Field uint16
 }
 
-func (*IRgetstatic) Op() ops.Op { return ops.Getstatic }
-func (ir *IRgetstatic) Execute(vm VM) error {
+func (*ICgetstatic) Op() ops.Op { return ops.Getstatic }
+func (ir *ICgetstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
 	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {
@@ -269,12 +269,12 @@ func (ir *IRgetstatic) Execute(vm VM) error {
 	return nil
 }
 
-type IRinstanceof struct {
+type ICinstanceof struct {
 	Class uint16
 }
 
-func (*IRinstanceof) Op() ops.Op { return ops.Instanceof }
-func (ir *IRinstanceof) Execute(vm VM) error {
+func (*ICinstanceof) Op() ops.Op { return ops.Instanceof }
+func (ir *ICinstanceof) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	class, err := vm.GetClassByIndex(ir.Class)
@@ -289,12 +289,12 @@ func (ir *IRinstanceof) Execute(vm VM) error {
 	return nil
 }
 
-type IRinvokedynamic struct {
+type ICinvokedynamic struct {
 	Method uint16
 }
 
-func (*IRinvokedynamic) Op() ops.Op { return ops.Invokedynamic }
-func (ir *IRinvokedynamic) Execute(vm VM) error {
+func (*ICinvokedynamic) Op() ops.Op { return ops.Invokedynamic }
+func (ir *ICinvokedynamic) Execute(vm VM) error {
 	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		// TODO: Seems not correct here
@@ -304,13 +304,13 @@ func (ir *IRinvokedynamic) Execute(vm VM) error {
 	return nil
 }
 
-type IRinvokeinterface struct {
+type ICinvokeinterface struct {
 	Method uint16
 	Count  byte // not in use
 }
 
-func (*IRinvokeinterface) Op() ops.Op { return ops.Invokeinterface }
-func (ir *IRinvokeinterface) Execute(vm VM) error {
+func (*ICinvokeinterface) Op() ops.Op { return ops.Invokeinterface }
+func (ir *ICinvokeinterface) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ir.Method)
@@ -325,12 +325,12 @@ func (ir *IRinvokeinterface) Execute(vm VM) error {
 	return nil
 }
 
-type IRinvokespecial struct {
+type ICinvokespecial struct {
 	Method uint16
 }
 
-func (*IRinvokespecial) Op() ops.Op { return ops.Invokespecial }
-func (ir *IRinvokespecial) Execute(vm VM) error {
+func (*ICinvokespecial) Op() ops.Op { return ops.Invokespecial }
+func (ir *ICinvokespecial) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ir.Method)
@@ -345,12 +345,12 @@ func (ir *IRinvokespecial) Execute(vm VM) error {
 	return nil
 }
 
-type IRinvokestatic struct {
+type ICinvokestatic struct {
 	Method uint16
 }
 
-func (*IRinvokestatic) Op() ops.Op { return ops.Invokestatic }
-func (ir *IRinvokestatic) Execute(vm VM) error {
+func (*ICinvokestatic) Op() ops.Op { return ops.Invokestatic }
+func (ir *ICinvokestatic) Execute(vm VM) error {
 	method := vm.GetCurrentClass().GetMethod(ir.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
@@ -363,12 +363,12 @@ func (ir *IRinvokestatic) Execute(vm VM) error {
 	return nil
 }
 
-type IRinvokevirtual struct {
+type ICinvokevirtual struct {
 	Method uint16
 }
 
-func (*IRinvokevirtual) Op() ops.Op { return ops.Invokevirtual }
-func (ir *IRinvokevirtual) Execute(vm VM) error {
+func (*ICinvokevirtual) Op() ops.Op { return ops.Invokevirtual }
+func (ir *ICinvokevirtual) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ir.Method)
@@ -383,13 +383,13 @@ func (ir *IRinvokevirtual) Execute(vm VM) error {
 	return nil
 }
 
-type IRmultianewarray struct {
+type ICmultianewarray struct {
 	Class      uint16
 	Dimensions byte
 }
 
-func (*IRmultianewarray) Op() ops.Op { return ops.Multianewarray }
-func (ir *IRmultianewarray) Execute(vm VM) error {
+func (*ICmultianewarray) Op() ops.Op { return ops.Multianewarray }
+func (ir *ICmultianewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
 	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
@@ -408,12 +408,12 @@ func (ir *IRmultianewarray) Execute(vm VM) error {
 	return nil
 }
 
-type IRnew struct {
+type ICnew struct {
 	Class uint16
 }
 
-func (*IRnew) Op() ops.Op { return ops.New }
-func (ir *IRnew) Execute(vm VM) error {
+func (*ICnew) Op() ops.Op { return ops.New }
+func (ir *ICnew) Execute(vm VM) error {
 	class, err := vm.GetClassByIndex(ir.Class)
 	if err != nil {
 		return err
@@ -423,12 +423,12 @@ func (ir *IRnew) Execute(vm VM) error {
 	return nil
 }
 
-type IRnewarray struct {
+type ICnewarray struct {
 	Atype byte
 }
 
-func (*IRnewarray) Op() ops.Op { return ops.Newarray }
-func (ir *IRnewarray) Execute(vm VM) error {
+func (*ICnewarray) Op() ops.Op { return ops.Newarray }
+func (ir *ICnewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
 	count := stack.PopInt32()
 	if count < 0 {
@@ -451,12 +451,12 @@ func (ir *IRnewarray) Execute(vm VM) error {
 	return nil
 }
 
-type IRputfield struct {
+type ICputfield struct {
 	Field uint16
 }
 
-func (*IRputfield) Op() ops.Op { return ops.Putfield }
-func (ir *IRputfield) Execute(vm VM) error {
+func (*ICputfield) Op() ops.Op { return ops.Putfield }
+func (ir *ICputfield) Execute(vm VM) error {
 	stack := vm.GetStack()
 	ref := stack.PopRef()
 	if ref == nil {
@@ -474,12 +474,12 @@ func (ir *IRputfield) Execute(vm VM) error {
 	return nil
 }
 
-type IRputstatic struct {
+type ICputstatic struct {
 	Field uint16
 }
 
-func (*IRputstatic) Op() ops.Op { return ops.Putstatic }
-func (ir *IRputstatic) Execute(vm VM) error {
+func (*ICputstatic) Op() ops.Op { return ops.Putstatic }
+func (ir *ICputstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
 	field := vm.GetCurrentClass().GetField(ir.Field)
 	if field == nil {

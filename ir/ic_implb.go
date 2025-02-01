@@ -5,10 +5,10 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type IRbaload struct{}
+type ICbaload struct{}
 
-func (*IRbaload) Op() ops.Op { return ops.Baload }
-func (*IRbaload) Execute(vm VM) error {
+func (*ICbaload) Op() ops.Op { return ops.Baload }
+func (*ICbaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt8()
 	index := stack.PopInt32()
@@ -22,10 +22,10 @@ func (*IRbaload) Execute(vm VM) error {
 	return nil
 }
 
-type IRbastore struct{}
+type ICbastore struct{}
 
-func (*IRbastore) Op() ops.Op { return ops.Bastore }
-func (*IRbastore) Execute(vm VM) error {
+func (*ICbastore) Op() ops.Op { return ops.Bastore }
+func (*ICbastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	arr := stack.PopArrInt8()
 	index := stack.PopInt32()
@@ -40,12 +40,12 @@ func (*IRbastore) Execute(vm VM) error {
 	return nil
 }
 
-type IRbipush struct {
+type ICbipush struct {
 	Value int8
 }
 
-func (*IRbipush) Op() ops.Op { return ops.Bipush }
-func (ir *IRbipush) Execute(vm VM) error {
+func (*ICbipush) Op() ops.Op { return ops.Bipush }
+func (ir *ICbipush) Execute(vm VM) error {
 	vm.GetStack().PushInt32((int32)(ir.Value))
 	return nil
 }
