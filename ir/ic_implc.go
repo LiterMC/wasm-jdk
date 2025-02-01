@@ -10,7 +10,7 @@ type ICcaload struct{}
 func (*ICcaload) Op() ops.Op { return ops.Caload }
 func (*ICcaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt16()
+	arr := stack.PopRef().GetArrInt16()
 	index := stack.PopInt32()
 	if arr == nil {
 		return errs.NullPointerException
@@ -27,7 +27,7 @@ type ICcastore struct{}
 func (*ICcastore) Op() ops.Op { return ops.Castore }
 func (*ICcastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt16()
+	arr := stack.PopRef().GetArrInt16()
 	index := stack.PopInt32()
 	value := stack.PopInt16()
 	if arr == nil {
@@ -45,7 +45,7 @@ type ICsaload struct{}
 func (*ICsaload) Op() ops.Op { return ops.Saload }
 func (*ICsaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt16()
+	arr := stack.PopRef().GetArrInt16()
 	index := stack.PopInt32()
 	if arr == nil {
 		return errs.NullPointerException
@@ -62,7 +62,7 @@ type ICsastore struct{}
 func (*ICsastore) Op() ops.Op { return ops.Sastore }
 func (*ICsastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt16()
+	arr := stack.PopRef().GetArrInt16()
 	index := stack.PopInt32()
 	value := stack.PopInt16()
 	if arr == nil {

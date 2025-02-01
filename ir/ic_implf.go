@@ -61,7 +61,7 @@ type ICfaload struct{}
 func (*ICfaload) Op() ops.Op { return ops.Faload }
 func (*ICfaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt32()
+	arr := stack.PopRef().GetArrInt32()
 	index := stack.PopInt32()
 	if arr == nil {
 		return errs.NullPointerException
@@ -78,7 +78,7 @@ type ICfastore struct{}
 func (*ICfastore) Op() ops.Op { return ops.Fastore }
 func (*ICfastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopArrInt32()
+	arr := stack.PopRef().GetArrInt32()
 	index := stack.PopInt32()
 	value := stack.PopInt32()
 	if arr == nil {

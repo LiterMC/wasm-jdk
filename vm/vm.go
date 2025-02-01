@@ -5,7 +5,11 @@ import (
 )
 
 type VM struct {
-	//
+	stack *Stack
 }
 
-var _ ir.VM = nil
+var _ ir.VM = (*VM)(nil)
+
+func (vm *VM) GetStack() ir.Stack {
+	return vm.stack
+}

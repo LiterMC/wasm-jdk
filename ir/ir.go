@@ -90,21 +90,6 @@ type Stack interface {
 	PushFloat64(float64)
 	PushRef(Ref)
 
-	PopArrInt8() []int8
-	PopArrInt16() []int16
-	PopArrInt32() []int32
-	PopArrInt64() []int64
-	PopArrFloat32() []float32
-	PopArrFloat64() []float64
-	PopArrRef() []Ref
-	PushArrInt8([]int8)
-	PushArrInt16([]int16)
-	PushArrInt32([]int32)
-	PushArrInt64([]int64)
-	PushArrFloat32([]float32)
-	PushArrFloat64([]float64)
-	PushArrRef([]Ref)
-
 	// returns whether the top element is a reference or not
 	IsRef() bool
 }
