@@ -11,7 +11,7 @@ func (*ICi2b) Op() ops.Op { return ops.I2b }
 func (*ICi2b) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
-	stack.PushInt32((int32)((int8)(value)))
+	stack.PushInt8((int8)(value))
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (*ICi2s) Op() ops.Op { return ops.I2s }
 func (*ICi2s) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
-	stack.PushInt32((int32)((int16)(value)))
+	stack.PushInt16((int16)(value))
 	return nil
 }
 
@@ -388,8 +388,8 @@ func (*ICiushr) Op() ops.Op { return ops.Iushr }
 func (*ICiushr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
-	a := stack.PopInt32()
-	stack.PushInt32((int32)((uint32)(a) >> (b & 0x1f)))
+	a := stack.Pop()
+	stack.Push(a >> (b & 0x1f))
 	return nil
 }
 

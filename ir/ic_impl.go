@@ -33,8 +33,8 @@ func (*ICdup) Execute(vm VM) error {
 		val := stack.PeekRef()
 		stack.PushRef(val)
 	} else {
-		val := stack.PeekInt32()
-		stack.PushInt32(val)
+		val := stack.Peek()
+		stack.Push(val)
 	}
 	return nil
 }
@@ -49,17 +49,17 @@ func (*ICdup_x1) Execute(vm VM) error {
 		a := stack.PopRef()
 		pushA = func() { stack.PushRef(a) }
 	} else {
-		a := stack.PopInt32()
-		pushA = func() { stack.PushInt32(a) }
+		a := stack.Pop()
+		pushA = func() { stack.Push(a) }
 	}
 	if stack.IsRef() {
 		b := stack.PopRef()
 		pushA()
 		stack.PushRef(b)
 	} else {
-		b := stack.PopInt32()
+		b := stack.Pop()
 		pushA()
-		stack.PushInt32(b)
+		stack.Push(b)
 	}
 	pushA()
 	return nil
@@ -75,22 +75,22 @@ func (*ICdup_x2) Execute(vm VM) error {
 		a := stack.PopRef()
 		pushA = func() { stack.PushRef(a) }
 	} else {
-		a := stack.PopInt32()
-		pushA = func() { stack.PushInt32(a) }
+		a := stack.Pop()
+		pushA = func() { stack.Push(a) }
 	}
 	if stack.IsRef() {
 		b2 := stack.PopRef()
 		pushB2 = func() { stack.PushRef(b2) }
 	} else {
-		b2 := stack.PopInt32()
-		pushB2 = func() { stack.PushInt32(b2) }
+		b2 := stack.Pop()
+		pushB2 = func() { stack.Push(b2) }
 	}
 	if stack.IsRef() {
 		b1 := stack.PopRef()
 		pushB1 = func() { stack.PushRef(b1) }
 	} else {
-		b1 := stack.PopInt32()
-		pushB1 = func() { stack.PushInt32(b1) }
+		b1 := stack.Pop()
+		pushB1 = func() { stack.Push(b1) }
 	}
 	pushA()
 	pushB1()
@@ -104,8 +104,25 @@ type ICdup2 struct{}
 func (*ICdup2) Op() ops.Op { return ops.Dup2 }
 func (*ICdup2) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.PeekInt64()
-	stack.PushInt64(val)
+	var pushA1, pushA2 func()
+	if stack.IsRef() {
+		a2 := stack.PopRef()
+		pushA2 = func() { stack.PushRef(a2) }
+	} else {
+		a2 := stack.Pop()
+		pushA2 = func() { stack.Push(a2) }
+	}
+	if stack.IsRef() {
+		a1 := stack.PopRef()
+		pushA1 = func() { stack.PushRef(a1) }
+	} else {
+		a1 := stack.Pop()
+		pushA1 = func() { stack.Push(a1) }
+	}
+	pushA1()
+	pushA2()
+	pushA1()
+	pushA2()
 	return nil
 }
 
@@ -119,22 +136,22 @@ func (*ICdup2_x1) Execute(vm VM) error {
 		a2 := stack.PopRef()
 		pushA2 = func() { stack.PushRef(a2) }
 	} else {
-		a2 := stack.PopInt32()
-		pushA2 = func() { stack.PushInt32(a2) }
+		a2 := stack.Pop()
+		pushA2 = func() { stack.Push(a2) }
 	}
 	if stack.IsRef() {
 		a1 := stack.PopRef()
 		pushA1 = func() { stack.PushRef(a1) }
 	} else {
-		a1 := stack.PopInt32()
-		pushA1 = func() { stack.PushInt32(a1) }
+		a1 := stack.Pop()
+		pushA1 = func() { stack.Push(a1) }
 	}
 	if stack.IsRef() {
 		b := stack.PopRef()
 		pushB = func() { stack.PushRef(b) }
 	} else {
-		b := stack.PopInt32()
-		pushB = func() { stack.PushInt32(b) }
+		b := stack.Pop()
+		pushB = func() { stack.Push(b) }
 	}
 	pushA1()
 	pushA2()
@@ -154,29 +171,29 @@ func (*ICdup2_x2) Execute(vm VM) error {
 		a2 := stack.PopRef()
 		pushA2 = func() { stack.PushRef(a2) }
 	} else {
-		a2 := stack.PopInt32()
-		pushA2 = func() { stack.PushInt32(a2) }
+		a2 := stack.Pop()
+		pushA2 = func() { stack.Push(a2) }
 	}
 	if stack.IsRef() {
 		a1 := stack.PopRef()
 		pushA1 = func() { stack.PushRef(a1) }
 	} else {
-		a1 := stack.PopInt32()
-		pushA1 = func() { stack.PushInt32(a1) }
+		a1 := stack.Pop()
+		pushA1 = func() { stack.Push(a1) }
 	}
 	if stack.IsRef() {
 		b2 := stack.PopRef()
 		pushB2 = func() { stack.PushRef(b2) }
 	} else {
-		b2 := stack.PopInt32()
-		pushB2 = func() { stack.PushInt32(b2) }
+		b2 := stack.Pop()
+		pushB2 = func() { stack.Push(b2) }
 	}
 	if stack.IsRef() {
 		b1 := stack.PopRef()
 		pushB1 = func() { stack.PushRef(b1) }
 	} else {
-		b1 := stack.PopInt32()
-		pushB1 = func() { stack.PushInt32(b1) }
+		b1 := stack.Pop()
+		pushB1 = func() { stack.Push(b1) }
 	}
 	pushA1()
 	pushA2()

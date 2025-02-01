@@ -81,6 +81,6 @@ type ICsipush struct {
 
 func (*ICsipush) Op() ops.Op { return ops.Sipush }
 func (ir *ICsipush) Execute(vm VM) error {
-	vm.GetStack().PushInt32((int32)(ir.Value))
+	vm.GetStack().PushInt16(ir.Value)
 	return nil
 }

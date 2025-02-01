@@ -331,8 +331,8 @@ func (*IClushr) Op() ops.Op { return ops.Lushr }
 func (*IClushr) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
-	a := stack.PopInt64()
-	stack.PushInt64((int64)((uint64)(a) >> (b & 0x1f)))
+	a := stack.Pop64()
+	stack.Push64(a >> (b & 0x1f))
 	return nil
 }
 

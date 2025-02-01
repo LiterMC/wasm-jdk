@@ -66,6 +66,8 @@ type Stack interface {
 	SetVarFloat64(uint16, float64)
 	SetVarRef(uint16, Ref)
 
+	Peek() uint32
+	Peek64() uint64
 	PeekInt8() int8
 	PeekInt16() int16
 	PeekInt32() int32
@@ -73,6 +75,8 @@ type Stack interface {
 	PeekFloat32() float32
 	PeekFloat64() float64
 	PeekRef() Ref
+	Pop() uint32
+	Pop64() uint64
 	PopInt8() int8
 	PopInt16() int16
 	PopInt32() int32
@@ -80,6 +84,8 @@ type Stack interface {
 	PopFloat32() float32
 	PopFloat64() float64
 	PopRef() Ref
+	Push(uint32)
+	Push64(uint64)
 	PushInt8(int8)
 	PushInt16(int16)
 	PushInt32(int32)
@@ -93,21 +99,25 @@ type Stack interface {
 }
 
 type Class interface {
+	Name() string
+	Desc() *desc.Desc
+
 	IsAssignableFrom(Class) bool
 	IsInstance(Ref) bool
-	Name() string
+
 	GetAndPushConst(uint16, Stack) error
 	GetField(uint16) Field
 	GetMethod(uint16) Method
 }
 
 type Field interface {
+	Name() string
+	Type() Class
+
 	GetDeclaringClass() Class
 	IsStatic() bool
 	Modifiers() int
 
-	Name() string
-	Type() Class
 	GetAndPush(Ref, Stack)
 	PopAndSet(Ref, Stack)
 }

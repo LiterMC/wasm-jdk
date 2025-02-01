@@ -8,6 +8,7 @@ import (
 
 type Ref interface {
 	Desc() *desc.Desc
+	Class() Class
 	Len() int32
 	Data() unsafe.Pointer
 	GetArrRef() []Ref

@@ -30,7 +30,8 @@ type ICaastore struct{}
 func (*ICaastore) Op() ops.Op { return ops.Aastore }
 func (*ICaastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrRef()
+	ref := stack.PopRef()
+	arr := ref.GetArrRef()
 	index := stack.PopInt32()
 	value := stack.PopRef()
 	if arr == nil {
@@ -42,7 +43,7 @@ func (*ICaastore) Execute(vm VM) error {
 	if value == nil {
 		arr[index] = value
 	}
-	if !vm.GetClass(value).IsAssignableFrom(vm.GetArrClass(arr)) {
+	if !vm.GetClass(value).IsAssignableFrom(ref.Class()) {
 		return errs.ClassCastException
 	}
 	arr[index] = value
