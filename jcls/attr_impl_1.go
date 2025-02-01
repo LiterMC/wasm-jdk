@@ -43,9 +43,9 @@ type ExceptionHandlers struct {
 func (*AttrCode) Name() string { return "Code" }
 func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 	var (
-		n   uint16
+		n    uint16
 		size uint32
-		err error
+		err  error
 	)
 	if a.MaxStack, err = readUint16(r); err != nil {
 		return err

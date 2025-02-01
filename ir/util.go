@@ -5,15 +5,16 @@ import (
 )
 
 func arrayToRef[T any](arr []T) Ref {
-	return *((*Ref)((unsafe.Pointer)(&arr)))
+	return (Ref)(unsafe.SliceData(arr))
 }
 
-type sliceHeader struct {
-	data unsafe.Pointer
-	len  int
-	cap  int
+type refHeader struct {
+	class     Ref
+	arrayKind uint8
+	len       int
+	data      [0]byte
 }
 
 func arrayLength(ref Ref) int {
-	return (*sliceHeader)((unsafe.Pointer)(&ref)).len
+	return (*refHeader)((Ref)((uintptr)(ref) - unsafe.Offsetof(refHeader{}.data))).len
 }

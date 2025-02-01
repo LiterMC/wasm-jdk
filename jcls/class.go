@@ -9,7 +9,6 @@ import (
 const ClassMagic uint32 = 0xCAFEBABE
 
 type Class struct {
-	Magic       uint32
 	Minor       uint16
 	Major       uint16
 	ConstPool   []ConstantInfo
@@ -24,15 +23,16 @@ type Class struct {
 
 func ParseClass(r io.Reader) (*Class, error) {
 	var (
-		c   = new(Class)
-		n   uint16
-		err error
+		c     = new(Class)
+		n     uint16
+		magic uint32
+		err   error
 	)
-	if c.Magic, err = readUint32(r); err != nil {
+	if magic, err = readUint32(r); err != nil {
 		return nil, err
 	}
-	if c.Magic != ClassMagic {
-		return nil, fmt.Errorf("Unexpected class header 0x%08x", c.Magic)
+	if magic != ClassMagic {
+		return nil, fmt.Errorf("Unexpected class header 0x%08x", magic)
 	}
 	if c.Minor, err = readUint16(r); err != nil {
 		return nil, err
