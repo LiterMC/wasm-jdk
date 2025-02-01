@@ -200,9 +200,11 @@ type ICgoto struct {
 	Node   *ICNode
 }
 
-func (*ICgoto) Op() ops.Op { return ops.Goto }
-func (ir *ICgoto) Execute(vm VM) error {
-	vm.Goto(ir.Node)
+func (*ICgoto) Op() ops.Op                  { return ops.Goto }
+func (ic *ICgoto) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICgoto) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICgoto) Execute(vm VM) error {
+	vm.Goto(ic.Node)
 	return nil
 }
 
@@ -211,9 +213,11 @@ type ICgoto_w struct {
 	Node   *ICNode
 }
 
-func (*ICgoto_w) Op() ops.Op { return ops.Goto_w }
-func (ir *ICgoto_w) Execute(vm VM) error {
-	vm.Goto(ir.Node)
+func (*ICgoto_w) Op() ops.Op                  { return ops.Goto_w }
+func (ic *ICgoto_w) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICgoto_w) Offsets() []int32         { return []int32{ic.Offset} }
+func (ic *ICgoto_w) Execute(vm VM) error {
+	vm.Goto(ic.Node)
 	return nil
 }
 
@@ -222,13 +226,15 @@ type ICif_acmpeq struct {
 	Node   *ICNode
 }
 
-func (*ICif_acmpeq) Op() ops.Op { return ops.If_acmpeq }
-func (ir *ICif_acmpeq) Execute(vm VM) error {
+func (*ICif_acmpeq) Op() ops.Op                  { return ops.If_acmpeq }
+func (ic *ICif_acmpeq) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_acmpeq) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_acmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
 	a := stack.PopRef()
 	if a == b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -238,13 +244,15 @@ type ICif_acmpne struct {
 	Node   *ICNode
 }
 
-func (*ICif_acmpne) Op() ops.Op { return ops.If_acmpne }
-func (ir *ICif_acmpne) Execute(vm VM) error {
+func (*ICif_acmpne) Op() ops.Op                  { return ops.If_acmpne }
+func (ic *ICif_acmpne) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_acmpne) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_acmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopRef()
 	a := stack.PopRef()
 	if a != b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -254,13 +262,15 @@ type ICif_icmpeq struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmpeq) Op() ops.Op { return ops.If_icmpeq }
-func (ir *ICif_icmpeq) Execute(vm VM) error {
+func (*ICif_icmpeq) Op() ops.Op                  { return ops.If_icmpeq }
+func (ic *ICif_icmpeq) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmpeq) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmpeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a == b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -270,13 +280,15 @@ type ICif_icmpge struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmpge) Op() ops.Op { return ops.If_icmpge }
-func (ir *ICif_icmpge) Execute(vm VM) error {
+func (*ICif_icmpge) Op() ops.Op                  { return ops.If_icmpge }
+func (ic *ICif_icmpge) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmpge) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmpge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a >= b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -286,13 +298,15 @@ type ICif_icmpgt struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmpgt) Op() ops.Op { return ops.If_icmpgt }
-func (ir *ICif_icmpgt) Execute(vm VM) error {
+func (*ICif_icmpgt) Op() ops.Op                  { return ops.If_icmpgt }
+func (ic *ICif_icmpgt) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmpgt) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmpgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a > b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -302,13 +316,15 @@ type ICif_icmple struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmple) Op() ops.Op { return ops.If_icmple }
-func (ir *ICif_icmple) Execute(vm VM) error {
+func (*ICif_icmple) Op() ops.Op                  { return ops.If_icmple }
+func (ic *ICif_icmple) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmple) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmple) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a <= b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -318,13 +334,15 @@ type ICif_icmplt struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmplt) Op() ops.Op { return ops.If_icmplt }
-func (ir *ICif_icmplt) Execute(vm VM) error {
+func (*ICif_icmplt) Op() ops.Op                  { return ops.If_icmplt }
+func (ic *ICif_icmplt) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmplt) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmplt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a < b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -334,13 +352,15 @@ type ICif_icmpne struct {
 	Node   *ICNode
 }
 
-func (*ICif_icmpne) Op() ops.Op { return ops.If_icmpne }
-func (ir *ICif_icmpne) Execute(vm VM) error {
+func (*ICif_icmpne) Op() ops.Op                  { return ops.If_icmpne }
+func (ic *ICif_icmpne) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICif_icmpne) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICif_icmpne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	b := stack.PopInt32()
 	a := stack.PopInt32()
 	if a != b {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -350,12 +370,14 @@ type ICifeq struct {
 	Node   *ICNode
 }
 
-func (*ICifeq) Op() ops.Op { return ops.Ifeq }
-func (ir *ICifeq) Execute(vm VM) error {
+func (*ICifeq) Op() ops.Op                  { return ops.Ifeq }
+func (ic *ICifeq) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifeq) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifeq) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a == 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -365,12 +387,14 @@ type ICifge struct {
 	Node   *ICNode
 }
 
-func (*ICifge) Op() ops.Op { return ops.Ifge }
-func (ir *ICifge) Execute(vm VM) error {
+func (*ICifge) Op() ops.Op                  { return ops.Ifge }
+func (ic *ICifge) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifge) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifge) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a >= 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -380,12 +404,14 @@ type ICifgt struct {
 	Node   *ICNode
 }
 
-func (*ICifgt) Op() ops.Op { return ops.Ifgt }
-func (ir *ICifgt) Execute(vm VM) error {
+func (*ICifgt) Op() ops.Op                  { return ops.Ifgt }
+func (ic *ICifgt) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifgt) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifgt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a > 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -395,12 +421,14 @@ type ICifle struct {
 	Node   *ICNode
 }
 
-func (*ICifle) Op() ops.Op { return ops.Ifle }
-func (ir *ICifle) Execute(vm VM) error {
+func (*ICifle) Op() ops.Op                  { return ops.Ifle }
+func (ic *ICifle) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifle) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifle) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a <= 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -410,12 +438,14 @@ type ICiflt struct {
 	Node   *ICNode
 }
 
-func (*ICiflt) Op() ops.Op { return ops.Iflt }
-func (ir *ICiflt) Execute(vm VM) error {
+func (*ICiflt) Op() ops.Op                  { return ops.Iflt }
+func (ic *ICiflt) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICiflt) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICiflt) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a < 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -425,12 +455,14 @@ type ICifne struct {
 	Node   *ICNode
 }
 
-func (*ICifne) Op() ops.Op { return ops.Ifne }
-func (ir *ICifne) Execute(vm VM) error {
+func (*ICifne) Op() ops.Op                  { return ops.Ifne }
+func (ic *ICifne) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifne) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifne) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopInt32()
 	if a != 0 {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -440,12 +472,14 @@ type ICifnonnull struct {
 	Node   *ICNode
 }
 
-func (*ICifnonnull) Op() ops.Op { return ops.Ifnonnull }
-func (ir *ICifnonnull) Execute(vm VM) error {
+func (*ICifnonnull) Op() ops.Op                  { return ops.Ifnonnull }
+func (ic *ICifnonnull) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifnonnull) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifnonnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
 	if a != nil {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -455,12 +489,14 @@ type ICifnull struct {
 	Node   *ICNode
 }
 
-func (*ICifnull) Op() ops.Op { return ops.Ifnull }
-func (ir *ICifnull) Execute(vm VM) error {
+func (*ICifnull) Op() ops.Op                  { return ops.Ifnull }
+func (ic *ICifnull) SetNode(i int, n *ICNode) { ic.Node = n }
+func (ic *ICifnull) Offsets() []int32         { return []int32{(int32)(ic.Offset)} }
+func (ic *ICifnull) Execute(vm VM) error {
 	stack := vm.GetStack()
 	a := stack.PopRef()
 	if a == nil {
-		vm.Goto(ir.Node)
+		vm.Goto(ic.Node)
 	}
 	return nil
 }
@@ -518,11 +554,26 @@ func (c CaseEntry) Cmp(o CaseEntry) int {
 }
 
 func (*IClookupswitch) Op() ops.Op { return ops.Lookupswitch }
-func (ir *IClookupswitch) Execute(vm VM) error {
+func (ic *IClookupswitch) SetNode(i int, n *ICNode) {
+	if i == 0 {
+		ic.DefaultNode = n
+	} else {
+		ic.Indexes[i-1].N = n
+	}
+}
+func (ic *IClookupswitch) Offsets() []int32 {
+	offsets := make([]int32, len(ic.Indexes)+1)
+	offsets[0] = ic.DefaultOffset
+	for i, e := range ic.Indexes {
+		offsets[i+1] = e.V
+	}
+	return offsets
+}
+func (ic *IClookupswitch) Execute(vm VM) error {
 	key := vm.GetStack().PopInt32()
-	node := ir.DefaultNode
-	if ind, ok := slices.BinarySearchFunc(ir.Indexes, key, CaseEntry.CmpKey); ok {
-		node = ir.Indexes[ind].N
+	node := ic.DefaultNode
+	if ind, ok := slices.BinarySearchFunc(ic.Indexes, key, CaseEntry.CmpKey); ok {
+		node = ic.Indexes[ind].N
 	}
 	vm.Goto(node)
 	return nil
@@ -605,17 +656,33 @@ type ICtableswitch struct {
 	DefaultOffset int32
 	DefaultNode   *ICNode
 	Low, High     int32
-	Offsets       []int32
+	OffsetList    []int32
 	Nodes         []*ICNode
 }
 
 func (*ICtableswitch) Op() ops.Op { return ops.Tableswitch }
-func (ir *ICtableswitch) Execute(vm VM) error {
+func (ic *ICtableswitch) SetNode(i int, n *ICNode) {
+	if i == 0 {
+		ic.DefaultNode = n
+	} else {
+		if ic.Nodes == nil {
+			ic.Nodes = make([]*ICNode, len(ic.OffsetList))
+		}
+		ic.Nodes[i-1] = n
+	}
+}
+func (ic *ICtableswitch) Offsets() []int32 {
+	offsets := make([]int32, len(ic.OffsetList)+1)
+	offsets[0] = ic.DefaultOffset
+	copy(offsets[1:], ic.OffsetList)
+	return offsets
+}
+func (ic *ICtableswitch) Execute(vm VM) error {
 	key := vm.GetStack().PopInt32()
-	node := ir.DefaultNode
-	if ir.Low <= key && key <= ir.High {
-		i := key - ir.Low
-		node = ir.Nodes[i]
+	node := ic.DefaultNode
+	if ic.Low <= key && key <= ic.High {
+		i := key - ic.Low
+		node = ic.Nodes[i]
 	}
 	vm.Goto(node)
 	return nil
@@ -628,31 +695,31 @@ type ICwide struct {
 }
 
 func (*ICwide) Op() ops.Op { return ops.Wide }
-func (ir *ICwide) Execute(vm VM) error {
-	switch ir.OpCode {
+func (ic *ICwide) Execute(vm VM) error {
+	switch ic.OpCode {
 	case ops.Iload:
-		return (&ICiload{Index: ir.Index}).Execute(vm)
+		return (&ICiload{Index: ic.Index}).Execute(vm)
 	case ops.Fload:
-		return (&ICfload{Index: ir.Index}).Execute(vm)
+		return (&ICfload{Index: ic.Index}).Execute(vm)
 	case ops.Aload:
-		return (&ICaload{Index: ir.Index}).Execute(vm)
+		return (&ICaload{Index: ic.Index}).Execute(vm)
 	case ops.Lload:
-		return (&IClload{Index: ir.Index}).Execute(vm)
+		return (&IClload{Index: ic.Index}).Execute(vm)
 	case ops.Dload:
-		return (&ICdload{Index: ir.Index}).Execute(vm)
+		return (&ICdload{Index: ic.Index}).Execute(vm)
 	case ops.Istore:
-		return (&ICistore{Index: ir.Index}).Execute(vm)
+		return (&ICistore{Index: ic.Index}).Execute(vm)
 	case ops.Fstore:
-		return (&ICfstore{Index: ir.Index}).Execute(vm)
+		return (&ICfstore{Index: ic.Index}).Execute(vm)
 	case ops.Astore:
-		return (&ICastore{Index: ir.Index}).Execute(vm)
+		return (&ICastore{Index: ic.Index}).Execute(vm)
 	case ops.Lstore:
-		return (&IClstore{Index: ir.Index}).Execute(vm)
+		return (&IClstore{Index: ic.Index}).Execute(vm)
 	case ops.Dstore:
-		return (&ICdstore{Index: ir.Index}).Execute(vm)
+		return (&ICdstore{Index: ic.Index}).Execute(vm)
 	case ops.Iinc:
-		return (&ICiinc{Index: ir.Index, Const: (int16)(ir.Const)}).Execute(vm)
+		return (&ICiinc{Index: ic.Index, Const: (int16)(ic.Const)}).Execute(vm)
 	default:
-		panic(fmt.Errorf("ir.wide: unexpected opcode %d", ir.OpCode))
+		panic(fmt.Errorf("ir.wide: unexpected opcode %d", ic.OpCode))
 	}
 }

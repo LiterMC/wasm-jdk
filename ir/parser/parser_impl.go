@@ -268,9 +268,9 @@ func (*ParserICtableswitch) Parse(br ByteReader) (ir.IC, error) {
 		return nil, err
 	}
 	indexCount := ic.High - ic.Low + 1
-	ic.Offsets = make([]int32, indexCount)
+	ic.OffsetList = make([]int32, indexCount)
 	for i := range indexCount {
-		if ic.Offsets[i], err = readInt32(br); err != nil {
+		if ic.OffsetList[i], err = readInt32(br); err != nil {
 			return nil, err
 		}
 	}

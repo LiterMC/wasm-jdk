@@ -16,11 +16,15 @@ type IC interface {
 	Execute(vm VM) error
 }
 
+type ICJumpable interface {
+	Offsets() []int32
+	SetNode(i int, n *ICNode)
+}
+
 type ICNode struct {
 	IC
 	Offset int32
 	Next   *ICNode
-	Nexts  []*ICNode
 }
 
 type VM interface {
