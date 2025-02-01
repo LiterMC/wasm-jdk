@@ -41,7 +41,7 @@ type Ref interface {
 	ArrayKind() ArrayKind
 	Len() int32
 	Data() unsafe.Pointer
-	GetRefArray() []Ref
+	GetArrRef() []Ref
 	GetArrInt8() []int8
 	GetArrInt16() []int16
 	GetArrInt32() []int32
