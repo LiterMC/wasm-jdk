@@ -3,104 +3,88 @@ package vm
 import (
 	"unsafe"
 
+	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
 )
 
-const (
-	kindNone uint8 = iota
-	kindRef
-	kindBoolean
-	kindByte
-	kindChar
-	kindShort
-	kindInt
-	kindLong
-	kindFloat
-	kindDouble
-)
-
-type Ref = unsafe.Pointer
-
-type refHeader struct {
-	class     *jcls.Class
-	arrayKind uint8
-	len       int
-	data      [0]byte
+type Ref struct {
+	class     uint32 // index class in classloader
+	arrayKind ir.arrayKind
+	arrayLen  int32
+	data      unsafe.Pointer
 }
 
-func getKindSize(kind uint8) uintptr {
-	switch kind {
-	case kindRef:
-		return unsafe.Sizeof((Ref)(nil))
-	case kindBoolean, kindByte:
-		return unsafe.Sizeof((int8)(0))
-	case kindChar, kindShort:
-		return unsafe.Sizeof((int16)(0))
-	case kindInt, kindFloat:
-		return unsafe.Sizeof((int32)(0))
-	case kindLong, kindDouble:
-		return unsafe.Sizeof((int64)(0))
-	default:
-		panic("unknown kind")
+var _ ir.Ref = (*Ref)(nil)
+
+func newRefArray(class *jcls.Class, kind uint8, length int) *Ref {
+	r := &Ref{
+		class:     class,
+		arrayKind: kind,
+		arrayLen:  (int32)(length),
+	}
+	if kind == kindRef {
+		data := make([]unsafe.Pointer, length)
+	} else {
+		bytes := make([]byte, kind.Size()*(uintptr)(length))
+		r.data = (unsafe.Pointer)(unsafe.SliceData(bytes))
+	}
+	return r
+}
+
+func newObjectRef(class *jcls.Class, size int) *Ref {
+	return &Ref{
+		class:     class,
+		arrayKind: kindNone,
 	}
 }
 
-func newRefArray(class *jcls.Class, kind uint8, length int) Ref {
-	bytes := make([]byte, unsafe.Offsetof(refHeader{}.data)+getKindSize(kind)*(uintptr)(length))
-	r := (*refHeader)((unsafe.Pointer)(unsafe.SliceData(bytes)))
-	r.class = class
-	r.arrayKind = kind
-	r.len = length
-	return r.AsRef()
+func (r *Ref) IsArray() bool {
+	return r.arrayKind != kindNone
 }
 
-func newObjectRef(class *jcls.Class, size int) Ref {
-	bytes := make([]byte, unsafe.Offsetof(refHeader{}.data)+(uintptr)(size))
-	r := (*refHeader)((unsafe.Pointer)(unsafe.SliceData(bytes)))
-	r.class = class
-	r.arrayKind = kindRef
-	return r.AsRef()
+func (r *Ref) ArrayKind() ArrayKind {
+	return r.arrayKind
 }
 
-func getRefHeader(ref Ref) *refHeader {
-	return (*refHeader)((unsafe.Pointer)((uintptr)(ref) - unsafe.Offsetof(refHeader{}.data)))
+func (r *Ref) Len() int32 {
+	return r.arrayLen
 }
 
-func (r *refHeader) AsRef() Ref {
-	return (Ref)(&r.data)
+func (r *Ref) Data() unsafe.Pointer {
+	return r.data
 }
 
-func (r *refHeader) GetRefArray() []Ref {
+func (r *Ref) GetRefArray() []Ref {
 	if r.arrayKind != kindRef {
 		panic("Underlying array is not reference")
 	}
-	return unsafe.Slice((*Ref)((Ref)(&r.data)), r.len)
+	return unsafe.Slice((*Ref)(r.data), r.len)
 }
 
-func (r *refHeader) GetArrInt8() []int8 {
+func (r *Ref) GetArrInt8() []int8 {
 	if r.arrayKind != kindBoolean && r.arrayKind != kindByte {
 		panic("Underlying array is not int8")
 	}
-	return unsafe.Slice((*int8)((Ref)(&r.data)), r.len)
+	return unsafe.Slice((*int8)(r.data), r.len)
 }
 
-func (r *refHeader) GetArrInt16() []int16 {
+func (r *Ref) GetArrInt16() []int16 {
 	if r.arrayKind != kindChar && r.arrayKind != kindShort {
 		panic("Underlying array is not int16")
 	}
-	return unsafe.Slice((*int16)((Ref)(&r.data)), r.len)
+	return unsafe.Slice((*int16)(r.data), r.len)
 }
 
-func (r *refHeader) GetArrInt32() []int32 {
+func (r *Ref) GetArrInt32() []int32 {
 	if r.arrayKind != kindInt && r.arrayKind != kindFloat {
 		panic("Underlying array is not int32")
 	}
-	return unsafe.Slice((*int32)((Ref)(&r.data)), r.len)
+	return unsafe.Slice((*int32)(r.data), r.len)
 }
 
-func (r *refHeader) GetArrInt64() []int64 {
+func (r *Ref) GetArrInt64() []int64 {
 	if r.arrayKind != kindLong && r.arrayKind != kindDouble {
 		panic("Underlying array is not int64")
 	}
-	return unsafe.Slice((*int64)((Ref)(&r.data)), r.len)
+	return unsafe.Slice((*int64)(r.data), r.len)
 }

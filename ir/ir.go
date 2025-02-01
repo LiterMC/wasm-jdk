@@ -1,12 +1,8 @@
 package ir
 
 import (
-	"unsafe"
-
 	"github.com/LiterMC/wasm-jdk/ops"
 )
-
-type Ref = unsafe.Pointer
 
 // Intermediate Code Representation
 type IC interface {
@@ -31,12 +27,12 @@ type VM interface {
 	GetStack() Stack
 
 	New(Class) Ref
-	NewArrInt8(int32) []int8
-	NewArrInt16(int32) []int16
-	NewArrInt32(int32) []int32
-	NewArrInt64(int32) []int64
-	NewArrRef(Class, int32) []Ref
-	NewArrRefMultiDim(Class, []int32) []Ref
+	NewArrInt8(int32) Ref
+	NewArrInt16(int32) Ref
+	NewArrInt32(int32) Ref
+	NewArrInt64(int32) Ref
+	NewArrRef(Class, int32) Ref
+	NewArrRefMultiDim(Class, []int32) Ref
 
 	GetObjectClass() Class
 	GetThrowableClass() Class

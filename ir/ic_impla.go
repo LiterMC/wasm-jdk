@@ -124,7 +124,7 @@ func (ir *ICanewarray) Execute(vm VM) error {
 		return err
 	}
 	arr := vm.NewArrRef(class, count)
-	stack.PushRef(arrayToRef(arr))
+	stack.PushRef(arr)
 	return nil
 }
 
@@ -137,8 +137,7 @@ func (*ICarraylength) Execute(vm VM) error {
 	if ref == nil {
 		return errs.NullPointerException
 	}
-	count := arrayLength(ref)
-	stack.PushInt32((int32)(count))
+	stack.PushInt32(ref.Len())
 	return nil
 }
 
@@ -404,7 +403,7 @@ func (ir *ICmultianewarray) Execute(vm VM) error {
 		counts[i] = count
 	}
 	arr := vm.NewArrRefMultiDim(class, counts)
-	stack.PushRef(arrayToRef(arr))
+	stack.PushRef(arr)
 	return nil
 }
 
@@ -437,13 +436,13 @@ func (ir *ICnewarray) Execute(vm VM) error {
 	var arr Ref
 	switch ir.Atype {
 	case 4, 8: // T_BOOLEAN, T_BYTE
-		arr = arrayToRef(vm.NewArrInt8(count))
+		arr = vm.NewArrInt8(count)
 	case 5, 9: // T_CHAR, T_SHORT
-		arr = arrayToRef(vm.NewArrInt16(count))
+		arr = vm.NewArrInt16(count)
 	case 6, 10: // T_FLOAT, T_INT
-		arr = arrayToRef(vm.NewArrInt32(count))
+		arr = vm.NewArrInt32(count)
 	case 7, 11: // T_DOUBLE, T_LONG
-		arr = arrayToRef(vm.NewArrInt64(count))
+		arr = vm.NewArrInt64(count)
 	default:
 		panic(fmt.Errorf("ir.newarray: unknown atype %d", ir.Atype))
 	}
