@@ -8,7 +8,7 @@ import (
 
 type Ref = unsafe.Pointer
 
-// Intermediate Cide Representation
+// Intermediate Code Representation
 type IC interface {
 	// The operation code
 	Op() ops.Op
