@@ -1,6 +1,7 @@
 package jcls
 
 import (
+	"fmt"
 	"io"
 )
 
@@ -33,6 +34,53 @@ type ConstantInfo interface {
 	Resolve([]ConstantInfo)
 }
 
+func ParseConstant(r io.Reader) (ConstantInfo, error) {
+	t, err := readUint8(r)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		c   ConstantInfo
+		tag = (ConstTag)(t)
+	)
+	switch tag {
+	case TagClass:
+		c = &ConstantClass{}
+	case TagFieldref, TagMethodref, TagInterfaceMethodref:
+		c = &ConstantRef{ConstTag: tag}
+	case TagString:
+		c = &ConstantString{}
+	case TagInteger:
+		c = &ConstantInteger{}
+	case TagFloat:
+		c = &ConstantFloat{}
+	case TagLong:
+		c = &ConstantLong{}
+	case TagDouble:
+		c = &ConstantDouble{}
+	case TagNameAndType:
+		c = &ConstantNameAndType{}
+	case TagUtf8:
+		c = &ConstantUtf8{}
+	case TagMethodHandle:
+		c = &ConstantMethodHandle{}
+	case TagMethodType:
+		c = &ConstantMethodType{}
+	case TagDynamic, TagInvokeDynamic:
+		c = &ConstantDynamics{ConstTag: tag}
+	case TagModule:
+		c = &ConstantModule{}
+	case TagPackage:
+		c = &ConstantPackage{}
+	default:
+		return nil, fmt.Errorf("Unexpected constant tag %d", t)
+	}
+	if err = c.Parse(r); err != nil {
+		return nil, err
+	}
+	return c, nil
+}
+
 type ConstantClass struct {
 	NameInd uint16
 	Name    string
@@ -47,7 +95,7 @@ func (c *ConstantClass) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantClass) Resolve(infos []ConstantInfo) {
-	c.Name = infos[c.NameInd].(*ConstantUtf8).Value
+	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
 }
 
 type ConstantRef struct {
@@ -70,8 +118,8 @@ func (c *ConstantRef) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantRef) Resolve(infos []ConstantInfo) {
-	c.Class = infos[c.ClassInd].(*ConstantClass)
-	c.NameAndType = infos[c.NameAndTypeInd].(*ConstantNameAndType)
+	c.Class = infos[c.ClassInd-1].(*ConstantClass)
+	c.NameAndType = infos[c.NameAndTypeInd-1].(*ConstantNameAndType)
 }
 
 type ConstantString struct {
@@ -88,7 +136,7 @@ func (c *ConstantString) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantString) Resolve(infos []ConstantInfo) {
-	c.String = infos[c.StringInd].(*ConstantUtf8).Value
+	c.String = infos[c.StringInd-1].(*ConstantUtf8).Value
 }
 
 type ConstantInteger struct {
@@ -166,8 +214,8 @@ func (c *ConstantNameAndType) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantNameAndType) Resolve(infos []ConstantInfo) {
-	c.Name = infos[c.NameInd].(*ConstantUtf8).Value
-	c.Desc = infos[c.DescInd].(*ConstantUtf8).Value
+	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
+	c.Desc = infos[c.DescInd-1].(*ConstantUtf8).Value
 }
 
 type ConstantUtf8 struct {
@@ -207,7 +255,7 @@ func (c *ConstantMethodHandle) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantMethodHandle) Resolve(infos []ConstantInfo) {
-	c.Ref = infos[c.RefInd].(*ConstantRef)
+	c.Ref = infos[c.RefInd-1].(*ConstantRef)
 }
 
 type ConstantMethodType struct {
@@ -224,7 +272,7 @@ func (c *ConstantMethodType) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantMethodType) Resolve(infos []ConstantInfo) {
-	c.Desc = infos[c.DescInd].(*ConstantUtf8).Value
+	c.Desc = infos[c.DescInd-1].(*ConstantUtf8).Value
 }
 
 type ConstantDynamics struct {
@@ -246,7 +294,7 @@ func (c *ConstantDynamics) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantDynamics) Resolve(infos []ConstantInfo) {
-	c.NameAndType = infos[c.NameAndTypeInd].(*ConstantNameAndType)
+	c.NameAndType = infos[c.NameAndTypeInd-1].(*ConstantNameAndType)
 }
 
 type ConstantModule struct {
@@ -263,7 +311,7 @@ func (c *ConstantModule) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantModule) Resolve(infos []ConstantInfo) {
-	c.Name = infos[c.NameInd].(*ConstantUtf8).Value
+	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
 }
 
 type ConstantPackage struct {
@@ -280,5 +328,5 @@ func (c *ConstantPackage) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantPackage) Resolve(infos []ConstantInfo) {
-	c.Name = infos[c.NameInd].(*ConstantUtf8).Value
+	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
 }

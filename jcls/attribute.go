@@ -14,19 +14,26 @@ type AttributeRaw struct {
 }
 
 func (a *AttributeRaw) Name() string { return a.AName }
-func (a *AttributeRaw) Parse(r io.Reader, consts []ConstantInfo) error {
-	name, err := readUint16(r)
+
+func ParseAttr(r io.Reader, consts []ConstantInfo) (Attribute, error) {
+	nameInd, err := readUint16(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	a.AName = consts[name].(*ConstantUtf8).Value
+	name := consts[nameInd-1].(*ConstantUtf8).Value
 	size, err := readUint32(r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	a.Data = make([]byte, size)
-	if _, err = io.ReadFull(r, a.Data); err != nil {
-		return err
+	data := make([]byte, size)
+	if _, err = io.ReadFull(r, data); err != nil {
+		return nil, err
 	}
-	return nil
+	switch name {
+	// TODO:
+	}
+	return &AttributeRaw{
+		AName: name,
+		Data:  data,
+	}, nil
 }
