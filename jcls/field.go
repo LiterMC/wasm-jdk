@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/LiterMC/wasm-jdk/desc"
 )
 
 type Field struct {
 	AccessFlags AccessFlag
 	Name        string
-	Desc        string
+	Desc        *desc.Desc
 	Attrs       []Attribute
 }
 
@@ -27,7 +29,9 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	f.Desc = consts[n-1].(*ConstantUtf8).Value
+	if f.Desc, err = consts[n-1].(*ConstantUtf8).AsDesc(); err != nil {
+		return nil, err
+	}
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
@@ -43,7 +47,7 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 func (f *Field) String() string {
 	var sb strings.Builder
 	sb.WriteString(f.AccessFlags.String())
-	sb.WriteString(f.Desc)
+	sb.WriteString(f.Desc.String())
 	sb.WriteByte(' ')
 	sb.WriteString(f.Name)
 	fmt.Fprintf(&sb, " (%d attrs);", len(f.Attrs))

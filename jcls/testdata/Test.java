@@ -9,8 +9,8 @@ public class Test {
 		System.out.println("testPrivateVoidMethod");
 	}
 
-	public final int testPublicFinalAddMethod(int a, int b) {
-		return a + b;
+	public final long testPublicFinalAddMethod(int a, long b) {
+		return a + b + this.int1;
 	}
 
 	public static void main(String[] args) {
@@ -18,5 +18,11 @@ public class Test {
 			System.out.println("arg0: " + args[0]);
 		}
 		System.out.print("Test class " + args.length + "\n");
+		Test tt = new Test();
+		System.out.println("running testPrivateVoidMethod");
+		tt.testPrivateVoidMethod();
+		System.out.println("running testPublicFinalAddMethod");
+		long x = tt.testPublicFinalAddMethod(3, 2);
+		System.out.println(x);
 	}
 }

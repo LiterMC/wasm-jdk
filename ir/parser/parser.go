@@ -49,6 +49,12 @@ func ParseCode(buf []byte) (*ir.ICNode, error) {
 		jumps = make(map[int32][]jumpRequest)
 	)
 	for {
+		if reqs, ok := jumps[node.Offset]; ok {
+			for _, req := range reqs {
+				req.node.IC.(ir.ICJumpable).SetNode(req.i, node)
+			}
+			delete(jumps, node.Offset)
+		}
 		if offset, err := r.Seek(0, io.SeekCurrent); err != nil {
 			return nil, err
 		} else {

@@ -1,6 +1,7 @@
 package ir
 
 import (
+	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
@@ -26,16 +27,13 @@ type ICNode struct {
 type VM interface {
 	GetStack() Stack
 
-	New(Class) Ref
-	NewArrInt8(int32) Ref
-	NewArrInt16(int32) Ref
-	NewArrInt32(int32) Ref
-	NewArrInt64(int32) Ref
-	NewArrRef(Class, int32) Ref
-	NewArrRefMultiDim(Class, []int32) Ref
+	New(*desc.Desc) Ref
+	NewArray(*desc.Desc, int32) Ref
+	NewArrayMultiDim(*desc.Desc, []int32) Ref
 
 	GetObjectClass() Class
 	GetThrowableClass() Class
+	GetDesc(uint16) *desc.Desc
 	GetClassByIndex(uint16) (Class, error)
 	GetClass(Ref) Class
 	GetArrClass([]Ref) Class

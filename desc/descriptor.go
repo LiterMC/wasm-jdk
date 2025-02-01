@@ -3,6 +3,7 @@ package desc
 import (
 	"errors"
 	"strings"
+	"unsafe"
 )
 
 type Type byte
@@ -17,25 +18,55 @@ const (
 	Long    Type = 'J'
 	Float   Type = 'F'
 	Double  Type = 'D'
-	Ref     Type = 'L'
+	Class   Type = 'L'
 	Array   Type = '['
 
-	RefEnd    byte = ';'
+	ClassEnd  byte = ';'
 	Method    byte = '('
 	MethodEnd byte = ')'
 )
 
+func (t Type) IsRef() bool {
+	return t == Class || t == Array
+}
+
+func (t Type) Size() uintptr {
+	switch t {
+	case Void:
+		return 0
+	case Class, Array:
+		return unsafe.Sizeof((unsafe.Pointer)(nil))
+	case Boolean, Byte:
+		return 1
+	case Char, Short:
+		return 2
+	case Int, Float:
+		return 4
+	case Long, Double:
+		return 8
+	default:
+		panic("unknown kind")
+	}
+}
+
 var (
-	ErrInvalid = errors.New("Invalid descriptor")
-	ErrEndTooLate = errors.New("Invalid descriptor: end too late")
+	ErrInvalid     = errors.New("Invalid descriptor")
+	ErrEndTooLate  = errors.New("Invalid descriptor: end too late")
 	ErrEndTooEarly = errors.New("Invalid descriptor: end too early")
 )
 
 type Desc struct {
 	ArrDim  int
-	Type    Type
-	RefName string
+	EndType Type
+	Class   string
 }
+
+var (
+	DescInt8  = &Desc{EndType: Byte}
+	DescInt16 = &Desc{EndType: Short}
+	DescInt32 = &Desc{EndType: Int}
+	DescInt64 = &Desc{EndType: Long}
+)
 
 func ParseDesc(s string) (*Desc, error) {
 	s, d := parseDesc(s)
@@ -55,15 +86,15 @@ func parseDesc(s string) (string, *Desc) {
 	t := (Type)(s[0])
 	switch t {
 	case Void, Boolean, Byte, Char, Short, Int, Long, Float, Double:
-		return s[1:], &Desc{Type: t}
-	case Ref:
-		i := strings.IndexByte(s, RefEnd)
+		return s[1:], &Desc{EndType: t}
+	case Class:
+		i := strings.IndexByte(s, ClassEnd)
 		if i == -1 {
 			return "", nil
 		}
 		return s[i+1:], &Desc{
-			Type:    Ref,
-			RefName: s[1:i],
+			EndType: Class,
+			Class:   s[1:i],
 		}
 	case Array:
 		var desc *Desc
@@ -75,6 +106,55 @@ func parseDesc(s string) (string, *Desc) {
 	default:
 		return "", nil
 	}
+}
+
+func (d *Desc) Clone() *Desc {
+	o := new(Desc)
+	*o = *d
+	return o
+}
+
+func (d *Desc) IsArray() bool {
+	return d.ArrDim > 0
+}
+
+func (d *Desc) Type() Type {
+	if d.ArrDim > 0 {
+		return Array
+	}
+	return d.EndType
+}
+
+func (d *Desc) ElemType() Type {
+	if d.ArrDim == 0 {
+		panic("the descriptor is not an array")
+	}
+	if d.ArrDim > 1 {
+		return Array
+	}
+	return d.EndType
+}
+
+func (d *Desc) Elem() *Desc {
+	o := d.Clone()
+	o.ArrDim--
+	if o.ArrDim < 0 {
+		panic("the descriptor is not an array")
+	}
+	return o
+}
+
+func (d *Desc) String() string {
+	var s strings.Builder
+	for range d.ArrDim {
+		s.WriteByte('[')
+	}
+	s.WriteByte((byte)(d.EndType))
+	if d.EndType == Class {
+		s.WriteString(d.Class)
+		s.WriteByte(ClassEnd)
+	}
+	return s.String()
 }
 
 type MethodDesc struct {
@@ -111,3 +191,23 @@ func ParseMethodDesc(s string) (*MethodDesc, error) {
 	return md, nil
 }
 
+func (d *MethodDesc) Clone() *MethodDesc {
+	o := new(MethodDesc)
+	o.Inputs = make([]*Desc, len(d.Inputs))
+	for i, dc := range d.Inputs {
+		o.Inputs[i] = dc.Clone()
+	}
+	o.Output = d.Output.Clone()
+	return o
+}
+
+func (d *MethodDesc) String() string {
+	var s strings.Builder
+	s.WriteByte(Method)
+	for _, in := range d.Inputs {
+		s.WriteString(in.String())
+	}
+	s.WriteByte(MethodEnd)
+	s.WriteString(d.Output.String())
+	return s.String()
+}

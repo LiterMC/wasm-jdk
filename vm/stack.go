@@ -4,9 +4,12 @@ import (
 	"math"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/jcls"
 )
 
 type Stack struct {
+	class     *jcls.Class
+	method    *jcls.Method
 	pc        *ir.ICNode
 	vars      []uint32
 	varRefs   []*Ref

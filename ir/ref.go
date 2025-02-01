@@ -2,43 +2,12 @@ package ir
 
 import (
 	"unsafe"
+
+	"github.com/LiterMC/wasm-jdk/desc"
 )
-
-type ArrayKind byte
-
-const (
-	KindNone ArrayKind = iota
-	KindRef
-	KindBoolean
-	KindByte
-	KindChar
-	KindShort
-	KindInt
-	KindLong
-	KindFloat
-	KindDouble
-)
-
-func (k ArrayKind) Size() uintptr {
-	switch k {
-	case KindRef:
-		return unsafe.Sizeof((Ref)(nil))
-	case KindBoolean, KindByte:
-		return unsafe.Sizeof((int8)(0))
-	case KindChar, KindShort:
-		return unsafe.Sizeof((int16)(0))
-	case KindInt, KindFloat:
-		return unsafe.Sizeof((int32)(0))
-	case KindLong, KindDouble:
-		return unsafe.Sizeof((int64)(0))
-	default:
-		panic("unknown kind")
-	}
-}
 
 type Ref interface {
-	IsArray() bool
-	ArrayKind() ArrayKind
+	Desc() *desc.Desc
 	Len() int32
 	Data() unsafe.Pointer
 	GetArrRef() []Ref

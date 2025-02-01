@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/LiterMC/wasm-jdk/desc"
 )
 
 const ClassMagic uint32 = 0xCAFEBABE
@@ -19,6 +21,8 @@ type Class struct {
 	Fields      []*Field
 	Methods     []*Method
 	Attrs       []Attribute
+
+	CachedDescs map[uint16]*desc.Desc
 }
 
 func ParseClass(r io.Reader) (*Class, error) {
@@ -119,6 +123,8 @@ func ParseClass(r io.Reader) (*Class, error) {
 			return nil, err
 		}
 	}
+
+	c.CachedDescs = make(map[uint16]*desc.Desc)
 	return c, nil
 }
 

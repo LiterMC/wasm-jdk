@@ -3,6 +3,8 @@ package jcls
 import (
 	"fmt"
 	"io"
+
+	"github.com/LiterMC/wasm-jdk/desc"
 )
 
 // https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html#jvms-4.4
@@ -239,6 +241,9 @@ func (c *ConstantNameAndType) String() string {
 
 type ConstantUtf8 struct {
 	Value string
+
+	desc *desc.Desc
+	methodDesc *desc.MethodDesc
 }
 
 func (*ConstantUtf8) Tag() ConstTag { return TagUtf8 }
@@ -256,6 +261,26 @@ func (c *ConstantUtf8) Parse(r io.Reader) error {
 	return nil
 }
 func (c *ConstantUtf8) Resolve(infos []ConstantInfo) {}
+
+func (c *ConstantUtf8) AsDesc() (*desc.Desc, error) {
+	if c.desc == nil {
+		var err error
+		if c.desc, err = desc.ParseDesc(c.Value); err != nil {
+			return nil, err
+		}
+	}
+	return c.desc, nil
+}
+
+func (c *ConstantUtf8) AsMethodDesc() (*desc.MethodDesc, error) {
+	if c.methodDesc == nil {
+		var err error
+		if c.methodDesc, err = desc.ParseMethodDesc(c.Value); err != nil {
+			return nil, err
+		}
+	}
+	return c.methodDesc, nil
+}
 
 type ConstantMethodHandle struct {
 	RefKind uint8

@@ -3,6 +3,7 @@ package ir
 import (
 	"fmt"
 
+	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -119,11 +120,8 @@ func (ir *ICanewarray) Execute(vm VM) error {
 	if count < 0 {
 		return errs.NegativeArraySizeException
 	}
-	class, err := vm.GetClassByIndex(ir.Class)
-	if err != nil {
-		return err
-	}
-	arr := vm.NewArrRef(class, count)
+	desc := vm.GetDesc(ir.Class)
+	arr := vm.NewArray(desc, count)
 	stack.PushRef(arr)
 	return nil
 }
@@ -383,17 +381,14 @@ func (ir *ICinvokevirtual) Execute(vm VM) error {
 }
 
 type ICmultianewarray struct {
-	Class      uint16
+	Desc       uint16
 	Dimensions byte
 }
 
 func (*ICmultianewarray) Op() ops.Op { return ops.Multianewarray }
 func (ir *ICmultianewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
-	class, err := vm.GetClassByIndex(ir.Class)
-	if err != nil {
-		return err
-	}
+	desc := vm.GetDesc(ir.Desc)
 	counts := make([]int32, ir.Dimensions)
 	for i := range ir.Dimensions {
 		count := stack.PopInt32()
@@ -402,22 +397,19 @@ func (ir *ICmultianewarray) Execute(vm VM) error {
 		}
 		counts[i] = count
 	}
-	arr := vm.NewArrRefMultiDim(class, counts)
+	arr := vm.NewArrayMultiDim(desc, counts)
 	stack.PushRef(arr)
 	return nil
 }
 
 type ICnew struct {
-	Class uint16
+	Desc uint16
 }
 
 func (*ICnew) Op() ops.Op { return ops.New }
 func (ir *ICnew) Execute(vm VM) error {
-	class, err := vm.GetClassByIndex(ir.Class)
-	if err != nil {
-		return err
-	}
-	ref := vm.New(class)
+	desc := vm.GetDesc(ir.Desc)
+	ref := vm.New(desc)
 	vm.GetStack().PushRef(ref)
 	return nil
 }
@@ -436,13 +428,13 @@ func (ir *ICnewarray) Execute(vm VM) error {
 	var arr Ref
 	switch ir.Atype {
 	case 4, 8: // T_BOOLEAN, T_BYTE
-		arr = vm.NewArrInt8(count)
+		arr = vm.NewArray(desc.DescInt8, count)
 	case 5, 9: // T_CHAR, T_SHORT
-		arr = vm.NewArrInt16(count)
+		arr = vm.NewArray(desc.DescInt16, count)
 	case 6, 10: // T_FLOAT, T_INT
-		arr = vm.NewArrInt32(count)
+		arr = vm.NewArray(desc.DescInt32, count)
 	case 7, 11: // T_DOUBLE, T_LONG
-		arr = vm.NewArrInt64(count)
+		arr = vm.NewArray(desc.DescInt64, count)
 	default:
 		panic(fmt.Errorf("ir.newarray: unknown atype %d", ir.Atype))
 	}

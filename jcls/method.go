@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/LiterMC/wasm-jdk/desc"
 )
 
 type Method struct {
 	AccessFlags AccessFlag
 	Name        string
-	Desc        string
+	Desc        *desc.MethodDesc
 	Attrs       []Attribute
 }
 
@@ -27,7 +29,9 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	m.Desc = consts[n-1].(*ConstantUtf8).Value
+	if m.Desc, err = consts[n-1].(*ConstantUtf8).AsMethodDesc(); err != nil {
+		return nil, err
+	}
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
@@ -44,7 +48,7 @@ func (m *Method) String() string {
 	var sb strings.Builder
 	sb.WriteString(m.AccessFlags.String())
 	sb.WriteString(m.Name)
-	sb.WriteString(m.Desc)
+	sb.WriteString(m.Desc.String())
 	fmt.Fprintf(&sb, " (%d attrs);", len(m.Attrs))
 	for _, a := range m.Attrs {
 		sb.WriteByte(' ')

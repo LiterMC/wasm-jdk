@@ -31,6 +31,8 @@ func TestParseDesc(t *testing.T) {
 			}
 		} else if err != nil {
 			t.Errorf("failed parse %q: %v", d.S, err)
+		} else if dc.String() != d.S {
+			t.Errorf("parsed desc %q not match %q", dc.String(), d.S)
 		}
 	}
 }
@@ -61,6 +63,8 @@ func TestParseMethodDesc(t *testing.T) {
 			}
 		} else if err != nil {
 			t.Errorf("failed parse %q: %v", d.S, err)
+		} else if dc.String() != d.S {
+			t.Errorf("parsed desc %q not match %q", dc.String(), d.S)
 		}
 	}
 }

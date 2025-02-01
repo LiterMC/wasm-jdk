@@ -480,7 +480,7 @@ func (*ParserICmultianewarray) Op() ops.Op { return ops.Multianewarray }
 func (*ParserICmultianewarray) Parse(br ByteReader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICmultianewarray)
-	if ic.Class, err = readUint16(br); err != nil {
+	if ic.Desc, err = readUint16(br); err != nil {
 		return nil, err
 	}
 	if ic.Dimensions, err = br.ReadByte(); err != nil {
@@ -498,7 +498,7 @@ func (*ParserICnew) Op() ops.Op { return ops.New }
 func (*ParserICnew) Parse(br ByteReader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICnew)
-	if ic.Class, err = readUint16(br); err != nil {
+	if ic.Desc, err = readUint16(br); err != nil {
 		return nil, err
 	}
 	return ic, nil
