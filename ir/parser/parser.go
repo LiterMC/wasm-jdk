@@ -28,3 +28,7 @@ func RegisterParser(p IRParser) {
 	}
 	parsers[op] = p
 }
+
+func GetIRParser(b ops.Op) IRParser {
+	return parsers[b]
+}

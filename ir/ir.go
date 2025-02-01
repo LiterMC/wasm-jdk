@@ -16,6 +16,13 @@ type IR interface {
 	Execute(vm VM) error
 }
 
+type IRNode struct {
+	IR
+	Offset int32
+	Next   *IRNode
+	Nexts  []*IRNode
+}
+
 type VM interface {
 	GetStack() Stack
 
@@ -36,9 +43,10 @@ type VM interface {
 	GetCurrentClass() Class
 	GetCurrentMethod() Method
 	Invoke(Method, Ref)
+	InvokeStatic(Method)
 	Return()
 	Throw(Ref)
-	Goto(int32)
+	Goto(*IRNode)
 
 	MonitorLock(Ref) error
 	MonitorUnlock(Ref) error
@@ -96,6 +104,9 @@ type Stack interface {
 	PushArrFloat32([]float32)
 	PushArrFloat64([]float64)
 	PushArrRef([]Ref)
+
+	// returns whether the top element is a reference or not
+	IsRef() bool
 }
 
 type Class interface {

@@ -300,7 +300,7 @@ func (ir *IRinvokedynamic) Execute(vm VM) error {
 		// TODO: Seems not correct here
 		return errs.BootstrapMethodError
 	}
-	vm.Invoke(method, nil)
+	vm.InvokeStatic(method)
 	return nil
 }
 
@@ -359,7 +359,7 @@ func (ir *IRinvokestatic) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.Invoke(method, nil)
+	vm.InvokeStatic(method)
 	return nil
 }
 
