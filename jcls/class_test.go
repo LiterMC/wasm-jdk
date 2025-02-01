@@ -18,5 +18,5 @@ func TestParseClass(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot ParseClass: %v", err)
 	}
-	t.Logf("class: %s", class)
+	t.Logf("class: %v", class)
 }

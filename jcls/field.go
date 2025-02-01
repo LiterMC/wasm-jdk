@@ -54,3 +54,12 @@ func (f *Field) String() string {
 	sb.WriteByte(';')
 	return sb.String()
 }
+
+func (f *Field) GetAttr(name string) Attribute {
+	for _, a := range f.Attrs {
+		if a.Name() == name {
+			return a
+		}
+	}
+	return nil
+}

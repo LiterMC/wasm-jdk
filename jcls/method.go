@@ -53,3 +53,12 @@ func (m *Method) String() string {
 	sb.WriteByte(';')
 	return sb.String()
 }
+
+func (m *Method) GetAttr(name string) Attribute {
+	for _, a := range m.Attrs {
+		if a.Name() == name {
+			return a
+		}
+	}
+	return nil
+}

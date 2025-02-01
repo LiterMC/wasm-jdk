@@ -100,6 +100,9 @@ func (c *ConstantClass) Parse(r io.Reader) error {
 func (c *ConstantClass) Resolve(infos []ConstantInfo) {
 	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
 }
+func (c *ConstantClass) String() string {
+	return "Class: " + c.Name
+}
 
 type ConstantRef struct {
 	ConstTag       ConstTag
@@ -127,21 +130,24 @@ func (c *ConstantRef) Resolve(infos []ConstantInfo) {
 }
 
 type ConstantString struct {
-	StringInd uint16
-	String    string
+	Utf8Ind uint16
+	Utf8    string
 }
 
 func (*ConstantString) Tag() ConstTag { return TagString }
 func (*ConstantString) IsWide() bool  { return false }
 func (c *ConstantString) Parse(r io.Reader) error {
 	var err error
-	if c.StringInd, err = readUint16(r); err != nil {
+	if c.Utf8Ind, err = readUint16(r); err != nil {
 		return err
 	}
 	return nil
 }
 func (c *ConstantString) Resolve(infos []ConstantInfo) {
-	c.String = infos[c.StringInd-1].(*ConstantUtf8).Value
+	c.Utf8 = infos[c.Utf8Ind-1].(*ConstantUtf8).Value
+}
+func (c *ConstantString) String() string {
+	return c.Utf8
 }
 
 type ConstantInteger struct {
@@ -226,6 +232,9 @@ func (c *ConstantNameAndType) Parse(r io.Reader) error {
 func (c *ConstantNameAndType) Resolve(infos []ConstantInfo) {
 	c.Name = infos[c.NameInd-1].(*ConstantUtf8).Value
 	c.Desc = infos[c.DescInd-1].(*ConstantUtf8).Value
+}
+func (c *ConstantNameAndType) String() string {
+	return c.Name + " " + c.Desc
 }
 
 type ConstantUtf8 struct {

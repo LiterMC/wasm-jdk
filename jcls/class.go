@@ -157,8 +157,18 @@ func (c *Class) String() string {
 	for _, a := range c.Attrs {
 		sb.WriteString("    ")
 		sb.WriteString(a.Name())
+		fmt.Fprintf(&sb, ": %v", a)
 		sb.WriteByte('\n')
 	}
 	sb.WriteByte('}')
 	return sb.String()
+}
+
+func (c *Class) GetAttr(name string) Attribute {
+	for _, a := range c.Attrs {
+		if a.Name() == name {
+			return a
+		}
+	}
+	return nil
 }

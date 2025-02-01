@@ -1,6 +1,7 @@
 package jcls
 
 import (
+	"bytes"
 	"io"
 )
 
@@ -8,12 +9,21 @@ type Attribute interface {
 	Name() string
 }
 
-type AttributeRaw struct {
-	AName string
-	Data  []byte
+type ParsableAttribute interface {
+	Attribute
+	Parse(r *bytes.Buffer, consts []ConstantInfo) error
 }
 
-func (a *AttributeRaw) Name() string { return a.AName }
+var attributeFactories = make(map[string]func() ParsableAttribute)
+
+func RegisterAttr(newer func() ParsableAttribute) {
+	attr := newer()
+	name := attr.Name()
+	if _, ok := attributeFactories[name]; ok {
+		panic("Attribute " + name + " is already registered")
+	}
+	attributeFactories[name] = newer
+}
 
 func ParseAttr(r io.Reader, consts []ConstantInfo) (Attribute, error) {
 	nameInd, err := readUint16(r)
@@ -29,11 +39,28 @@ func ParseAttr(r io.Reader, consts []ConstantInfo) (Attribute, error) {
 	if _, err = io.ReadFull(r, data); err != nil {
 		return nil, err
 	}
-	switch name {
-	// TODO:
+	var a ParsableAttribute
+	newer := attributeFactories[name]
+	if newer == nil {
+		a = &AttributeRaw{
+			AName: name,
+		}
+	} else {
+		a = newer()
 	}
-	return &AttributeRaw{
-		AName: name,
-		Data:  data,
-	}, nil
+	if err = a.Parse(bytes.NewBuffer(data), consts); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
+type AttributeRaw struct {
+	AName string
+	Data  []byte
+}
+
+func (a *AttributeRaw) Name() string { return a.AName }
+func (a *AttributeRaw) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	a.Data = r.Bytes()
+	return nil
 }

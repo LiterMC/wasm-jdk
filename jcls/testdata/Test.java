@@ -14,7 +14,9 @@ public class Test {
 	}
 
 	public static void main(String[] args) {
-		System.out.print("arg0: " + args[0] + "\n");
-		System.out.println("Test class");
+		if (args.length > 0) {
+			System.out.println("arg0: " + args[0]);
+		}
+		System.out.print("Test class " + args.length + "\n");
 	}
 }
