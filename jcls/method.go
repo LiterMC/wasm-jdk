@@ -1,7 +1,9 @@
 package jcls
 
 import (
+	"fmt"
 	"io"
+	"strings"
 )
 
 type Method struct {
@@ -36,4 +38,18 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 		}
 	}
 	return m, nil
+}
+
+func (m *Method) String() string {
+	var sb strings.Builder
+	sb.WriteString(m.AccessFlags.String())
+	sb.WriteString(m.Name)
+	sb.WriteString(m.Desc)
+	fmt.Fprintf(&sb, " (%d attrs);", len(m.Attrs))
+	for _, a := range m.Attrs {
+		sb.WriteByte(' ')
+		sb.WriteString(a.Name())
+	}
+	sb.WriteByte(';')
+	return sb.String()
 }

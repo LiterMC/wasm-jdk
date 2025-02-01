@@ -30,6 +30,8 @@ const (
 
 type ConstantInfo interface {
 	Tag() ConstTag
+	// If use two constant pool slots
+	IsWide() bool
 	Parse(io.Reader) error
 	Resolve([]ConstantInfo)
 }
@@ -86,7 +88,8 @@ type ConstantClass struct {
 	Name    string
 }
 
-func (c *ConstantClass) Tag() ConstTag { return TagClass }
+func (*ConstantClass) Tag() ConstTag { return TagClass }
+func (*ConstantClass) IsWide() bool  { return false }
 func (c *ConstantClass) Parse(r io.Reader) error {
 	var err error
 	if c.NameInd, err = readUint16(r); err != nil {
@@ -107,6 +110,7 @@ type ConstantRef struct {
 }
 
 func (c *ConstantRef) Tag() ConstTag { return c.ConstTag }
+func (*ConstantRef) IsWide() bool    { return false }
 func (c *ConstantRef) Parse(r io.Reader) error {
 	var err error
 	if c.ClassInd, err = readUint16(r); err != nil {
@@ -127,7 +131,8 @@ type ConstantString struct {
 	String    string
 }
 
-func (c *ConstantString) Tag() ConstTag { return TagString }
+func (*ConstantString) Tag() ConstTag { return TagString }
+func (*ConstantString) IsWide() bool  { return false }
 func (c *ConstantString) Parse(r io.Reader) error {
 	var err error
 	if c.StringInd, err = readUint16(r); err != nil {
@@ -143,7 +148,8 @@ type ConstantInteger struct {
 	Value uint32
 }
 
-func (c *ConstantInteger) Tag() ConstTag { return TagInteger }
+func (*ConstantInteger) Tag() ConstTag { return TagInteger }
+func (*ConstantInteger) IsWide() bool  { return false }
 func (c *ConstantInteger) Parse(r io.Reader) error {
 	var err error
 	if c.Value, err = readUint32(r); err != nil {
@@ -157,7 +163,8 @@ type ConstantFloat struct {
 	Value uint32
 }
 
-func (c *ConstantFloat) Tag() ConstTag { return TagFloat }
+func (*ConstantFloat) Tag() ConstTag { return TagFloat }
+func (*ConstantFloat) IsWide() bool  { return false }
 func (c *ConstantFloat) Parse(r io.Reader) error {
 	var err error
 	if c.Value, err = readUint32(r); err != nil {
@@ -171,7 +178,8 @@ type ConstantLong struct {
 	Value uint64
 }
 
-func (c *ConstantLong) Tag() ConstTag { return TagLong }
+func (*ConstantLong) Tag() ConstTag { return TagLong }
+func (*ConstantLong) IsWide() bool  { return true }
 func (c *ConstantLong) Parse(r io.Reader) error {
 	var err error
 	if c.Value, err = readUint64(r); err != nil {
@@ -185,7 +193,8 @@ type ConstantDouble struct {
 	Value uint64
 }
 
-func (c *ConstantDouble) Tag() ConstTag { return TagDouble }
+func (*ConstantDouble) Tag() ConstTag { return TagDouble }
+func (*ConstantDouble) IsWide() bool  { return true }
 func (c *ConstantDouble) Parse(r io.Reader) error {
 	var err error
 	if c.Value, err = readUint64(r); err != nil {
@@ -202,7 +211,8 @@ type ConstantNameAndType struct {
 	Desc    string
 }
 
-func (c *ConstantNameAndType) Tag() ConstTag { return TagNameAndType }
+func (*ConstantNameAndType) Tag() ConstTag { return TagNameAndType }
+func (*ConstantNameAndType) IsWide() bool  { return false }
 func (c *ConstantNameAndType) Parse(r io.Reader) error {
 	var err error
 	if c.NameInd, err = readUint16(r); err != nil {
@@ -222,7 +232,8 @@ type ConstantUtf8 struct {
 	Value string
 }
 
-func (c *ConstantUtf8) Tag() ConstTag { return TagUtf8 }
+func (*ConstantUtf8) Tag() ConstTag { return TagUtf8 }
+func (*ConstantUtf8) IsWide() bool  { return false }
 func (c *ConstantUtf8) Parse(r io.Reader) error {
 	size, err := readUint16(r)
 	if err != nil {
@@ -243,7 +254,8 @@ type ConstantMethodHandle struct {
 	Ref     *ConstantRef
 }
 
-func (c *ConstantMethodHandle) Tag() ConstTag { return TagMethodHandle }
+func (*ConstantMethodHandle) Tag() ConstTag { return TagMethodHandle }
+func (*ConstantMethodHandle) IsWide() bool  { return false }
 func (c *ConstantMethodHandle) Parse(r io.Reader) error {
 	var err error
 	if c.RefKind, err = readUint8(r); err != nil {
@@ -263,7 +275,8 @@ type ConstantMethodType struct {
 	Desc    string
 }
 
-func (c *ConstantMethodType) Tag() ConstTag { return TagMethodType }
+func (*ConstantMethodType) Tag() ConstTag { return TagMethodType }
+func (*ConstantMethodType) IsWide() bool  { return false }
 func (c *ConstantMethodType) Parse(r io.Reader) error {
 	var err error
 	if c.DescInd, err = readUint16(r); err != nil {
@@ -283,6 +296,7 @@ type ConstantDynamics struct {
 }
 
 func (c *ConstantDynamics) Tag() ConstTag { return c.ConstTag }
+func (*ConstantDynamics) IsWide() bool    { return false }
 func (c *ConstantDynamics) Parse(r io.Reader) error {
 	var err error
 	if c.BootstrapMethod, err = readUint16(r); err != nil {
@@ -302,7 +316,8 @@ type ConstantModule struct {
 	Name    string
 }
 
-func (c *ConstantModule) Tag() ConstTag { return TagModule }
+func (*ConstantModule) Tag() ConstTag { return TagModule }
+func (*ConstantModule) IsWide() bool  { return false }
 func (c *ConstantModule) Parse(r io.Reader) error {
 	var err error
 	if c.NameInd, err = readUint16(r); err != nil {
@@ -319,7 +334,8 @@ type ConstantPackage struct {
 	Name    string
 }
 
-func (c *ConstantPackage) Tag() ConstTag { return TagPackage }
+func (*ConstantPackage) Tag() ConstTag { return TagPackage }
+func (*ConstantPackage) IsWide() bool  { return false }
 func (c *ConstantPackage) Parse(r io.Reader) error {
 	var err error
 	if c.NameInd, err = readUint16(r); err != nil {

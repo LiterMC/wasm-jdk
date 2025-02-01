@@ -1,7 +1,9 @@
 package jcls
 
 import (
+	"fmt"
 	"io"
+	"strings"
 )
 
 type Field struct {
@@ -36,4 +38,19 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 		}
 	}
 	return f, nil
+}
+
+func (f *Field) String() string {
+	var sb strings.Builder
+	sb.WriteString(f.AccessFlags.String())
+	sb.WriteString(f.Desc)
+	sb.WriteByte(' ')
+	sb.WriteString(f.Name)
+	fmt.Fprintf(&sb, " (%d attrs);", len(f.Attrs))
+	for _, a := range f.Attrs {
+		sb.WriteByte(' ')
+		sb.WriteString(a.Name())
+	}
+	sb.WriteByte(';')
+	return sb.String()
 }

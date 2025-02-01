@@ -1,5 +1,9 @@
 package jcls
 
+import (
+	"strings"
+)
+
 // Source: https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-4.html#jvms-4.5-200-A.1
 type AccessFlag uint16
 
@@ -26,4 +30,36 @@ const (
 
 func (a AccessFlag) Has(f AccessFlag) bool {
 	return a&f != 0
+}
+
+func (a AccessFlag) String() string {
+	var sb strings.Builder
+	if a.Has(AccPublic) {
+		sb.WriteString("public ")
+	}
+	if a.Has(AccPrivate) {
+		sb.WriteString("private ")
+	}
+	if a.Has(AccProtected) {
+		sb.WriteString("protected ")
+	}
+	if a.Has(AccStatic) {
+		sb.WriteString("static ")
+	}
+	if a.Has(AccFinal) {
+		sb.WriteString("final ")
+	}
+	if a.Has(AccVolatile) {
+		sb.WriteString("volatile ")
+	}
+	if a.Has(AccTransient) {
+		sb.WriteString("transient ")
+	}
+	if a.Has(AccSynthetic) {
+		sb.WriteString("synthetic ")
+	}
+	if a.Has(AccEnum) {
+		sb.WriteString("enum ")
+	}
+	return sb.String()
 }
