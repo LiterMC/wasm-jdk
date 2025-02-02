@@ -11,7 +11,7 @@ import (
 type Method struct {
 	AccessFlags AccessFlag
 	name        string
-	Desc        *desc.MethodDesc
+	desc        *desc.MethodDesc
 	Attrs       []Attribute
 	Code        *AttrCode
 }
@@ -30,7 +30,7 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	if m.Desc, err = consts[n-1].(*ConstantUtf8).AsMethodDesc(); err != nil {
+	if m.desc, err = consts[n-1].(*ConstantUtf8).AsMethodDesc(); err != nil {
 		return nil, err
 	}
 	if n, err = readUint16(r); err != nil {
@@ -54,6 +54,10 @@ func (m *Method) Name() string {
 	return m.name
 }
 
+func (m *Method) Desc() *desc.MethodDesc {
+	return m.desc
+}
+
 func (m *Method) IsStatic() bool {
 	return m.AccessFlags.Has(AccStatic)
 }
@@ -62,7 +66,7 @@ func (m *Method) String() string {
 	var sb strings.Builder
 	sb.WriteString(m.AccessFlags.String())
 	sb.WriteString(m.name)
-	sb.WriteString(m.Desc.String())
+	sb.WriteString(m.desc.String())
 	fmt.Fprintf(&sb, " (%d attrs);", len(m.Attrs))
 	for _, a := range m.Attrs {
 		sb.WriteByte(' ')

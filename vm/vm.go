@@ -7,8 +7,9 @@ import (
 )
 
 type VM struct {
-	stack  *Stack
-	nextPc *ir.ICNode
+	stack      *Stack
+	nextPc     *ir.ICNode
+	nextNative NativeMethodCallback
 
 	loader ClassLoader
 
@@ -52,9 +53,20 @@ func NewVM(opts *Options) *VM {
 	return vm
 }
 
+func (vm *VM) Running() bool {
+	return vm.stack != nil
+}
+
 func (vm *VM) Step() error {
 	vm.nextPc = vm.stack.pc.Next
-	err := vm.stack.pc.IC.Execute(vm)
+	var err error
+	if vm.nextNative != nil {
+		nn := vm.nextNative
+		vm.nextNative = nil
+		err = nn(vm)
+	} else {
+		err = vm.stack.pc.IC.Execute(vm)
+	}
 	vm.stack.pc = vm.nextPc
 	return err
 }
@@ -121,64 +133,72 @@ func (vm *VM) GetCurrentMethod() ir.Method {
 	return vm.stack.method
 }
 
-func (vm *VM) Invoke(m ir.Method, this ir.Ref) {
-	switch m := m.(type) {
-	case *Method:
+func (vm *VM) Invoke(me ir.Method, this ir.Ref) {
+	m := me.(*Method)
+	if m.AccessFlags.Has(jcls.AccNative) {
+		if m.native == nil {
+			panic("native method is not loaded")
+		}
+		vm.nextNative = m.native
+	} else {
 		vm.nextPc = m.Code.Code
-		prev := vm.stack
-		vm.stack = &Stack{
-			prev:   prev,
-			class:  m.class,
-			method: m,
-		}
-		for i := range len(m.Desc.Inputs) {
-			j := (uint16)(len(m.Desc.Inputs) - i)
-			d := m.Desc.Inputs[j-1]
-			switch d.Type() {
-			case desc.Void:
-			case desc.Class, desc.Array:
-				vm.stack.SetVarRef(j, prev.PopRef())
-			case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-				vm.stack.SetVar(j, prev.Pop())
-			case desc.Long, desc.Double:
-				vm.stack.SetVar64(j, prev.Pop64())
-			default:
-				panic("vm: unknown MethodDesc.Input.Type")
-			}
-		}
-		vm.stack.SetVarRef(0, this)
-	default:
-		panic("vm: unknown method type")
 	}
+	prev := vm.stack
+	vm.stack = &Stack{
+		prev:   prev,
+		class:  m.class,
+		method: m,
+	}
+	inputs := m.Desc().Inputs
+	for i := range len(inputs) {
+		j := (uint16)(len(inputs) - i)
+		d := inputs[j-1]
+		switch d.Type() {
+		case desc.Void:
+		case desc.Class, desc.Array:
+			vm.stack.SetVarRef(j, prev.PopRef())
+		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
+			vm.stack.SetVar(j, prev.Pop())
+		case desc.Long, desc.Double:
+			vm.stack.SetVar64(j, prev.Pop64())
+		default:
+			panic("vm: unknown MethodDesc.Input.Type")
+		}
+	}
+	vm.stack.SetVarRef(0, this)
 }
 
-func (vm *VM) InvokeStatic(m ir.Method) {
-	switch m := m.(type) {
-	case *Method:
+func (vm *VM) InvokeStatic(me ir.Method) {
+	m := me.(*Method)
+	if m.AccessFlags.Has(jcls.AccNative) {
+		if m.native == nil {
+			panic("native method is not loaded")
+		}
+		vm.nextNative = m.native
+	} else {
 		vm.nextPc = m.Code.Code
-		prev := vm.stack
-		vm.stack = &Stack{
-			prev:   prev,
-			class:  m.class,
-			method: m,
+	}
+	prev := vm.stack
+	vm.stack = &Stack{
+		prev:   prev,
+		class:  m.class,
+		method: m,
+	}
+	inputs := m.Desc().Inputs
+	for i := range len(inputs) {
+		j := (uint16)(len(inputs) - i - 1)
+		d := inputs[j-1]
+		switch d.Type() {
+		case desc.Void:
+		case desc.Class, desc.Array:
+			vm.stack.SetVarRef(j, prev.PopRef())
+		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
+			vm.stack.SetVar(j, prev.Pop())
+		case desc.Long, desc.Double:
+			vm.stack.SetVar64(j, prev.Pop64())
+		default:
+			panic("vm: unknown MethodDesc.Input.Type")
 		}
-		for i := range len(m.Desc.Inputs) {
-			j := (uint16)(len(m.Desc.Inputs) - i - 1)
-			d := m.Desc.Inputs[j]
-			switch d.Type() {
-			case desc.Void:
-			case desc.Class, desc.Array:
-				vm.stack.SetVarRef(j, prev.PopRef())
-			case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-				vm.stack.SetVar(j, prev.Pop())
-			case desc.Long, desc.Double:
-				vm.stack.SetVar64(j, prev.Pop64())
-			default:
-				panic("vm: unknown MethodDesc.Input.Type")
-			}
-		}
-	default:
-		panic("vm: unknown method type")
 	}
 }
 
@@ -187,7 +207,7 @@ func (vm *VM) Return() {
 	vm.stack = vm.stack.prev
 	if vm.stack != nil {
 		vm.nextPc = vm.stack.pc.Next
-		switch returned.method.Desc.Output.Type() {
+		switch returned.method.Desc().Output.Type() {
 		case desc.Void:
 		case desc.Class, desc.Array:
 			vm.stack.PushRef(returned.PopRef())

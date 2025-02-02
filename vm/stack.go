@@ -9,7 +9,7 @@ import (
 type Stack struct {
 	prev      *Stack
 	class     *Class
-	method    *Method
+	method    ir.Method
 	pc        *ir.ICNode
 	vars      []uint32
 	varRefs   []*Ref

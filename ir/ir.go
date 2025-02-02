@@ -131,6 +131,7 @@ type Field interface {
 
 type Method interface {
 	Name() string
+	Desc() *desc.MethodDesc
 
 	GetDeclaringClass() Class
 	IsStatic() bool
