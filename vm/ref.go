@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"math/rand"
 	"reflect"
 	"sync"
 	"unsafe"
@@ -18,6 +19,8 @@ type Ref struct {
 	desc  *desc.Desc
 	class ir.Class
 
+	identity int32
+
 	arrayLen int32
 	data     unsafe.Pointer
 }
@@ -28,9 +31,11 @@ func newObjectRef(cls ir.Class) *Ref {
 	class := cls.(*Class)
 	data := reflect.New(class.refType).UnsafePointer()
 	return &Ref{
-		lock: sync.Cond{L: new(sync.Mutex)},
-		desc: cls.Desc(),
-		data: data,
+		lock:     sync.Cond{L: new(sync.Mutex)},
+		desc:     cls.Desc(),
+		class:    class,
+		identity: (int32)(rand.Int63n(32)),
+		data:     data,
 	}
 }
 
@@ -38,6 +43,8 @@ func newRefArray(desc *desc.Desc, length int32) *Ref {
 	r := &Ref{
 		lock:     sync.Cond{L: new(sync.Mutex)},
 		desc:     desc,
+		class:    nil, // TODO: class?
+		identity: (int32)(rand.Int63n(32)),
 		arrayLen: length,
 	}
 	et := desc.ElemType()
@@ -71,6 +78,10 @@ func (r *Ref) Desc() *desc.Desc {
 
 func (r *Ref) Class() ir.Class {
 	return r.class
+}
+
+func (r *Ref) Hash() int32 {
+	return r.identity
 }
 
 func (r *Ref) Len() int32 {

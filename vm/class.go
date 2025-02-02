@@ -17,11 +17,11 @@ type Class struct {
 
 	super      ir.Class
 	interfaces []ir.Class
-	refType reflect.Type
+	refType    reflect.Type
 
 	initFMOnce sync.Once
-	Fields  []Field
-	Methods []Method
+	Fields     []Field
+	Methods    []Method
 
 	loadedFieldAccesors map[uint16]func() *Field
 	loadedMethods       map[uint16]func() *Method
