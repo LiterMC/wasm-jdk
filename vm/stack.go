@@ -4,12 +4,12 @@ import (
 	"math"
 
 	"github.com/LiterMC/wasm-jdk/ir"
-	"github.com/LiterMC/wasm-jdk/jcls"
 )
 
 type Stack struct {
-	class     *jcls.Class
-	method    *jcls.Method
+	prev      *Stack
+	class     *Class
+	method    *Method
 	pc        *ir.ICNode
 	vars      []uint32
 	varRefs   []*Ref
@@ -19,62 +19,76 @@ type Stack struct {
 
 var _ ir.Stack = (*Stack)(nil)
 
+func (s *Stack) GetVar(i uint16) uint32 {
+	return s.vars[i]
+}
+
+func (s *Stack) GetVar64(i uint16) uint64 {
+	return ((uint64)(s.vars[i]) << 32) | (uint64)(s.vars[i+1])
+}
+
 func (s *Stack) GetVarInt8(i uint16) int8 {
-	return (int8)(s.vars[i])
+	return (int8)(s.GetVar(i))
 }
 
 func (s *Stack) GetVarInt16(i uint16) int16 {
-	return (int16)(s.vars[i])
+	return (int16)(s.GetVar(i))
 }
 
 func (s *Stack) GetVarInt32(i uint16) int32 {
-	return (int32)(s.vars[i])
+	return (int32)(s.GetVar(i))
 }
 
 func (s *Stack) GetVarInt64(i uint16) int64 {
-	return ((int64)(s.vars[i]) << 32) | (int64)(s.vars[i+1])
+	return (int64)(s.GetVar64(i))
 }
 
 func (s *Stack) GetVarFloat32(i uint16) float32 {
-	return math.Float32frombits((uint32)(s.GetVarInt32(i)))
+	return math.Float32frombits(s.GetVar(i))
 }
 
 func (s *Stack) GetVarFloat64(i uint16) float64 {
-	return math.Float64frombits((uint64)(s.GetVarInt64(i)))
+	return math.Float64frombits(s.GetVar64(i))
 }
 
 func (s *Stack) GetVarRef(i uint16) ir.Ref {
 	return s.varRefs[i]
 }
 
-func (s *Stack) SetVarInt8(i uint16, v int8) {
-	s.vars[i] = (uint32)(v)
+func (s *Stack) SetVar(i uint16, v uint32) {
+	s.vars[i] = v
 	s.varRefs[i] = nil
 }
 
-func (s *Stack) SetVarInt16(i uint16, v int16) {
-	s.vars[i] = (uint32)(v)
-	s.varRefs[i] = nil
-}
-
-func (s *Stack) SetVarInt32(i uint16, v int32) {
-	s.vars[i] = (uint32)(v)
-	s.varRefs[i] = nil
-}
-
-func (s *Stack) SetVarInt64(i uint16, v int64) {
+func (s *Stack) SetVar64(i uint16, v uint64) {
 	s.vars[i] = (uint32)(v >> 32)
 	s.vars[i+1] = (uint32)(v)
 	s.varRefs[i] = nil
 	s.varRefs[i+1] = nil
 }
 
+func (s *Stack) SetVarInt8(i uint16, v int8) {
+	s.SetVarInt32(i, (int32)(v))
+}
+
+func (s *Stack) SetVarInt16(i uint16, v int16) {
+	s.SetVarInt32(i, (int32)(v))
+}
+
+func (s *Stack) SetVarInt32(i uint16, v int32) {
+	s.SetVar(i, (uint32)(v))
+}
+
+func (s *Stack) SetVarInt64(i uint16, v int64) {
+	s.SetVar64(i, (uint64)(v))
+}
+
 func (s *Stack) SetVarFloat32(i uint16, v float32) {
-	s.SetVarInt32(i, (int32)(math.Float32bits(v)))
+	s.SetVar(i, math.Float32bits(v))
 }
 
 func (s *Stack) SetVarFloat64(i uint16, v float64) {
-	s.SetVarInt64(i, (int64)(math.Float64bits(v)))
+	s.SetVar64(i, math.Float64bits(v))
 }
 
 func (s *Stack) SetVarRef(i uint16, v ir.Ref) {

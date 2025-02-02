@@ -161,9 +161,9 @@ type ICdload struct {
 }
 
 func (*ICdload) Op() ops.Op { return ops.Dload }
-func (ir *ICdload) Execute(vm VM) error {
+func (ic *ICdload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt64((uint16)(ir.Index))
+	val := stack.GetVarInt64((uint16)(ic.Index))
 	stack.PushInt64(val)
 	return nil
 }
@@ -245,10 +245,10 @@ type ICdstore struct {
 }
 
 func (*ICdstore) Op() ops.Op { return ops.Dstore }
-func (ir *ICdstore) Execute(vm VM) error {
+func (ic *ICdstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
-	stack.SetVarInt64((uint16)(ir.Index), val)
+	stack.SetVarInt64((uint16)(ic.Index), val)
 	return nil
 }
 

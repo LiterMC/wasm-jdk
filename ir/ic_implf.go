@@ -169,9 +169,9 @@ type ICfload struct {
 }
 
 func (*ICfload) Op() ops.Op { return ops.Fload }
-func (ir *ICfload) Execute(vm VM) error {
+func (ic *ICfload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32((uint16)(ir.Index))
+	val := stack.GetVarInt32((uint16)(ic.Index))
 	stack.PushInt32(val)
 	return nil
 }
@@ -253,10 +253,10 @@ type ICfstore struct {
 }
 
 func (*ICfstore) Op() ops.Op { return ops.Fstore }
-func (ir *ICfstore) Execute(vm VM) error {
+func (ic *ICfstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
-	stack.SetVarInt32((uint16)(ir.Index), val)
+	stack.SetVarInt32((uint16)(ic.Index), val)
 	return nil
 }
 

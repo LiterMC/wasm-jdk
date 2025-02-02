@@ -2,6 +2,7 @@ package desc
 
 import (
 	"errors"
+	"reflect"
 	"strings"
 	"unsafe"
 )
@@ -26,6 +27,14 @@ const (
 	MethodEnd byte = ')'
 )
 
+var (
+	typePointer = reflect.TypeOf((unsafe.Pointer)(nil))
+	typeInt8    = reflect.TypeOf((int8)(0))
+	typeInt16   = reflect.TypeOf((int16)(0))
+	typeInt32   = reflect.TypeOf((int32)(0))
+	typeInt64   = reflect.TypeOf((int64)(0))
+)
+
 func (t Type) IsRef() bool {
 	return t == Class || t == Array
 }
@@ -45,7 +54,24 @@ func (t Type) Size() uintptr {
 	case Long, Double:
 		return 8
 	default:
-		panic("unknown kind")
+		panic("unknown desc.Type")
+	}
+}
+
+func (t Type) AsReflect() reflect.Type {
+	switch t {
+	case Class, Array:
+		return typePointer
+	case Boolean, Byte:
+		return typeInt8
+	case Char, Short:
+		return typeInt16
+	case Int, Float:
+		return typeInt32
+	case Long, Double:
+		return typeInt64
+	default:
+		panic("unexpected desc.Type")
 	}
 }
 
@@ -144,6 +170,14 @@ func (d *Desc) Elem() *Desc {
 	return o
 }
 
+func (d *Desc) AsReflect() reflect.Type {
+	return d.Type().AsReflect()
+}
+
+func (d *Desc) Eq(o *Desc) bool {
+	return d.ArrDim == o.ArrDim && d.EndType == o.EndType && d.Class == o.Class
+}
+
 func (d *Desc) String() string {
 	var s strings.Builder
 	for range d.ArrDim {
@@ -201,6 +235,18 @@ func (d *MethodDesc) Clone() *MethodDesc {
 	return o
 }
 
+func (d *MethodDesc) EqInputs(o *MethodDesc) bool {
+	if len(d.Inputs) != len(o.Inputs) {
+		return false
+	}
+	for i, in := range d.Inputs {
+		if !in.Eq(o.Inputs[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 func (d *MethodDesc) String() string {
 	var s strings.Builder
 	s.WriteByte(Method)
@@ -210,4 +256,13 @@ func (d *MethodDesc) String() string {
 	s.WriteByte(MethodEnd)
 	s.WriteString(d.Output.String())
 	return s.String()
+}
+
+func (d *MethodDesc) AsReflect() reflect.Type {
+	inputs := make([]reflect.Type, len(d.Inputs))
+	output := d.Output.AsReflect()
+	for i, in := range d.Inputs {
+		inputs[i] = in.AsReflect()
+	}
+	return reflect.FuncOf(inputs, []reflect.Type{output}, false)
 }

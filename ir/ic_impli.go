@@ -195,10 +195,10 @@ type ICiinc struct {
 }
 
 func (*ICiinc) Op() ops.Op { return ops.Iinc }
-func (ir *ICiinc) Execute(vm VM) error {
+func (ic *ICiinc) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32(ir.Index)
-	stack.SetVarInt32(ir.Index, val+(int32)(ir.Const))
+	val := stack.GetVarInt32(ic.Index)
+	stack.SetVarInt32(ic.Index, val+(int32)(ic.Const))
 	return nil
 }
 
@@ -207,9 +207,9 @@ type ICiload struct {
 }
 
 func (*ICiload) Op() ops.Op { return ops.Iload }
-func (ir *ICiload) Execute(vm VM) error {
+func (ic *ICiload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt32((uint16)(ir.Index))
+	val := stack.GetVarInt32((uint16)(ic.Index))
 	stack.PushInt32(val)
 	return nil
 }
@@ -324,10 +324,10 @@ type ICistore struct {
 }
 
 func (*ICistore) Op() ops.Op { return ops.Istore }
-func (ir *ICistore) Execute(vm VM) error {
+func (ic *ICistore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt32()
-	stack.SetVarInt32((uint16)(ir.Index), val)
+	stack.SetVarInt32((uint16)(ic.Index), val)
 	return nil
 }
 
@@ -409,8 +409,8 @@ type ICldc struct {
 }
 
 func (*ICldc) Op() ops.Op { return ops.Ldc }
-func (ir *ICldc) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst((uint16)(ir.Index), vm.GetStack())
+func (ic *ICldc) Execute(vm VM) error {
+	return vm.GetCurrentClass().GetAndPushConst((uint16)(ic.Index), vm.GetStack())
 }
 
 type ICldc_w struct {
@@ -418,6 +418,6 @@ type ICldc_w struct {
 }
 
 func (*ICldc_w) Op() ops.Op { return ops.Ldc_w }
-func (ir *ICldc_w) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
+func (ic *ICldc_w) Execute(vm VM) error {
+	return vm.GetCurrentClass().GetAndPushConst(ic.Index, vm.GetStack())
 }

@@ -80,7 +80,7 @@ type ICsipush struct {
 }
 
 func (*ICsipush) Op() ops.Op { return ops.Sipush }
-func (ir *ICsipush) Execute(vm VM) error {
-	vm.GetStack().PushInt16(ir.Value)
+func (ic *ICsipush) Execute(vm VM) error {
+	vm.GetStack().PushInt16(ic.Value)
 	return nil
 }

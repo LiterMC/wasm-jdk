@@ -1,28 +1,42 @@
 package vm
 
 import (
+	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
 )
 
 type Ref struct {
-	desc     *desc.Desc
+	lock      sync.Cond
+	locked    ir.VM
+	lockCount int32
+
+	desc  *desc.Desc
+	class ir.Class
+
 	arrayLen int32
 	data     unsafe.Pointer
 }
 
 var _ ir.Ref = (*Ref)(nil)
 
-func newObjectRef(desc *desc.Desc) *Ref {
+func newObjectRef(cls ir.Class) *Ref {
+	class := cls.(*Class)
+	data := reflect.New(class.refType).UnsafePointer()
 	return &Ref{
-		desc: desc,
+		lock: sync.Cond{L: new(sync.Mutex)},
+		desc: cls.Desc(),
+		data: data,
 	}
 }
 
 func newRefArray(desc *desc.Desc, length int32) *Ref {
 	r := &Ref{
+		lock:     sync.Cond{L: new(sync.Mutex)},
 		desc:     desc,
 		arrayLen: length,
 	}
@@ -53,6 +67,10 @@ func newMultiDimArray(desc *desc.Desc, lengths []int32) *Ref {
 
 func (r *Ref) Desc() *desc.Desc {
 	return r.desc
+}
+
+func (r *Ref) Class() ir.Class {
+	return r.class
 }
 
 func (r *Ref) Len() int32 {
@@ -96,4 +114,24 @@ func (r *Ref) GetArrInt64() []int64 {
 		panic("Underlying array is not int64")
 	}
 	return unsafe.Slice((*int64)(r.data), r.arrayLen)
+}
+
+func (r *Ref) Lock(vm ir.VM) int {
+	if r.locked != vm {
+		r.lock.L.Lock()
+	}
+	r.lockCount++
+	return (int)(r.lockCount)
+}
+
+func (r *Ref) Unlock(vm ir.VM) (int, error) {
+	if r.locked != vm {
+		return 0, errs.IllegalMonitorStateException
+	}
+	r.lockCount--
+	c := (int)(r.lockCount)
+	if c == 0 {
+		r.lock.L.Unlock()
+	}
+	return c, nil
 }

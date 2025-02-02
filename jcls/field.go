@@ -10,7 +10,7 @@ import (
 
 type Field struct {
 	AccessFlags AccessFlag
-	Name        string
+	name        string
 	Desc        *desc.Desc
 	Attrs       []Attribute
 }
@@ -25,7 +25,7 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	f.Name = consts[n-1].(*ConstantUtf8).Value
+	f.name = consts[n-1].(*ConstantUtf8).Value
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
@@ -44,12 +44,20 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 	return f, nil
 }
 
+func (f *Field) Name() string {
+	return f.name
+}
+
+func (f *Field) IsStatic() bool {
+	return f.AccessFlags.Has(AccStatic)
+}
+
 func (f *Field) String() string {
 	var sb strings.Builder
 	sb.WriteString(f.AccessFlags.String())
 	sb.WriteString(f.Desc.String())
 	sb.WriteByte(' ')
-	sb.WriteString(f.Name)
+	sb.WriteString(f.name)
 	fmt.Fprintf(&sb, " (%d attrs);", len(f.Attrs))
 	for _, a := range f.Attrs {
 		sb.WriteByte(' ')

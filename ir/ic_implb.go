@@ -45,7 +45,7 @@ type ICbipush struct {
 }
 
 func (*ICbipush) Op() ops.Op { return ops.Bipush }
-func (ir *ICbipush) Execute(vm VM) error {
-	vm.GetStack().PushInt8(ir.Value)
+func (ic *ICbipush) Execute(vm VM) error {
+	vm.GetStack().PushInt8(ic.Value)
 	return nil
 }

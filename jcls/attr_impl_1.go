@@ -37,7 +37,7 @@ type ExceptionHandlers struct {
 	Start   uint16
 	End     uint16
 	Handler uint16
-	Type    *ConstantClass
+	Class   string
 }
 
 func (*AttrCode) Name() string { return "Code" }
@@ -79,7 +79,7 @@ func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 		if n, err = readUint16(r); err != nil {
 			return err
 		}
-		e.Type = consts[n-1].(*ConstantClass)
+		e.Class = consts[n-1].(*ConstantClass).Name
 		a.Exceptions[i] = e
 	}
 
@@ -96,6 +96,99 @@ func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 }
 func (a *AttrCode) String() string {
 	return fmt.Sprintf("%#v", a.Code)
+}
+
+type AttrExceptions struct {
+	Exceptions []string
+}
+
+func (*AttrExceptions) Name() string { return "Exceptions" }
+func (a *AttrExceptions) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	n, err := readUint16(r)
+	if err != nil {
+		return err
+	}
+	a.Exceptions = make([]string, n)
+	for i := range n {
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		a.Exceptions[i] = consts[n-1].(*ConstantClass).Name
+	}
+	return nil
+}
+func (a *AttrExceptions) String() string {
+	return fmt.Sprint(a.Exceptions)
+}
+
+type AttrInnerClasses struct {
+	Classes []*InnerClassRecord
+}
+
+type InnerClassRecord struct {
+	Class      *ConstantClass
+	OuterClass *ConstantClass
+	Name       string
+	Access     AccessFlag
+}
+
+func (*AttrInnerClasses) Name() string { return "InnerClasses" }
+func (a *AttrInnerClasses) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	n, err := readUint16(r)
+	if err != nil {
+		return err
+	}
+	a.Classes = make([]*InnerClassRecord, n)
+	for i := range n {
+		c := new(InnerClassRecord)
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		c.Class = consts[n-1].(*ConstantClass)
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		c.OuterClass = consts[n-1].(*ConstantClass)
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		if n != 0 {
+			c.Name = consts[n-1].(*ConstantUtf8).Value
+		}
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		c.Access = (AccessFlag)(n)
+		a.Classes[i] = c
+	}
+	return nil
+}
+func (a *AttrInnerClasses) String() string {
+	return fmt.Sprintf("%#v", a.Classes)
+}
+
+type AttrEnclosingMethod struct {
+	Class  *ConstantClass
+	Method *ConstantNameAndType
+}
+
+func (*AttrEnclosingMethod) Name() string { return "EnclosingMethod" }
+func (a *AttrEnclosingMethod) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	n, err := readUint16(r)
+	if err != nil {
+		return err
+	}
+	a.Class = consts[n-1].(*ConstantClass)
+	if n, err = readUint16(r); err != nil {
+		return err
+	}
+	if n != 0 {
+		a.Method = consts[n-1].(*ConstantNameAndType)
+	}
+	return nil
+}
+func (a *AttrEnclosingMethod) String() string {
+	return a.Class.Name + "." + a.Method.String()
 }
 
 type AttrSourceFile struct {

@@ -130,8 +130,8 @@ type ICldc2_w struct {
 }
 
 func (*ICldc2_w) Op() ops.Op { return ops.Ldc2_w }
-func (ir *ICldc2_w) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst(ir.Index, vm.GetStack())
+func (ic *ICldc2_w) Execute(vm VM) error {
+	return vm.GetCurrentClass().GetAndPushConst(ic.Index, vm.GetStack())
 }
 
 type ICldiv struct{}
@@ -150,9 +150,9 @@ type IClload struct {
 }
 
 func (*IClload) Op() ops.Op { return ops.Lload }
-func (ir *IClload) Execute(vm VM) error {
+func (ic *IClload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	val := stack.GetVarInt64((uint16)(ir.Index))
+	val := stack.GetVarInt64((uint16)(ic.Index))
 	stack.PushInt64(val)
 	return nil
 }
@@ -267,10 +267,10 @@ type IClstore struct {
 }
 
 func (*IClstore) Op() ops.Op { return ops.Lstore }
-func (ir *IClstore) Execute(vm VM) error {
+func (ic *IClstore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	val := stack.PopInt64()
-	stack.SetVarInt64((uint16)(ir.Index), val)
+	stack.SetVarInt64((uint16)(ic.Index), val)
 	return nil
 }
 

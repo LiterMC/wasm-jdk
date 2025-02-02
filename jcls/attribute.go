@@ -61,6 +61,8 @@ type AttributeRaw struct {
 
 func (a *AttributeRaw) Name() string { return a.AName }
 func (a *AttributeRaw) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
-	a.Data = r.Bytes()
+	if r.Len() > 0 {
+		a.Data = r.Bytes()
+	}
 	return nil
 }

@@ -16,4 +16,7 @@ type Ref interface {
 	GetArrInt16() []int16
 	GetArrInt32() []int32
 	GetArrInt64() []int64
+
+	Lock(vm VM) int
+	Unlock(vm VM) (int, error)
 }

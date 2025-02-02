@@ -10,19 +10,20 @@ import (
 
 const ClassMagic uint32 = 0xCAFEBABE
 
+// jcls.Class represents a parsed class
 type Class struct {
-	Minor       uint16
-	Major       uint16
-	ConstPool   []ConstantInfo
-	AccessFlags AccessFlag
-	This        *ConstantClass
-	Super       *ConstantClass
-	Interfaces  []*ConstantClass
-	Fields      []*Field
-	Methods     []*Method
-	Attrs       []Attribute
+	Minor         uint16
+	Major         uint16
+	ConstPool     []ConstantInfo
+	AccessFlags   AccessFlag
+	ThisSym       *ConstantClass
+	SuperSym      *ConstantClass
+	InterfacesSym []*ConstantClass
+	Fields        []*Field
+	Methods       []*Method
+	Attrs         []Attribute
 
-	CachedDescs map[uint16]*desc.Desc
+	thisDesc *desc.Desc
 }
 
 func ParseClass(r io.Reader) (*Class, error) {
@@ -74,24 +75,24 @@ func ParseClass(r io.Reader) (*Class, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	c.This = c.ConstPool[n-1].(*ConstantClass)
+	c.ThisSym = c.ConstPool[n-1].(*ConstantClass)
 
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
 	if n != 0 {
-		c.Super = c.ConstPool[n-1].(*ConstantClass)
+		c.SuperSym = c.ConstPool[n-1].(*ConstantClass)
 	}
 
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	c.Interfaces = make([]*ConstantClass, n)
+	c.InterfacesSym = make([]*ConstantClass, n)
 	for i := range n {
 		if n, err = readUint16(r); err != nil {
 			return nil, err
 		}
-		c.Interfaces[i] = c.ConstPool[n-1].(*ConstantClass)
+		c.InterfacesSym[i] = c.ConstPool[n-1].(*ConstantClass)
 	}
 
 	if n, err = readUint16(r); err != nil {
@@ -124,7 +125,10 @@ func ParseClass(r io.Reader) (*Class, error) {
 		}
 	}
 
-	c.CachedDescs = make(map[uint16]*desc.Desc)
+	c.thisDesc = &desc.Desc{
+		EndType: desc.Class,
+		Class:   c.ThisSym.Name,
+	}
 	return c, nil
 }
 
@@ -132,14 +136,14 @@ func (c *Class) String() string {
 	var sb strings.Builder
 	sb.WriteString("Class ")
 	sb.WriteString(c.AccessFlags.String())
-	sb.WriteString(c.This.Name)
-	if c.Super != nil {
+	sb.WriteString(c.ThisSym.Name)
+	if c.SuperSym != nil {
 		sb.WriteString(" extends ")
-		sb.WriteString(c.Super.Name)
+		sb.WriteString(c.SuperSym.Name)
 	}
-	if len(c.Interfaces) > 0 {
+	if len(c.InterfacesSym) > 0 {
 		sb.WriteString(" implements ")
-		for i, it := range c.Interfaces {
+		for i, it := range c.InterfacesSym {
 			if i != 0 {
 				sb.WriteString(", ")
 			}
@@ -168,6 +172,18 @@ func (c *Class) String() string {
 	}
 	sb.WriteByte('}')
 	return sb.String()
+}
+
+func (c *Class) Name() string {
+	return c.ThisSym.Name
+}
+
+func (c *Class) Desc() *desc.Desc {
+	return c.thisDesc
+}
+
+func (c *Class) IsInterface() bool {
+	return c.AccessFlags.Has(AccInterface)
 }
 
 func (c *Class) GetAttr(name string) Attribute {

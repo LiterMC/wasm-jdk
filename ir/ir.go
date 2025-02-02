@@ -1,6 +1,8 @@
 package ir
 
 import (
+	"reflect"
+
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -20,14 +22,14 @@ type ICJumpable interface {
 
 type ICNode struct {
 	IC
-	Offset int32
 	Next   *ICNode
+	Offset int32
 }
 
 type VM interface {
 	GetStack() Stack
 
-	New(*desc.Desc) Ref
+	New(Class) Ref
 	NewArray(*desc.Desc, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
 
@@ -36,7 +38,6 @@ type VM interface {
 	GetDesc(uint16) *desc.Desc
 	GetClassByIndex(uint16) (Class, error)
 	GetClass(Ref) Class
-	GetArrClass([]Ref) Class
 
 	GetCurrentClass() Class
 	GetCurrentMethod() Method
@@ -51,6 +52,8 @@ type VM interface {
 }
 
 type Stack interface {
+	GetVar(uint16) uint32
+	GetVar64(uint16) uint64
 	GetVarInt8(uint16) int8
 	GetVarInt16(uint16) int16
 	GetVarInt32(uint16) int32
@@ -58,6 +61,8 @@ type Stack interface {
 	GetVarFloat32(uint16) float32
 	GetVarFloat64(uint16) float64
 	GetVarRef(uint16) Ref
+	SetVar(uint16, uint32)
+	SetVar64(uint16, uint64)
 	SetVarInt8(uint16, int8)
 	SetVarInt16(uint16, int16)
 	SetVarInt32(uint16, int32)
@@ -101,7 +106,11 @@ type Stack interface {
 type Class interface {
 	Name() string
 	Desc() *desc.Desc
+	Reflect() reflect.Type
 
+	Super() Class
+	Interfaces() []Class
+	IsInterface() bool
 	IsAssignableFrom(Class) bool
 	IsInstance(Ref) bool
 
@@ -112,22 +121,17 @@ type Class interface {
 
 type Field interface {
 	Name() string
-	Type() Class
 
 	GetDeclaringClass() Class
 	IsStatic() bool
-	Modifiers() int
 
 	GetAndPush(Ref, Stack)
 	PopAndSet(Ref, Stack)
 }
 
 type Method interface {
+	Name() string
+
 	GetDeclaringClass() Class
 	IsStatic() bool
-	Modifiers() int
-
-	Name() string
-	ParameterTypes() []Class
-	ReturnType() Class
 }

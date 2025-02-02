@@ -498,7 +498,7 @@ func (*ParserICnew) Op() ops.Op { return ops.New }
 func (*ParserICnew) Parse(br ByteReader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICnew)
-	if ic.Desc, err = readUint16(br); err != nil {
+	if ic.Class, err = readUint16(br); err != nil {
 		return nil, err
 	}
 	return ic, nil

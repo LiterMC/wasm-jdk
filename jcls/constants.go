@@ -242,7 +242,7 @@ func (c *ConstantNameAndType) String() string {
 type ConstantUtf8 struct {
 	Value string
 
-	desc *desc.Desc
+	desc       *desc.Desc
 	methodDesc *desc.MethodDesc
 }
 
