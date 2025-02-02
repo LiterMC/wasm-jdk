@@ -13,13 +13,13 @@ import (
 // vm.Class represents a loaded class
 type Class struct {
 	*jcls.Class
-	vm     *VM
 	loader ClassLoader
 
 	super      ir.Class
 	interfaces []ir.Class
-
 	refType reflect.Type
+
+	initFMOnce sync.Once
 	Fields  []Field
 	Methods []Method
 
@@ -29,10 +29,9 @@ type Class struct {
 
 var _ ir.Class = (*Class)(nil)
 
-func loadClass(cls *jcls.Class, vm *VM, loader ClassLoader) *Class {
+func LoadClass(cls *jcls.Class, loader ClassLoader) *Class {
 	c := &Class{
 		Class:  cls,
-		vm:     vm,
 		loader: loader,
 	}
 	var err error
@@ -59,6 +58,10 @@ func loadClass(cls *jcls.Class, vm *VM, loader ClassLoader) *Class {
 	}
 	c.refType = reflect.StructOf(fields)
 	return c
+}
+
+func (c *Class) InitBeforeUse() {
+	c.initFMOnce.Do(c.initFM)
 }
 
 func (c *Class) initFM() {
