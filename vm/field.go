@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
@@ -29,15 +30,15 @@ func (f *Field) GetAndPush(r ir.Ref, s ir.Stack) {
 	ptr := unsafe.Add(r.Data(), f.offset)
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
-		s.PushRef(*(**Ref)(ptr))
+		s.PushRef((*Ref)(atomic.LoadPointer((*unsafe.Pointer)(ptr))))
 	case desc.Boolean, desc.Byte:
-		s.PushInt8(*(*int8)(ptr))
+		s.PushInt8((int8)(atomic.LoadInt32((*int32)(ptr))))
 	case desc.Char, desc.Short:
-		s.PushInt16(*(*int16)(ptr))
+		s.PushInt16((int16)(atomic.LoadInt32((*int32)(ptr))))
 	case desc.Int, desc.Float:
-		s.PushInt32(*(*int32)(ptr))
+		s.PushInt32(atomic.LoadInt32((*int32)(ptr)))
 	case desc.Long, desc.Double:
-		s.PushInt64(*(*int64)(ptr))
+		s.PushInt64(atomic.LoadInt64((*int64)(ptr)))
 	default:
 		panic("unreachable")
 	}
@@ -47,15 +48,15 @@ func (f *Field) PopAndSet(r ir.Ref, s ir.Stack) {
 	ptr := unsafe.Add(r.Data(), f.offset)
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
-		*(**Ref)(ptr) = s.PopRef().(*Ref)
+		atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(s.PopRef().(*Ref)))
 	case desc.Boolean, desc.Byte:
-		*(*int8)(ptr) = s.PopInt8()
+		atomic.StoreInt32((*int32)(ptr), (int32)(s.PopInt8()))
 	case desc.Char, desc.Short:
-		*(*int16)(ptr) = s.PopInt16()
+		atomic.StoreInt32((*int32)(ptr), (int32)(s.PopInt16()))
 	case desc.Int, desc.Float:
-		*(*int32)(ptr) = s.PopInt32()
+		atomic.StoreInt32((*int32)(ptr), s.PopInt32())
 	case desc.Long, desc.Double:
-		*(*int64)(ptr) = s.PopInt64()
+		atomic.StoreInt64((*int64)(ptr), s.PopInt64())
 	default:
 		panic("unreachable")
 	}

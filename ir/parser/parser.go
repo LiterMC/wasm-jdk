@@ -10,14 +10,9 @@ import (
 	"github.com/LiterMC/wasm-jdk/ops"
 )
 
-type ByteReader interface {
-	io.ByteReader
-	io.Reader
-}
-
 type ICParser interface {
 	Op() ops.Op
-	Parse(br ByteReader) (ir.IC, error)
+	Parse(br *bytes.Reader) (ir.IC, error)
 }
 
 var parsers = make(map[ops.Op]ICParser)
@@ -66,7 +61,7 @@ func ParseCode(buf []byte) (*ir.ICNode, error) {
 		}
 		parser := GetICParser((ops.Op)(b))
 		if parser == nil {
-			return nil, fmt.Errorf("parser: unknown opcode 0x%02x", b)
+			return nil, fmt.Errorf("parser: unknown opcode 0x%02x at 0x%04x", b, node.Offset)
 		}
 
 		if node.IC, err = parser.Parse(r); err != nil {

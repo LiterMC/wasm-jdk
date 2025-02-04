@@ -3,7 +3,9 @@ package vm
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
+	"sync/atomic"
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -13,7 +15,8 @@ import (
 // vm.Class represents a loaded class
 type Class struct {
 	*jcls.Class
-	loader ClassLoader
+	loader ir.ClassLoader
+	initVM atomic.Pointer[VM]
 
 	super      ir.Class
 	interfaces []ir.Class
@@ -22,6 +25,7 @@ type Class struct {
 	initFMOnce sync.Once
 	Fields     []Field
 	Methods    []Method
+	staticInit *Method
 
 	loadedFieldAccesors map[uint16]func() *Field
 	loadedMethods       map[uint16]func() *Method
@@ -29,14 +33,16 @@ type Class struct {
 
 var _ ir.Class = (*Class)(nil)
 
-func LoadClass(cls *jcls.Class, loader ClassLoader) *Class {
+func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 	c := &Class{
 		Class:  cls,
 		loader: loader,
 	}
 	var err error
-	if c.super, err = c.loader.LoadClass(c.SuperSym.Name); err != nil {
-		panic(err)
+	if c.SuperSym != nil {
+		if c.super, err = c.loader.LoadClass(c.SuperSym.Name); err != nil {
+			panic(err)
+		}
 	}
 	c.interfaces = make([]ir.Class, len(c.InterfacesSym))
 	for i, in := range c.InterfacesSym {
@@ -46,48 +52,89 @@ func LoadClass(cls *jcls.Class, loader ClassLoader) *Class {
 	}
 
 	fields := make([]reflect.StructField, len(c.Class.Fields)+1)
-	fields[0] = reflect.StructField{
-		Name: "S",
-		Type: c.super.Reflect(),
+	if c.super == nil {
+		fields[0] = reflect.StructField{
+			Name: "S",
+			Type: reflect.TypeOf(struct{}{}),
+		}
+	} else {
+		fields[0] = reflect.StructField{
+			Name: "S",
+			Type: c.super.Reflect(),
+		}
 	}
 	for i, f := range c.Class.Fields {
 		fields[i+1] = reflect.StructField{
-			Name: "F" + f.Name(),
+			Name: "F" + j2goName(f.Name()),
 			Type: f.Desc.AsReflect(),
 		}
 	}
 	c.refType = reflect.StructOf(fields)
-	return c
-}
-
-func (c *Class) InitBeforeUse() {
-	c.initFMOnce.Do(c.initFM)
-}
-
-func (c *Class) initFM() {
-	var err error
 	c.Fields = make([]Field, len(c.Class.Fields))
 	for i, f := range c.Class.Fields {
 		cf := &c.Fields[i]
 		cf.Field = f
 		cf.class = c
 		cf.offset = c.refType.Field(i + 1).Offset
+	}
+
+	c.Methods = make([]Method, len(c.Class.Methods))
+	for i, m := range c.Class.Methods {
+		cm := &c.Methods[i]
+		cm.Method = m
+		cm.class = c
+		if cm.Name() == "<clinit>" {
+			c.staticInit = cm
+		}
+	}
+	return c
+}
+
+func (c *Class) InitBeforeUse(vm *VM) {
+	if c.initVM.Load() == vm {
+		return
+	}
+	c.initVM.CompareAndSwap(nil, vm)
+	c.initFMOnce.Do(c.initFM)
+}
+
+func (c *Class) initFM() {
+	fmt.Println("initing", c.Name())
+	var err error
+	for i, f := range c.Class.Fields {
+		cf := &c.Fields[i]
 		if f.Desc.EndType == desc.Class {
 			if cf.typ, err = c.loader.LoadClass(f.Desc.Class); err != nil {
 				panic(err)
 			}
 		}
 	}
-	c.Methods = make([]Method, len(c.Class.Methods))
-	for i, m := range c.Class.Methods {
-		cf := &c.Methods[i]
-		cf.Method = m
-		cf.class = c
-	}
 
 	c.loadedFieldAccesors = make(map[uint16]func() *Field)
 	c.loadedMethods = make(map[uint16]func() *Method)
 	c.scanCodes()
+
+	if c.staticInit != nil {
+		if !c.staticInit.IsStatic() {
+			panic("class initalize method is not static")
+		}
+		vm := NewVM(&Options{
+			Loader: c.loader,
+		})
+		vm.creator = c.initVM.Load()
+		vm.stack = &Stack{
+			class:  c,
+			method: c.staticInit,
+		}
+		vm.stack.pc = c.staticInit.Code.Code
+		println("vm created")
+		for vm.Running() {
+			println("steping")
+			if err := vm.Step(); err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func (c *Class) Reflect() reflect.Type {
@@ -165,12 +212,22 @@ func (c *Class) GetMethod(i uint16) ir.Method {
 	return c.loadedMethods[i]()
 }
 
-func (c *Class) GetMethodByName(name string, desc *desc.MethodDesc) ir.Method {
-	for i := range len(c.Methods) {
-		m := &c.Methods[i]
-		if !m.AccessFlags.Has(jcls.AccPrivate) && m.Name() == name && m.Desc().EqInputs(desc) {
-			if !m.Desc().Output.Eq(desc.Output) {
-				panic("Methods have same inputs but different output")
+func (c *Class) GetMethodByName(location string) ir.Method {
+	i := strings.IndexByte(location, desc.Method)
+	if i < 0 {
+		panic("method name missing descriptor")
+	}
+	name := location[:i]
+	dc, err := desc.ParseMethodDesc(location[i:])
+	if err != nil {
+		panic(err)
+	}
+	x := c
+	for i := range len(x.Methods) {
+		m := &x.Methods[i]
+		if m.Name() == name && m.Desc().EqInputs(dc) {
+			if !m.Desc().Output.Eq(dc.Output) {
+				panic("Methods " + location + " have same inputs but different output")
 			}
 			return m
 		}
@@ -180,11 +237,18 @@ func (c *Class) GetMethodByName(name string, desc *desc.MethodDesc) ir.Method {
 
 func (c *Class) scanCodes() {
 	for _, m := range c.Class.Methods {
+		if m.AccessFlags.Has(jcls.AccNative | jcls.AccAbstract) {
+			continue
+		}
 		for node := m.Code.Code; node != nil; node = node.Next {
 			switch ic := node.IC.(type) {
 			case *ir.ICgetfield:
 				c.loadFieldGetter(ic.Field, false)
 			case *ir.ICgetstatic:
+				c.loadFieldGetter(ic.Field, true)
+			case *ir.ICputfield:
+				c.loadFieldGetter(ic.Field, false)
+			case *ir.ICputstatic:
 				c.loadFieldGetter(ic.Field, true)
 			case *ir.ICinvokedynamic:
 				c.loadMethodDynamicGetter(ic.Method)
@@ -230,6 +294,7 @@ func (c *Class) loadField(ref *jcls.ConstantRef, canLoadClass bool) *Field {
 			panic(err)
 		}
 		x = k.(*Class)
+		x.InitBeforeUse(c.initVM.Load())
 	} else {
 		return nil
 	}
@@ -260,6 +325,7 @@ func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
 		panic(err)
 	}
 	x := k.(*Class)
+	x.InitBeforeUse(c.initVM.Load())
 	for i, m := range x.Class.Methods {
 		if (x == c || !m.AccessFlags.Has(jcls.AccPrivate)) && m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
 			return &x.Methods[i]
@@ -280,4 +346,8 @@ func (c *Class) loadMethodDynamicGetter(ind uint16) {
 
 func (c *Class) loadMethodDynamic(ref *jcls.ConstantDynamics) *Method {
 	panic(fmt.Errorf("TODO: Trying to invoke dynamic %#v %#v", ref, ref.NameAndType))
+}
+
+func j2goName(name string) string {
+	return strings.ReplaceAll(name, "$", "__")
 }

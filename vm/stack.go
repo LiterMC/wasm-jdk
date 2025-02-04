@@ -56,11 +56,19 @@ func (s *Stack) GetVarRef(i uint16) ir.Ref {
 }
 
 func (s *Stack) SetVar(i uint16, v uint32) {
+	if n := (int)(i) - len(s.vars) + 1; n > 0 {
+		s.vars = append(s.vars, make([]uint32, n)...)
+		s.varRefs = append(s.varRefs, make([]*Ref, n)...)
+	}
 	s.vars[i] = v
 	s.varRefs[i] = nil
 }
 
 func (s *Stack) SetVar64(i uint16, v uint64) {
+	if n := (int)(i) - len(s.vars) + 2; n > 0 {
+		s.vars = append(s.vars, make([]uint32, n)...)
+		s.varRefs = append(s.varRefs, make([]*Ref, n)...)
+	}
 	s.vars[i] = (uint32)(v >> 32)
 	s.vars[i+1] = (uint32)(v)
 	s.varRefs[i] = nil
@@ -92,6 +100,7 @@ func (s *Stack) SetVarFloat64(i uint16, v float64) {
 }
 
 func (s *Stack) SetVarRef(i uint16, v ir.Ref) {
+	s.SetVar(i, 0)
 	s.varRefs[i] = v.(*Ref)
 }
 

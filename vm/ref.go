@@ -93,7 +93,7 @@ func (r *Ref) Data() unsafe.Pointer {
 }
 
 func (r *Ref) GetArrRef() []ir.Ref {
-	if r.desc.ElemType().IsRef() {
+	if !r.desc.ElemType().IsRef() {
 		panic("Underlying array is not reference")
 	}
 	return unsafe.Slice((*ir.Ref)(r.data), r.arrayLen)

@@ -11,24 +11,15 @@ type VM struct {
 	nextPc     *ir.ICNode
 	nextNative NativeMethodCallback
 
-	loader ClassLoader
+	loader ir.ClassLoader
+	creator *VM
 
 	javaLangObject    ir.Class
 	javaLangThrowable ir.Class
+	javaLangString    ir.Class
 }
 
 var _ ir.VM = (*VM)(nil)
-
-var mainMethodDesc = &desc.MethodDesc{
-	Inputs: []*desc.Desc{
-		&desc.Desc{
-			ArrDim:  1,
-			EndType: desc.Class,
-			Class:   "java/lang/String",
-		},
-	},
-	Output: &desc.Desc{EndType: desc.Void},
-}
 
 func NewVM(opts *Options) *VM {
 	vm := new(VM)
@@ -40,15 +31,22 @@ func NewVM(opts *Options) *VM {
 	if vm.javaLangThrowable, err = vm.loader.LoadClass("java/lang/Throwable"); err != nil {
 		panic(err)
 	}
-	var entryClass0 ir.Class
-	if entryClass0, err = vm.loader.LoadClass(opts.EntryClass); err != nil {
+	if vm.javaLangString, err = vm.loader.LoadClass("java/lang/String"); err != nil {
 		panic(err)
 	}
-	entryClass := entryClass0.(*Class)
-	entryMethod := entryClass.GetMethodByName(opts.EntryMethod, mainMethodDesc).(*Method)
-	vm.stack = &Stack{
-		class:  entryClass,
-		method: entryMethod,
+	if opts.EntryClass != "" {
+		var entryClass0 ir.Class
+		if entryClass0, err = vm.loader.LoadClass(opts.EntryClass); err != nil {
+			panic(err)
+		}
+		entryClass := entryClass0.(*Class)
+		entryClass.InitBeforeUse(vm)
+		entryMethod := entryClass.GetMethodByName(opts.EntryMethod).(*Method)
+		vm.stack = &Stack{
+			class:  entryClass,
+			method: entryMethod,
+			pc:     entryMethod.Code.Code,
+		}
 	}
 	return vm
 }
@@ -76,7 +74,15 @@ func (vm *VM) GetStack() ir.Stack {
 }
 
 func (vm *VM) New(cls ir.Class) ir.Ref {
+	class := cls.(*Class)
+	class.InitBeforeUse(vm)
 	ref := newObjectRef(cls)
+	return ref
+}
+
+func (vm *VM) NewString(str string) ir.Ref {
+	ref := newObjectRef(vm.javaLangString)
+	// TODO: assign string
 	return ref
 }
 
@@ -94,6 +100,10 @@ func (vm *VM) GetObjectClass() ir.Class {
 
 func (vm *VM) GetThrowableClass() ir.Class {
 	return vm.javaLangThrowable
+}
+
+func (vm *VM) GetStringClass() ir.Class {
+	return vm.javaLangString
 }
 
 func (vm *VM) getConstant(i uint16) jcls.ConstantInfo {
@@ -125,6 +135,10 @@ func (vm *VM) GetClass(r ir.Ref) ir.Class {
 	return r.(*Ref).class
 }
 
+func (vm *VM) GetClassLoader() ir.ClassLoader {
+	return vm.stack.class.loader
+}
+
 func (vm *VM) GetCurrentClass() ir.Class {
 	return vm.stack.class
 }
@@ -133,11 +147,22 @@ func (vm *VM) GetCurrentMethod() ir.Method {
 	return vm.stack.method
 }
 
-func (vm *VM) Invoke(me ir.Method, this ir.Ref) {
-	m := me.(*Method)
+func (vm *VM) LoadNativeMethod(method ir.Method, native NativeMethodCallback) {
+	m := method.(*Method)
+	if !m.AccessFlags.Has(jcls.AccNative) {
+		panic("method " + m.Location() + " is not native")
+	}
+	if m.native != nil {
+		panic("method " + m.Location() + " is already loaded")
+	}
+	m.native = native
+}
+
+func (vm *VM) Invoke(method ir.Method, this ir.Ref) {
+	m := method.(*Method)
 	if m.AccessFlags.Has(jcls.AccNative) {
 		if m.native == nil {
-			panic("native method is not loaded")
+			panic("native method " + m.Location() + " is not loaded")
 		}
 		vm.nextNative = m.native
 	} else {
@@ -172,7 +197,7 @@ func (vm *VM) InvokeStatic(me ir.Method) {
 	m := me.(*Method)
 	if m.AccessFlags.Has(jcls.AccNative) {
 		if m.native == nil {
-			panic("native method is not loaded")
+			panic("native method " + m.Location() + " is not loaded")
 		}
 		vm.nextNative = m.native
 	} else {

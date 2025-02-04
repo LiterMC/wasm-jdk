@@ -14,7 +14,7 @@ type BasicFSClassLoader struct {
 	loaded sync.Map
 }
 
-func NewBasicFSClassLoader(fs fs.FS) vm.ClassLoader {
+func NewBasicFSClassLoader(fs fs.FS) ir.ClassLoader {
 	return &BasicFSClassLoader{
 		fs: fs,
 	}
@@ -31,11 +31,11 @@ func (l *BasicFSClassLoader) LoadClass(name string) (ir.Class, error) {
 	if err != nil {
 		return nil, err
 	}
-	class.InitBeforeUse()
 	return class, nil
 }
 
-func loadClassFromFS(l vm.ClassLoader, fs fs.FS, name string) (*vm.Class, error) {
+func loadClassFromFS(l ir.ClassLoader, fs fs.FS, name string) (*vm.Class, error) {
+	println("loading ", name)
 	fd, err := fs.Open(name + ".class")
 	if err != nil {
 		return nil, err

@@ -39,8 +39,10 @@ type VM interface {
 	GetClassByIndex(uint16) (Class, error)
 	GetClass(Ref) Class
 
+	GetClassLoader() ClassLoader
 	GetCurrentClass() Class
 	GetCurrentMethod() Method
+	LoadNativeMethod(Method, func(VM) error)
 	Invoke(Method, Ref)
 	InvokeStatic(Method)
 	Return()
@@ -103,6 +105,10 @@ type Stack interface {
 	IsRef() bool
 }
 
+type ClassLoader interface {
+	LoadClass(name string) (Class, error)
+}
+
 type Class interface {
 	Name() string
 	Desc() *desc.Desc
@@ -117,6 +123,7 @@ type Class interface {
 	GetAndPushConst(uint16, Stack) error
 	GetField(uint16) Field
 	GetMethod(uint16) Method
+	GetMethodByName(string) Method
 }
 
 type Field interface {

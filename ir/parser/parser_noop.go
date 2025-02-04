@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"bytes"
+
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -15,11 +17,11 @@ func (p *noOperandParser) Op() ops.Op {
 	return p.Singleton.Op()
 }
 
-func (p *noOperandParser) Parse(br ByteReader) (ir.IC, error) {
+func (p *noOperandParser) Parse(br *bytes.Reader) (ir.IC, error) {
 	return p.Singleton, nil
 }
 
-var noOpParsers = []noOperandParser{
+var noOperandParsers = []noOperandParser{
 	noOperandParser{Singleton: (*ir.ICareturn)(nil)},
 	noOperandParser{Singleton: (*ir.ICdreturn)(nil)},
 	noOperandParser{Singleton: (*ir.ICdup)(nil)},
@@ -170,7 +172,7 @@ var noOpParsers = []noOperandParser{
 }
 
 func init() {
-	for i, _ := range noOpParsers {
-		RegisterParser(&noOpParsers[i])
+	for i, _ := range noOperandParsers {
+		RegisterParser(&noOperandParsers[i])
 	}
 }

@@ -79,7 +79,11 @@ func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 		if n, err = readUint16(r); err != nil {
 			return err
 		}
-		e.Class = consts[n-1].(*ConstantClass).Name
+		if n == 0 {
+			e.Class = "java/lang/Throwable"
+		} else {
+			e.Class = consts[n-1].(*ConstantClass).Name
+		}
 		a.Exceptions[i] = e
 	}
 

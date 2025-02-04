@@ -18,3 +18,7 @@ var _ ir.Method = (*Method)(nil)
 func (m *Method) GetDeclaringClass() ir.Class {
 	return m.class
 }
+
+func (m *Method) Location() string {
+	return m.class.Name() + "." + m.Name() + m.Desc().String()
+}

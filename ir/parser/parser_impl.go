@@ -1,7 +1,9 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"slices"
 
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -11,7 +13,7 @@ import (
 type ParserICgoto struct{}
 
 func (*ParserICgoto) Op() ops.Op { return ops.Goto }
-func (*ParserICgoto) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICgoto) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICgoto)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -23,7 +25,7 @@ func (*ParserICgoto) Parse(br ByteReader) (ir.IC, error) {
 type ParserICgoto_w struct{}
 
 func (*ParserICgoto_w) Op() ops.Op { return ops.Goto_w }
-func (*ParserICgoto_w) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICgoto_w) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICgoto_w)
 	if ic.Offset, err = readInt32(br); err != nil {
@@ -35,7 +37,7 @@ func (*ParserICgoto_w) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_acmpeq struct{}
 
 func (*ParserICif_acmpeq) Op() ops.Op { return ops.If_acmpeq }
-func (*ParserICif_acmpeq) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_acmpeq) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_acmpeq)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -47,7 +49,7 @@ func (*ParserICif_acmpeq) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_acmpne struct{}
 
 func (*ParserICif_acmpne) Op() ops.Op { return ops.If_acmpne }
-func (*ParserICif_acmpne) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_acmpne) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_acmpne)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -59,7 +61,7 @@ func (*ParserICif_acmpne) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmpeq struct{}
 
 func (*ParserICif_icmpeq) Op() ops.Op { return ops.If_icmpeq }
-func (*ParserICif_icmpeq) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmpeq) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmpeq)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -71,7 +73,7 @@ func (*ParserICif_icmpeq) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmpge struct{}
 
 func (*ParserICif_icmpge) Op() ops.Op { return ops.If_icmpge }
-func (*ParserICif_icmpge) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmpge) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmpge)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -83,7 +85,7 @@ func (*ParserICif_icmpge) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmpgt struct{}
 
 func (*ParserICif_icmpgt) Op() ops.Op { return ops.If_icmpgt }
-func (*ParserICif_icmpgt) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmpgt) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmpgt)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -95,7 +97,7 @@ func (*ParserICif_icmpgt) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmple struct{}
 
 func (*ParserICif_icmple) Op() ops.Op { return ops.If_icmple }
-func (*ParserICif_icmple) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmple) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmple)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -107,7 +109,7 @@ func (*ParserICif_icmple) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmplt struct{}
 
 func (*ParserICif_icmplt) Op() ops.Op { return ops.If_icmplt }
-func (*ParserICif_icmplt) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmplt) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmplt)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -119,7 +121,7 @@ func (*ParserICif_icmplt) Parse(br ByteReader) (ir.IC, error) {
 type ParserICif_icmpne struct{}
 
 func (*ParserICif_icmpne) Op() ops.Op { return ops.If_icmpne }
-func (*ParserICif_icmpne) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICif_icmpne) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICif_icmpne)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -131,7 +133,7 @@ func (*ParserICif_icmpne) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifeq struct{}
 
 func (*ParserICifeq) Op() ops.Op { return ops.Ifeq }
-func (*ParserICifeq) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifeq) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifeq)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -143,7 +145,7 @@ func (*ParserICifeq) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifge struct{}
 
 func (*ParserICifge) Op() ops.Op { return ops.Ifge }
-func (*ParserICifge) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifge) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifge)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -155,7 +157,7 @@ func (*ParserICifge) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifgt struct{}
 
 func (*ParserICifgt) Op() ops.Op { return ops.Ifgt }
-func (*ParserICifgt) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifgt) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifgt)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -167,7 +169,7 @@ func (*ParserICifgt) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifle struct{}
 
 func (*ParserICifle) Op() ops.Op { return ops.Ifle }
-func (*ParserICifle) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifle) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifle)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -179,7 +181,7 @@ func (*ParserICifle) Parse(br ByteReader) (ir.IC, error) {
 type ParserICiflt struct{}
 
 func (*ParserICiflt) Op() ops.Op { return ops.Iflt }
-func (*ParserICiflt) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICiflt) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICiflt)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -191,7 +193,7 @@ func (*ParserICiflt) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifne struct{}
 
 func (*ParserICifne) Op() ops.Op { return ops.Ifne }
-func (*ParserICifne) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifne) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifne)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -203,7 +205,7 @@ func (*ParserICifne) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifnonnull struct{}
 
 func (*ParserICifnonnull) Op() ops.Op { return ops.Ifnonnull }
-func (*ParserICifnonnull) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifnonnull) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifnonnull)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -215,7 +217,7 @@ func (*ParserICifnonnull) Parse(br ByteReader) (ir.IC, error) {
 type ParserICifnull struct{}
 
 func (*ParserICifnull) Op() ops.Op { return ops.Ifnull }
-func (*ParserICifnull) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICifnull) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICifnull)
 	if ic.Offset, err = readInt16(br); err != nil {
@@ -227,8 +229,12 @@ func (*ParserICifnull) Parse(br ByteReader) (ir.IC, error) {
 type ParserIClookupswitch struct{}
 
 func (*ParserIClookupswitch) Op() ops.Op { return ops.Lookupswitch }
-func (*ParserIClookupswitch) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserIClookupswitch) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
+	offset, _ := br.Seek(0, io.SeekCurrent)
+	if _, err = br.Seek((4-offset&0x3)&0x3, io.SeekCurrent); err != nil {
+		return nil, err
+	}
 	ic := new(ir.IClookupswitch)
 	if ic.DefaultOffset, err = readInt32(br); err != nil {
 		return nil, err
@@ -255,8 +261,12 @@ func (*ParserIClookupswitch) Parse(br ByteReader) (ir.IC, error) {
 type ParserICtableswitch struct{}
 
 func (*ParserICtableswitch) Op() ops.Op { return ops.Tableswitch }
-func (*ParserICtableswitch) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICtableswitch) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
+	offset, _ := br.Seek(0, io.SeekCurrent)
+	if _, err = br.Seek((4-offset&0x3)&0x3, io.SeekCurrent); err != nil {
+		return nil, err
+	}
 	ic := new(ir.ICtableswitch)
 	if ic.DefaultOffset, err = readInt32(br); err != nil {
 		return nil, err
@@ -280,7 +290,7 @@ func (*ParserICtableswitch) Parse(br ByteReader) (ir.IC, error) {
 type ParserICwide struct{}
 
 func (*ParserICwide) Op() ops.Op { return ops.Wide }
-func (*ParserICwide) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICwide) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICwide)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -308,7 +318,7 @@ func (*ParserICwide) Parse(br ByteReader) (ir.IC, error) {
 type ParserICaload struct{}
 
 func (*ParserICaload) Op() ops.Op { return ops.Aload }
-func (*ParserICaload) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICaload) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICaload)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -321,7 +331,7 @@ func (*ParserICaload) Parse(br ByteReader) (ir.IC, error) {
 type ParserICanewarray struct{}
 
 func (*ParserICanewarray) Op() ops.Op { return ops.Anewarray }
-func (*ParserICanewarray) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICanewarray) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICanewarray)
 	if ic.Class, err = readUint16(br); err != nil {
@@ -333,7 +343,7 @@ func (*ParserICanewarray) Parse(br ByteReader) (ir.IC, error) {
 type ParserICastore struct{}
 
 func (*ParserICastore) Op() ops.Op { return ops.Astore }
-func (*ParserICastore) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICastore) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICastore)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -346,7 +356,7 @@ func (*ParserICastore) Parse(br ByteReader) (ir.IC, error) {
 type ParserICcheckcast struct{}
 
 func (*ParserICcheckcast) Op() ops.Op { return ops.Checkcast }
-func (*ParserICcheckcast) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICcheckcast) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICcheckcast)
 	if ic.Class, err = readUint16(br); err != nil {
@@ -358,7 +368,7 @@ func (*ParserICcheckcast) Parse(br ByteReader) (ir.IC, error) {
 type ParserICgetfield struct{}
 
 func (*ParserICgetfield) Op() ops.Op { return ops.Getfield }
-func (*ParserICgetfield) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICgetfield) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICgetfield)
 	if ic.Field, err = readUint16(br); err != nil {
@@ -370,7 +380,7 @@ func (*ParserICgetfield) Parse(br ByteReader) (ir.IC, error) {
 type ParserICgetstatic struct{}
 
 func (*ParserICgetstatic) Op() ops.Op { return ops.Getstatic }
-func (*ParserICgetstatic) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICgetstatic) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICgetstatic)
 	if ic.Field, err = readUint16(br); err != nil {
@@ -382,7 +392,7 @@ func (*ParserICgetstatic) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinstanceof struct{}
 
 func (*ParserICinstanceof) Op() ops.Op { return ops.Instanceof }
-func (*ParserICinstanceof) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinstanceof) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinstanceof)
 	if ic.Class, err = readUint16(br); err != nil {
@@ -394,7 +404,7 @@ func (*ParserICinstanceof) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinvokedynamic struct{}
 
 func (*ParserICinvokedynamic) Op() ops.Op { return ops.Invokedynamic }
-func (*ParserICinvokedynamic) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinvokedynamic) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinvokedynamic)
 	if ic.Method, err = readUint16(br); err != nil {
@@ -419,7 +429,7 @@ func (*ParserICinvokedynamic) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinvokeinterface struct{}
 
 func (*ParserICinvokeinterface) Op() ops.Op { return ops.Invokeinterface }
-func (*ParserICinvokeinterface) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinvokeinterface) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinvokeinterface)
 	if ic.Method, err = readUint16(br); err != nil {
@@ -441,7 +451,7 @@ func (*ParserICinvokeinterface) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinvokespecial struct{}
 
 func (*ParserICinvokespecial) Op() ops.Op { return ops.Invokespecial }
-func (*ParserICinvokespecial) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinvokespecial) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinvokespecial)
 	if ic.Method, err = readUint16(br); err != nil {
@@ -453,7 +463,7 @@ func (*ParserICinvokespecial) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinvokestatic struct{}
 
 func (*ParserICinvokestatic) Op() ops.Op { return ops.Invokestatic }
-func (*ParserICinvokestatic) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinvokestatic) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinvokestatic)
 	if ic.Method, err = readUint16(br); err != nil {
@@ -465,7 +475,7 @@ func (*ParserICinvokestatic) Parse(br ByteReader) (ir.IC, error) {
 type ParserICinvokevirtual struct{}
 
 func (*ParserICinvokevirtual) Op() ops.Op { return ops.Invokevirtual }
-func (*ParserICinvokevirtual) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICinvokevirtual) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICinvokevirtual)
 	if ic.Method, err = readUint16(br); err != nil {
@@ -477,7 +487,7 @@ func (*ParserICinvokevirtual) Parse(br ByteReader) (ir.IC, error) {
 type ParserICmultianewarray struct{}
 
 func (*ParserICmultianewarray) Op() ops.Op { return ops.Multianewarray }
-func (*ParserICmultianewarray) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICmultianewarray) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICmultianewarray)
 	if ic.Desc, err = readUint16(br); err != nil {
@@ -495,7 +505,7 @@ func (*ParserICmultianewarray) Parse(br ByteReader) (ir.IC, error) {
 type ParserICnew struct{}
 
 func (*ParserICnew) Op() ops.Op { return ops.New }
-func (*ParserICnew) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICnew) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICnew)
 	if ic.Class, err = readUint16(br); err != nil {
@@ -507,7 +517,7 @@ func (*ParserICnew) Parse(br ByteReader) (ir.IC, error) {
 type ParserICnewarray struct{}
 
 func (*ParserICnewarray) Op() ops.Op { return ops.Newarray }
-func (*ParserICnewarray) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICnewarray) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICnewarray)
 	if ic.Atype, err = br.ReadByte(); err != nil {
@@ -519,7 +529,7 @@ func (*ParserICnewarray) Parse(br ByteReader) (ir.IC, error) {
 type ParserICputfield struct{}
 
 func (*ParserICputfield) Op() ops.Op { return ops.Putfield }
-func (*ParserICputfield) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICputfield) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICputfield)
 	if ic.Field, err = readUint16(br); err != nil {
@@ -531,7 +541,7 @@ func (*ParserICputfield) Parse(br ByteReader) (ir.IC, error) {
 type ParserICputstatic struct{}
 
 func (*ParserICputstatic) Op() ops.Op { return ops.Putstatic }
-func (*ParserICputstatic) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICputstatic) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICputstatic)
 	if ic.Field, err = readUint16(br); err != nil {
@@ -543,7 +553,7 @@ func (*ParserICputstatic) Parse(br ByteReader) (ir.IC, error) {
 type ParserICbipush struct{}
 
 func (*ParserICbipush) Op() ops.Op { return ops.Bipush }
-func (*ParserICbipush) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICbipush) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICbipush)
 	var b byte
@@ -557,7 +567,7 @@ func (*ParserICbipush) Parse(br ByteReader) (ir.IC, error) {
 type ParserICsipush struct{}
 
 func (*ParserICsipush) Op() ops.Op { return ops.Sipush }
-func (*ParserICsipush) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICsipush) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICsipush)
 	if ic.Value, err = readInt16(br); err != nil {
@@ -569,7 +579,7 @@ func (*ParserICsipush) Parse(br ByteReader) (ir.IC, error) {
 type ParserICdload struct{}
 
 func (*ParserICdload) Op() ops.Op { return ops.Dload }
-func (*ParserICdload) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICdload) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICdload)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -582,7 +592,7 @@ func (*ParserICdload) Parse(br ByteReader) (ir.IC, error) {
 type ParserICdstore struct{}
 
 func (*ParserICdstore) Op() ops.Op { return ops.Dstore }
-func (*ParserICdstore) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICdstore) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICdstore)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -595,7 +605,7 @@ func (*ParserICdstore) Parse(br ByteReader) (ir.IC, error) {
 type ParserICfload struct{}
 
 func (*ParserICfload) Op() ops.Op { return ops.Fload }
-func (*ParserICfload) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICfload) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICfload)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -608,7 +618,7 @@ func (*ParserICfload) Parse(br ByteReader) (ir.IC, error) {
 type ParserICfstore struct{}
 
 func (*ParserICfstore) Op() ops.Op { return ops.Fstore }
-func (*ParserICfstore) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICfstore) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICfstore)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -621,23 +631,24 @@ func (*ParserICfstore) Parse(br ByteReader) (ir.IC, error) {
 type ParserICiinc struct{}
 
 func (*ParserICiinc) Op() ops.Op { return ops.Iinc }
-func (*ParserICiinc) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICiinc) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICiinc)
 	b, err := br.ReadByte()
 	if err != nil {
 		return nil, err
 	}
 	ic.Index = (uint16)(b)
-	if ic.Const, err = readInt16(br); err != nil {
+	if b, err = br.ReadByte(); err != nil {
 		return nil, err
 	}
+	ic.Const = (int16)((int8)(b))
 	return ic, nil
 }
 
 type ParserICiload struct{}
 
 func (*ParserICiload) Op() ops.Op { return ops.Iload }
-func (*ParserICiload) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICiload) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICiload)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -650,7 +661,7 @@ func (*ParserICiload) Parse(br ByteReader) (ir.IC, error) {
 type ParserICistore struct{}
 
 func (*ParserICistore) Op() ops.Op { return ops.Istore }
-func (*ParserICistore) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICistore) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.ICistore)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -663,7 +674,7 @@ func (*ParserICistore) Parse(br ByteReader) (ir.IC, error) {
 type ParserICldc struct{}
 
 func (*ParserICldc) Op() ops.Op { return ops.Ldc }
-func (*ParserICldc) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICldc) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICldc)
 	if ic.Index, err = br.ReadByte(); err != nil {
@@ -675,7 +686,7 @@ func (*ParserICldc) Parse(br ByteReader) (ir.IC, error) {
 type ParserICldc_w struct{}
 
 func (*ParserICldc_w) Op() ops.Op { return ops.Ldc_w }
-func (*ParserICldc_w) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICldc_w) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICldc_w)
 	if ic.Index, err = readUint16(br); err != nil {
@@ -687,7 +698,7 @@ func (*ParserICldc_w) Parse(br ByteReader) (ir.IC, error) {
 type ParserICldc2_w struct{}
 
 func (*ParserICldc2_w) Op() ops.Op { return ops.Ldc2_w }
-func (*ParserICldc2_w) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserICldc2_w) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICldc2_w)
 	if ic.Index, err = readUint16(br); err != nil {
@@ -699,7 +710,7 @@ func (*ParserICldc2_w) Parse(br ByteReader) (ir.IC, error) {
 type ParserIClload struct{}
 
 func (*ParserIClload) Op() ops.Op { return ops.Lload }
-func (*ParserIClload) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserIClload) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.IClload)
 	b, err := br.ReadByte()
 	if err != nil {
@@ -712,7 +723,7 @@ func (*ParserIClload) Parse(br ByteReader) (ir.IC, error) {
 type ParserIClstore struct{}
 
 func (*ParserIClstore) Op() ops.Op { return ops.Lstore }
-func (*ParserIClstore) Parse(br ByteReader) (ir.IC, error) {
+func (*ParserIClstore) Parse(br *bytes.Reader) (ir.IC, error) {
 	ic := new(ir.IClstore)
 	b, err := br.ReadByte()
 	if err != nil {

@@ -62,11 +62,11 @@ func (t Type) AsReflect() reflect.Type {
 	switch t {
 	case Class, Array:
 		return typePointer
-	case Boolean, Byte:
-		return typeInt8
-	case Char, Short:
-		return typeInt16
-	case Int, Float:
+	// case Boolean, Byte:
+	// 	return typeInt8
+	// case Char, Short:
+	// 	return typeInt16
+	case Boolean, Byte, Char, Short, Int, Float:
 		return typeInt32
 	case Long, Double:
 		return typeInt64
