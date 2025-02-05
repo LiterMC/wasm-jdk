@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -18,17 +19,22 @@ type Class struct {
 	loader ir.ClassLoader
 	initVM atomic.Pointer[VM]
 
+	arrayDim   int // -1: primary type; 0: normal class; 1+: array class
+	elem       *Class
 	super      ir.Class
 	interfaces []ir.Class
 	refType    reflect.Type
+	classRef   atomic.Pointer[Ref]
 
 	initFMOnce sync.Once
 	Fields     []Field
 	Methods    []Method
 	staticInit *Method
+	staticData unsafe.Pointer
 
 	loadedFieldAccesors map[uint16]func() *Field
 	loadedMethods       map[uint16]func() *Method
+	loadedDynamics      map[uint16]*dynamicInfo
 }
 
 var _ ir.Class = (*Class)(nil)
@@ -51,7 +57,8 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 		}
 	}
 
-	fields := make([]reflect.StructField, len(c.Class.Fields)+1)
+	statics := make([]reflect.StructField, 0, len(c.Class.Fields))
+	fields := make([]reflect.StructField, 1, len(c.Class.Fields)+1)
 	if c.super == nil {
 		fields[0] = reflect.StructField{
 			Name: "S",
@@ -63,20 +70,37 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 			Type: c.super.Reflect(),
 		}
 	}
-	for i, f := range c.Class.Fields {
-		fields[i+1] = reflect.StructField{
-			Name: "F" + j2goName(f.Name()),
-			Type: f.Desc.AsReflect(),
+	for _, f := range c.Class.Fields {
+		fName := "F" + j2goName(f.Name())
+		if f.IsStatic() {
+			statics = append(statics, reflect.StructField{
+				Name: fName,
+				Type: f.Desc.AsReflect(),
+			})
+		} else {
+			fields = append(fields, reflect.StructField{
+				Name: fName,
+				Type: f.Desc.AsReflect(),
+			})
 		}
 	}
+	staticType := reflect.StructOf(fields)
 	c.refType = reflect.StructOf(fields)
 	c.Fields = make([]Field, len(c.Class.Fields))
 	for i, f := range c.Class.Fields {
 		cf := &c.Fields[i]
 		cf.Field = f
 		cf.class = c
-		cf.offset = c.refType.Field(i + 1).Offset
+		fName := "F" + j2goName(cf.Name())
+		if cf.IsStatic() {
+			rf, _ := staticType.FieldByName(fName)
+			cf.offset = rf.Offset
+		} else {
+			rf, _ := c.refType.FieldByName(fName)
+			cf.offset = rf.Offset
+		}
 	}
+	c.staticData = reflect.New(staticType).UnsafePointer()
 
 	c.Methods = make([]Method, len(c.Class.Methods))
 	for i, m := range c.Class.Methods {
@@ -84,13 +108,30 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 		cm.Method = m
 		cm.class = c
 		if cm.Name() == "<clinit>" {
+			if !cm.IsStatic() {
+				panic("class initalize method is not static")
+			}
 			c.staticInit = cm
 		}
 	}
 	return c
 }
 
+func (c *Class) NewArrayClass(dim int) *Class {
+	return &Class{
+		arrayDim: dim,
+		elem:     c,
+	}
+}
+
 func (c *Class) InitBeforeUse(vm *VM) {
+	if c.arrayDim > 0 {
+		c.elem.InitBeforeUse(vm)
+		return
+	}
+	if c.arrayDim < 0 {
+		return
+	}
 	if c.initVM.Load() == vm {
 		return
 	}
@@ -100,6 +141,14 @@ func (c *Class) InitBeforeUse(vm *VM) {
 
 func (c *Class) initFM() {
 	fmt.Println("initing", c.Name())
+	defer fmt.Println("post init", c.Name())
+
+	ivm := c.initVM.Load()
+	if super, ok := c.super.(*Class); ok {
+		fmt.Println("waiting", super.Name())
+		super.InitBeforeUse(ivm)
+	}
+
 	var err error
 	for i, f := range c.Class.Fields {
 		cf := &c.Fields[i]
@@ -112,12 +161,10 @@ func (c *Class) initFM() {
 
 	c.loadedFieldAccesors = make(map[uint16]func() *Field)
 	c.loadedMethods = make(map[uint16]func() *Method)
+	c.loadedDynamics = make(map[uint16]*dynamicInfo)
 	c.scanCodes()
 
 	if c.staticInit != nil {
-		if !c.staticInit.IsStatic() {
-			panic("class initalize method is not static")
-		}
 		vm := NewVM(&Options{
 			Loader: c.loader,
 		})
@@ -126,10 +173,9 @@ func (c *Class) initFM() {
 			class:  c,
 			method: c.staticInit,
 		}
-		vm.stack.pc = c.staticInit.Code.Code
-		println("vm created")
+		fmt.Println("==> invoking " + c.Name() + ".<clinit>")
+		vm.nextPc = c.staticInit.Code.Code
 		for vm.Running() {
-			println("steping")
 			if err := vm.Step(); err != nil {
 				panic(err)
 			}
@@ -137,8 +183,35 @@ func (c *Class) initFM() {
 	}
 }
 
+func (c *Class) ArrayDim() int {
+	return c.arrayDim
+}
+
+func (c *Class) Elem() ir.Class {
+	if c.arrayDim == 0 {
+		panic("not an array class")
+	}
+	if c.arrayDim == 1 {
+		return c.elem
+	}
+	return c.elem.NewArrayClass(c.arrayDim - 1)
+}
+
+func (c *Class) Desc() *desc.Desc {
+	if c.arrayDim > 0 {
+		d := c.elem.Class.Desc().Clone()
+		d.ArrDim = c.arrayDim
+		return d
+	}
+	return c.Class.Desc()
+}
+
 func (c *Class) Reflect() reflect.Type {
 	return c.refType
+}
+
+func (c *Class) Modifiers() int32 {
+	return (int32)(c.Class.AccessFlags)
 }
 
 func (c *Class) Super() ir.Class {
@@ -187,9 +260,8 @@ func (c *Class) IsInstance(r ir.Ref) bool {
 
 func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 	v := c.ConstPool[i-1]
+	fmt.Printf("pushing const %#v\n", v)
 	switch v := v.(type) {
-	case *jcls.ConstantString:
-		s.PushRef(nil) // TODO: create string ref
 	case *jcls.ConstantInteger:
 		s.Push(v.Value)
 	case *jcls.ConstantFloat:
@@ -198,6 +270,14 @@ func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 		s.Push64(v.Value)
 	case *jcls.ConstantDouble:
 		s.Push64(v.Value)
+	case *jcls.ConstantString:
+		s.PushRef(c.initVM.Load().GetStringInternOrNew(v.Utf8))
+	case *jcls.ConstantClass:
+		vm := c.initVM.Load()
+		s.PushRef(vm.GetClassRef(vm.GetClassFromDesc(&desc.Desc{
+			EndType: desc.Class,
+			Class:   v.Name,
+		})))
 	default:
 		return fmt.Errorf("Unexpected constant type %T", v)
 	}
@@ -206,6 +286,16 @@ func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 
 func (c *Class) GetField(i uint16) ir.Field {
 	return c.loadedFieldAccesors[i]()
+}
+
+func (c *Class) GetFieldByName(name string) ir.Field {
+	for i := range len(c.Fields) {
+		f := &c.Fields[i]
+		if f.Name() == name {
+			return f
+		}
+	}
+	return nil
 }
 
 func (c *Class) GetMethod(i uint16) ir.Method {
@@ -217,8 +307,11 @@ func (c *Class) GetMethodByName(location string) ir.Method {
 	if i < 0 {
 		panic("method name missing descriptor")
 	}
-	name := location[:i]
-	dc, err := desc.ParseMethodDesc(location[i:])
+	return c.GetMethodByNameAndType(location[:i], location[i:])
+}
+
+func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
+	dc, err := desc.ParseMethodDesc(typ)
 	if err != nil {
 		panic(err)
 	}
@@ -227,7 +320,7 @@ func (c *Class) GetMethodByName(location string) ir.Method {
 		m := &x.Methods[i]
 		if m.Name() == name && m.Desc().EqInputs(dc) {
 			if !m.Desc().Output.Eq(dc.Output) {
-				panic("Methods " + location + " have same inputs but different output")
+				panic("Methods " + name + typ + " have same inputs but different output " + m.Desc().String())
 			}
 			return m
 		}
@@ -251,12 +344,14 @@ func (c *Class) scanCodes() {
 			case *ir.ICputstatic:
 				c.loadFieldGetter(ic.Field, true)
 			case *ir.ICinvokedynamic:
-				c.loadMethodDynamicGetter(ic.Method)
+				c.loadMethodDynamic(ic.Method)
 			case *ir.ICinvokeinterface:
 				c.loadMethodGetter(ic.Method)
 			case *ir.ICinvokespecial:
 				c.loadMethodGetter(ic.Method)
 			case *ir.ICinvokestatic:
+				c.loadMethodGetter(ic.Method)
+			case *ir.ICinvokevirtual:
 				c.loadMethodGetter(ic.Method)
 			}
 		}
@@ -320,31 +415,41 @@ func (c *Class) loadMethodGetter(ind uint16) {
 }
 
 func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
-	k, err := c.loader.LoadClass(c.Class.Name())
+	k, err := c.loader.LoadClass(ref.Class.Name)
 	if err != nil {
 		panic(err)
 	}
 	x := k.(*Class)
 	x.InitBeforeUse(c.initVM.Load())
-	for i, m := range x.Class.Methods {
-		if (x == c || !m.AccessFlags.Has(jcls.AccPrivate)) && m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
-			return &x.Methods[i]
+	for ; x != nil; x = x.super.(*Class) {
+		for i, m := range x.Class.Methods {
+			if (x == c || !m.AccessFlags.Has(jcls.AccPrivate)) && m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
+				return &x.Methods[i]
+			}
 		}
 	}
-	panic(fmt.Errorf("cannot load class: cannot find method %s%s", ref.NameAndType.Name, ref.NameAndType.Desc))
+	panic(fmt.Errorf("cannot load class: cannot find method %s", ref))
 }
 
-func (c *Class) loadMethodDynamicGetter(ind uint16) {
-	ref, ok := c.ConstPool[ind-1].(*jcls.ConstantDynamics)
-	if !ok || ref.ConstTag != jcls.TagInvokeDynamic {
-		panic(fmt.Errorf("cannot load class: constant at %d is not a invoke dynamic", ind-1))
+type dynamicInfo struct {
+	info      *jcls.ConstantDynamics
+	bootstrap *jcls.BootstrapMethod
+	callSite  *Ref
+}
+
+func (c *Class) loadMethodDynamic(ind uint16) {
+	info, ok := c.ConstPool[ind-1].(*jcls.ConstantDynamics)
+	if !ok || info.ConstTag != jcls.TagInvokeDynamic {
+		panic(fmt.Errorf("cannot load class: constant at %d is not a invokedynamic", ind-1))
 	}
-	c.loadedMethods[ind] = sync.OnceValue(func() *Method {
-		return c.loadMethodDynamic(ref)
-	})
+	bootstrap := c.GetAttr("BootstrapMethods").(*jcls.AttrBootstrapMethods).Methods[info.BootstrapMethod]
+	c.loadedDynamics[ind] = &dynamicInfo{
+		info:      info,
+		bootstrap: bootstrap,
+	}
 }
 
-func (c *Class) loadMethodDynamic(ref *jcls.ConstantDynamics) *Method {
+func (c *Class) invokeMethodDynamic(ref *jcls.ConstantDynamics) *Method {
 	panic(fmt.Errorf("TODO: Trying to invoke dynamic %#v %#v", ref, ref.NameAndType))
 }
 

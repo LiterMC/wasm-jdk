@@ -1,6 +1,7 @@
 package vm
 
 import (
+	"fmt"
 	"math/rand"
 	"reflect"
 	"sync"
@@ -21,6 +22,7 @@ type Ref struct {
 
 	identity int32
 
+	userData any
 	arrayLen int32
 	data     unsafe.Pointer
 }
@@ -39,29 +41,34 @@ func newObjectRef(cls ir.Class) *Ref {
 	}
 }
 
-func newRefArray(desc *desc.Desc, length int32) *Ref {
-	r := &Ref{
-		lock:     sync.Cond{L: new(sync.Mutex)},
-		desc:     desc,
-		class:    nil, // TODO: class?
-		identity: (int32)(rand.Int63n(32)),
-		arrayLen: length,
-	}
-	et := desc.ElemType()
+func newRefArray(cls ir.Class, length int32) *Ref {
+	var ptr unsafe.Pointer
+	et := cls.Desc().ElemType()
 	if et.IsRef() {
 		data := make([]ir.Ref, length)
-		r.data = (unsafe.Pointer)(unsafe.SliceData(data))
+		ptr = (unsafe.Pointer)(unsafe.SliceData(data))
 	} else {
 		bytes := make([]byte, et.Size()*(uintptr)(length))
-		r.data = (unsafe.Pointer)(unsafe.SliceData(bytes))
+		ptr = (unsafe.Pointer)(unsafe.SliceData(bytes))
 	}
-	return r
+	return newRefArrayWithData(cls, length, ptr)
 }
 
-func newMultiDimArray(desc *desc.Desc, lengths []int32) *Ref {
+func newRefArrayWithData(cls ir.Class, length int32, data unsafe.Pointer) *Ref {
+	return &Ref{
+		lock:     sync.Cond{L: new(sync.Mutex)},
+		desc:     cls.Desc(),
+		class:    cls.(*Class),
+		identity: (int32)(rand.Int63n(32)),
+		arrayLen: length,
+		data:     data,
+	}
+}
+
+func newMultiDimArray(cls ir.Class, lengths []int32) *Ref {
 	l := lengths[0]
-	arr := newRefArray(desc, l)
-	elem := desc.Elem()
+	arr := newRefArray(cls, l)
+	elem := cls.Elem()
 	lengths = lengths[1:]
 	if len(lengths) > 0 {
 		refs := arr.GetArrRef()
@@ -80,12 +87,16 @@ func (r *Ref) Class() ir.Class {
 	return r.class
 }
 
-func (r *Ref) Hash() int32 {
+func (r *Ref) Id() int32 {
 	return r.identity
 }
 
 func (r *Ref) Len() int32 {
 	return r.arrayLen
+}
+
+func (r *Ref) UserData() *any {
+	return &r.userData
 }
 
 func (r *Ref) Data() unsafe.Pointer {
@@ -145,4 +156,8 @@ func (r *Ref) Unlock(vm ir.VM) (int, error) {
 		r.lock.L.Unlock()
 	}
 	return c, nil
+}
+
+func (r *Ref) GoString() string {
+	return fmt.Sprintf("<Ref %x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
 }

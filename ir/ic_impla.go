@@ -121,8 +121,11 @@ func (ic *ICanewarray) Execute(vm VM) error {
 	if count < 0 {
 		return errs.NegativeArraySizeException
 	}
-	desc := vm.GetDesc(ic.Class)
-	arr := vm.NewArray(desc, count)
+	class, err := vm.GetClassByIndex(ic.Class)
+	if err != nil {
+		return err
+	}
+	arr := vm.NewArrayByClass(class, count)
 	stack.PushRef(arr)
 	return nil
 }
@@ -293,13 +296,7 @@ type ICinvokedynamic struct {
 
 func (*ICinvokedynamic) Op() ops.Op { return ops.Invokedynamic }
 func (ic *ICinvokedynamic) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ic.Method)
-	if method == nil {
-		// TODO: Seems not correct here
-		return errs.BootstrapMethodError
-	}
-	vm.InvokeStatic(method)
-	return nil
+	return vm.InvokeDynamic(ic.Method)
 }
 
 type ICinvokeinterface struct {

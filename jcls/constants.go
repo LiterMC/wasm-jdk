@@ -130,6 +130,9 @@ func (c *ConstantRef) Resolve(infos []ConstantInfo) {
 	c.Class = infos[c.ClassInd-1].(*ConstantClass)
 	c.NameAndType = infos[c.NameAndTypeInd-1].(*ConstantNameAndType)
 }
+func (c *ConstantRef) String() string {
+	return c.Class.Name + "." + c.NameAndType.String()
+}
 
 type ConstantString struct {
 	Utf8Ind uint16
@@ -236,6 +239,9 @@ func (c *ConstantNameAndType) Resolve(infos []ConstantInfo) {
 	c.Desc = infos[c.DescInd-1].(*ConstantUtf8).Value
 }
 func (c *ConstantNameAndType) String() string {
+	if c.Desc[0] == '(' {
+		return c.Name + c.Desc
+	}
 	return c.Name + " " + c.Desc
 }
 
@@ -282,19 +288,60 @@ func (c *ConstantUtf8) AsMethodDesc() (*desc.MethodDesc, error) {
 	return c.methodDesc, nil
 }
 
+type MethodKind byte
+
+const (
+	RefGetField         MethodKind = 1 // getfield C.f:T
+	RefGetStatic        MethodKind = 2 // getstatic C.f:T
+	RefPutField         MethodKind = 3 // putfield C.f:T
+	RefPutStatic        MethodKind = 4 // putstatic C.f:T
+	RefInvokeVirtual    MethodKind = 5 // invokevirtual C.m:(A*)T
+	RefInvokeStatic     MethodKind = 6 // invokestatic C.m:(A*)T
+	RefInvokeSpecial    MethodKind = 7 // invokespecial C.m:(A*)T
+	RefNewInvokeSpecial MethodKind = 8 // new C; dup; invokespecial C.<init>:(A*)V
+	RefInvokeInterface  MethodKind = 9 // invokeinterface C.m:(A*)T
+)
+
+func (k MethodKind) String() string {
+	switch k {
+	case RefGetField:
+		return "getfield"
+	case RefGetStatic:
+		return "getstatic"
+	case RefPutField:
+		return "putfield"
+	case RefPutStatic:
+		return "putstatic"
+	case RefInvokeVirtual:
+		return "invokevirtual"
+	case RefInvokeStatic:
+		return "invokestatic"
+	case RefInvokeSpecial:
+		return "invokespecial"
+	case RefNewInvokeSpecial:
+		return "newinvokespecial"
+	case RefInvokeInterface:
+		return "invokeinterface"
+	default:
+		panic("unknown method kind")
+	}
+}
+
 type ConstantMethodHandle struct {
-	RefKind uint8
-	RefInd  uint16
-	Ref     *ConstantRef
+	Kind   MethodKind
+	RefInd uint16
+	Ref    *ConstantRef
 }
 
 func (*ConstantMethodHandle) Tag() ConstTag { return TagMethodHandle }
 func (*ConstantMethodHandle) IsWide() bool  { return false }
 func (c *ConstantMethodHandle) Parse(r io.Reader) error {
 	var err error
-	if c.RefKind, err = readUint8(r); err != nil {
+	b, err := readUint8(r)
+	if err != nil {
 		return err
 	}
+	c.Kind = (MethodKind)(b)
 	if c.RefInd, err = readUint16(r); err != nil {
 		return err
 	}
@@ -302,6 +349,9 @@ func (c *ConstantMethodHandle) Parse(r io.Reader) error {
 }
 func (c *ConstantMethodHandle) Resolve(infos []ConstantInfo) {
 	c.Ref = infos[c.RefInd-1].(*ConstantRef)
+}
+func (c *ConstantMethodHandle) String() string {
+	return c.Kind.String() + ": " + c.Ref.String()
 }
 
 type ConstantMethodType struct {

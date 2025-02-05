@@ -23,7 +23,7 @@ type Class struct {
 	Methods       []*Method
 	Attrs         []Attribute
 
-	thisDesc *desc.Desc
+	ThisDesc *desc.Desc
 }
 
 func ParseClass(r io.Reader) (*Class, error) {
@@ -125,11 +125,36 @@ func ParseClass(r io.Reader) (*Class, error) {
 		}
 	}
 
-	c.thisDesc = &desc.Desc{
+	c.ThisDesc = &desc.Desc{
 		EndType: desc.Class,
 		Class:   c.ThisSym.Name,
 	}
 	return c, nil
+}
+
+func NewClass(flags AccessFlag, name string, super string, interfaces []string, fields []*Field, methods []*Method, attrs []Attribute) *Class {
+	c := new(Class)
+	c.AccessFlags = flags
+	c.ThisSym = &ConstantClass{
+		Name: name,
+	}
+	c.SuperSym = &ConstantClass{
+		Name: super,
+	}
+	c.InterfacesSym = make([]*ConstantClass, len(interfaces))
+	for i, name := range interfaces {
+		c.InterfacesSym[i] = &ConstantClass{
+			Name: name,
+		}
+	}
+	c.Fields = fields
+	c.Methods = methods
+	c.Attrs = attrs
+	c.ThisDesc = &desc.Desc{
+		EndType: desc.Class,
+		Class:   c.ThisSym.Name,
+	}
+	return c
 }
 
 func (c *Class) String() string {
@@ -179,7 +204,7 @@ func (c *Class) Name() string {
 }
 
 func (c *Class) Desc() *desc.Desc {
-	return c.thisDesc
+	return c.ThisDesc
 }
 
 func (c *Class) IsInterface() bool {

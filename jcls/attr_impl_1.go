@@ -3,6 +3,7 @@ package jcls
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/ir/parser"
@@ -152,7 +153,9 @@ func (a *AttrInnerClasses) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 		if n, err = readUint16(r); err != nil {
 			return err
 		}
-		c.OuterClass = consts[n-1].(*ConstantClass)
+		if n != 0 {
+			c.OuterClass = consts[n-1].(*ConstantClass)
+		}
 		if n, err = readUint16(r); err != nil {
 			return err
 		}
@@ -212,8 +215,63 @@ func (a *AttrSourceFile) String() string {
 	return a.Value
 }
 
+type AttrBootstrapMethods struct {
+	Methods []*BootstrapMethod
+}
+
+type BootstrapMethod struct {
+	Method *ConstantMethodHandle
+	Args   []ConstantInfo
+}
+
+func (*AttrBootstrapMethods) Name() string { return "BootstrapMethods" }
+func (a *AttrBootstrapMethods) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	n, err := readUint16(r)
+	if err != nil {
+		return err
+	}
+	a.Methods = make([]*BootstrapMethod, n)
+	for i := range len(a.Methods) {
+		m := new(BootstrapMethod)
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		m.Method = consts[n-1].(*ConstantMethodHandle)
+		if n, err = readUint16(r); err != nil {
+			return err
+		}
+		m.Args = make([]ConstantInfo, n)
+		for i := range n {
+			if n, err = readUint16(r); err != nil {
+				return err
+			}
+			m.Args[i] = consts[n-1]
+		}
+		a.Methods[i] = m
+	}
+	return nil
+}
+
+func (m *BootstrapMethod) String() string {
+	var sb strings.Builder
+	sb.WriteString(m.Method.String())
+	sb.WriteString(" -> [")
+	for i, arg := range m.Args {
+		if i != 0 {
+			sb.WriteString(", ")
+		}
+		fmt.Fprintf(&sb, "%v", arg)
+	}
+	sb.WriteByte(']')
+	return sb.String()
+}
+
 func init() {
 	RegisterAttr(func() ParsableAttribute { return new(AttrConstantValue) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrCode) })
+	RegisterAttr(func() ParsableAttribute { return new(AttrExceptions) })
+	RegisterAttr(func() ParsableAttribute { return new(AttrInnerClasses) })
+	RegisterAttr(func() ParsableAttribute { return new(AttrEnclosingMethod) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrSourceFile) })
+	RegisterAttr(func() ParsableAttribute { return new(AttrBootstrapMethods) })
 }

@@ -88,10 +88,30 @@ type Desc struct {
 }
 
 var (
-	DescInt8  = &Desc{EndType: Byte}
-	DescInt16 = &Desc{EndType: Short}
-	DescInt32 = &Desc{EndType: Int}
-	DescInt64 = &Desc{EndType: Long}
+	DescVoid    = &Desc{EndType: Void}
+	DescInt8    = &Desc{EndType: Byte}
+	DescInt16   = &Desc{EndType: Short}
+	DescInt32   = &Desc{EndType: Int}
+	DescInt64   = &Desc{EndType: Long}
+	DescBool    = &Desc{EndType: Boolean}
+	DescChar    = &Desc{EndType: Char}
+	DescFloat32 = &Desc{EndType: Float}
+	DescFloat64 = &Desc{EndType: Double}
+
+	DescByteArray = &Desc{
+		ArrDim:  1,
+		EndType: Byte,
+	}
+	DescClassArray = &Desc{
+		ArrDim:  1,
+		EndType: Class,
+		Class:   "java/lang/Class",
+	}
+	DescStringArray = &Desc{
+		ArrDim:  1,
+		EndType: Class,
+		Class:   "java/lang/String",
+	}
 )
 
 func ParseDesc(s string) (*Desc, error) {
@@ -106,6 +126,35 @@ func ParseDesc(s string) (*Desc, error) {
 }
 
 func parseDesc(s string) (string, *Desc) {
+	if len(s) == 1 {
+		switch (Type)(s[0]) {
+		case Void:
+			return "", DescVoid
+		case Boolean:
+			return "", DescBool
+		case Byte:
+			return "", DescInt8
+		case Char:
+			return "", DescChar
+		case Short:
+			return "", DescInt16
+		case Int:
+			return "", DescInt32
+		case Long:
+			return "", DescInt64
+		case Float:
+			return "", DescFloat32
+		case Double:
+			return "", DescFloat64
+		}
+	}
+	if s == "[B" {
+		return "", DescByteArray
+	}
+	return parseDesc0(s)
+}
+
+func parseDesc0(s string) (string, *Desc) {
 	if len(s) == 0 {
 		return "", nil
 	}
@@ -124,13 +173,13 @@ func parseDesc(s string) (string, *Desc) {
 		}
 	case Array:
 		var desc *Desc
-		s, desc = parseDesc(s[1:])
+		s, desc = parseDesc0(s[1:])
 		if desc != nil {
 			desc.ArrDim++
 		}
 		return s, desc
 	default:
-		return "", nil
+		return s, nil
 	}
 }
 

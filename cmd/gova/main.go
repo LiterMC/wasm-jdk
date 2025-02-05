@@ -7,15 +7,11 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/classloader"
 	"github.com/LiterMC/wasm-jdk/desc"
-	"github.com/LiterMC/wasm-jdk/ir"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
-)
 
-var stringArrayDesc = &desc.Desc{
-	ArrDim:  1,
-	EndType: desc.Class,
-	Class:   "java/lang/String",
-}
+	"github.com/LiterMC/wasm-jdk/native"
+	_ "github.com/LiterMC/wasm-jdk/native/init_all"
+)
 
 func main() {
 	class := os.Args[1]
@@ -34,7 +30,7 @@ func main() {
 		EntryMethod: "main([Ljava/lang/String;)V",
 	})
 	{
-		arr := vm.NewArray(stringArrayDesc, (int32)(len(os.Args)-2))
+		arr := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-2))
 		refs := arr.GetArrRef()
 		for i, arg := range os.Args[2:] {
 			refs[i] = vm.NewString(arg)
@@ -42,34 +38,12 @@ func main() {
 		vm.GetStack().SetVarRef(0, arr)
 	}
 	fmt.Println("Loading native library ...")
-	loadSystem(cl, vm)
+	native.LoadDefaultNatives(vm, cl)
 	fmt.Println("Running ...")
 	for vm.Running() {
-		fmt.Println("step")
 		if err := vm.Step(); err != nil {
 			fmt.Println("VM error:", err)
 			break
 		}
 	}
-}
-
-func loadSystem(cl ir.ClassLoader, vm *jvm.VM) {
-	loadNativeMethod(cl, vm, "java/lang/System.registerNatives()V", func(vm ir.VM) error {
-		fmt.Println("registering system natives")
-		return nil
-	})
-}
-
-func loadNativeMethod(cl ir.ClassLoader, vm *jvm.VM, location string, native jvm.NativeMethodCallback) {
-	cls, location, ok := strings.Cut(location, ".")
-	if !ok {
-		panic("no class name in location")
-	}
-	class, err := cl.LoadClass(cls)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("getting method:", location)
-	method := class.GetMethodByName(location)
-	vm.LoadNativeMethod(method, native)
 }

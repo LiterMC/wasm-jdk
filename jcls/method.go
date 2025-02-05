@@ -50,6 +50,15 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 	return m, nil
 }
 
+func NewMethod(flags AccessFlag, name string, descriptor *desc.MethodDesc, attrs []Attribute) *Method {
+	m := new(Method)
+	m.AccessFlags = flags
+	m.name = name
+	m.desc = descriptor
+	m.Attrs = attrs
+	return m
+}
+
 func (m *Method) Name() string {
 	return m.name
 }

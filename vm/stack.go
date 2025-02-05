@@ -52,7 +52,11 @@ func (s *Stack) GetVarFloat64(i uint16) float64 {
 }
 
 func (s *Stack) GetVarRef(i uint16) ir.Ref {
-	return s.varRefs[i]
+	v := s.varRefs[i]
+	if v == nil {
+		return nil
+	}
+	return v
 }
 
 func (s *Stack) SetVar(i uint16, v uint32) {
@@ -101,7 +105,11 @@ func (s *Stack) SetVarFloat64(i uint16, v float64) {
 
 func (s *Stack) SetVarRef(i uint16, v ir.Ref) {
 	s.SetVar(i, 0)
-	s.varRefs[i] = v.(*Ref)
+	if v == nil {
+		s.varRefs[i] = nil
+	} else {
+		s.varRefs[i] = v.(*Ref)
+	}
 }
 
 func (s *Stack) Peek() uint32 {
@@ -145,6 +153,7 @@ func (s *Stack) Pop() uint32 {
 	v := s.stack[i]
 	s.stack = s.stack[:i]
 	s.stackRefs[i] = nil
+	s.stackRefs = s.stackRefs[:i]
 	return v
 }
 
@@ -154,6 +163,7 @@ func (s *Stack) Pop64() uint64 {
 	s.stack = s.stack[:i]
 	s.stackRefs[i] = nil
 	s.stackRefs[i+1] = nil
+	s.stackRefs = s.stackRefs[:i]
 	return v
 }
 
@@ -186,15 +196,21 @@ func (s *Stack) PopRef() ir.Ref {
 	v := s.stackRefs[i]
 	s.stack = s.stack[:i]
 	s.stackRefs[i] = nil
+	s.stackRefs = s.stackRefs[:i]
+	if v == nil {
+		return nil
+	}
 	return v
 }
 
 func (s *Stack) Push(v uint32) {
 	s.stack = append(s.stack, v)
+	s.stackRefs = append(s.stackRefs, nil)
 }
 
 func (s *Stack) Push64(v uint64) {
 	s.stack = append(s.stack, (uint32)(v>>32), (uint32)(v))
+	s.stackRefs = append(s.stackRefs, nil, nil)
 }
 
 func (s *Stack) PushInt8(v int8) {
@@ -224,10 +240,9 @@ func (s *Stack) PushFloat64(v float64) {
 func (s *Stack) PushRef(v ir.Ref) {
 	i := len(s.stack)
 	s.Push(0)
-	if n := i - len(s.stackRefs); n >= 0 {
-		s.stackRefs = append(s.stackRefs, make([]*Ref, n+1)...)
+	if v != nil {
+		s.stackRefs[i] = v.(*Ref)
 	}
-	s.stackRefs[i] = v.(*Ref)
 }
 
 // returns whether the top element is a reference or not

@@ -44,16 +44,16 @@ func ParseCode(buf []byte) (*ir.ICNode, error) {
 		jumps = make(map[int32][]jumpRequest)
 	)
 	for {
-		if reqs, ok := jumps[node.Offset]; ok {
-			for _, req := range reqs {
-				req.node.IC.(ir.ICJumpable).SetNode(req.i, node)
-			}
-			delete(jumps, node.Offset)
-		}
 		if offset, err := r.Seek(0, io.SeekCurrent); err != nil {
 			return nil, err
 		} else {
 			node.Offset = (int32)(offset)
+		}
+		if jps, ok := jumps[node.Offset]; ok {
+			delete(jumps, node.Offset)
+			for _, req := range jps {
+				req.node.IC.(ir.ICJumpable).SetNode(req.i, node)
+			}
 		}
 
 		if b, err = r.ReadByte(); err != nil {
@@ -88,9 +88,15 @@ func ParseCode(buf []byte) (*ir.ICNode, error) {
 		node = n
 	}
 	for node = entry; node != nil; node = node.Next {
-		for _, req := range jumps[node.Offset] {
-			req.node.IC.(ir.ICJumpable).SetNode(req.i, node)
+		if jps, ok := jumps[node.Offset]; ok {
+			delete(jumps, node.Offset)
+			for _, req := range jps {
+				req.node.IC.(ir.ICJumpable).SetNode(req.i, node)
+			}
 		}
+	}
+	if len(jumps) > 0 {
+		return nil, fmt.Errorf("parser: unknown jump nodes")
 	}
 	return entry, nil
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
 )
+import "fmt"
 
 type Field struct {
 	*jcls.Field
@@ -26,8 +27,15 @@ func (f *Field) GetDeclaringClass() ir.Class {
 	return f.class
 }
 
+func (f *Field) GetPointer(r ir.Ref) unsafe.Pointer {
+	if f.IsStatic() {
+		return unsafe.Add(f.class.staticData, f.offset)
+	}
+	return unsafe.Add(r.Data(), f.offset)
+}
+
 func (f *Field) GetAndPush(r ir.Ref, s ir.Stack) {
-	ptr := unsafe.Add(r.Data(), f.offset)
+	ptr := f.GetPointer(r)
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
 		s.PushRef((*Ref)(atomic.LoadPointer((*unsafe.Pointer)(ptr))))
@@ -45,10 +53,16 @@ func (f *Field) GetAndPush(r ir.Ref, s ir.Stack) {
 }
 
 func (f *Field) PopAndSet(r ir.Ref, s ir.Stack) {
-	ptr := unsafe.Add(r.Data(), f.offset)
+	ptr := f.GetPointer(r)
+	fmt.Printf("stack:\n - %d\n - %d\n", s.(*Stack).vars, s.(*Stack).stack)
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
-		atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(s.PopRef().(*Ref)))
+		v := s.PopRef()
+		var r *Ref
+		if v != nil {
+			r = v.(*Ref)
+		}
+		atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(r))
 	case desc.Boolean, desc.Byte:
 		atomic.StoreInt32((*int32)(ptr), (int32)(s.PopInt8()))
 	case desc.Char, desc.Short:

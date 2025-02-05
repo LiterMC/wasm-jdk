@@ -1,8 +1,6 @@
 package ir
 
 import (
-	"reflect"
-
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -30,11 +28,18 @@ type VM interface {
 	GetStack() Stack
 
 	New(Class) Ref
+	NewString(string) Ref
 	NewArray(*desc.Desc, int32) Ref
+	NewArrayByClass(Class, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
 
 	GetObjectClass() Class
 	GetThrowableClass() Class
+	GetStringClass() Class
+	GetString(Ref) string
+	GetStringIntern(Ref) Ref
+	GetClassRef(Class) Ref
+
 	GetDesc(uint16) *desc.Desc
 	GetClassByIndex(uint16) (Class, error)
 	GetClass(Ref) Class
@@ -45,6 +50,7 @@ type VM interface {
 	LoadNativeMethod(Method, func(VM) error)
 	Invoke(Method, Ref)
 	InvokeStatic(Method)
+	InvokeDynamic(uint16) error
 	Return()
 	Throw(Ref)
 	Goto(*ICNode)
@@ -107,39 +113,4 @@ type Stack interface {
 
 type ClassLoader interface {
 	LoadClass(name string) (Class, error)
-}
-
-type Class interface {
-	Name() string
-	Desc() *desc.Desc
-	Reflect() reflect.Type
-
-	Super() Class
-	Interfaces() []Class
-	IsInterface() bool
-	IsAssignableFrom(Class) bool
-	IsInstance(Ref) bool
-
-	GetAndPushConst(uint16, Stack) error
-	GetField(uint16) Field
-	GetMethod(uint16) Method
-	GetMethodByName(string) Method
-}
-
-type Field interface {
-	Name() string
-
-	GetDeclaringClass() Class
-	IsStatic() bool
-
-	GetAndPush(Ref, Stack)
-	PopAndSet(Ref, Stack)
-}
-
-type Method interface {
-	Name() string
-	Desc() *desc.MethodDesc
-
-	GetDeclaringClass() Class
-	IsStatic() bool
 }

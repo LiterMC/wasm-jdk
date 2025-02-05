@@ -6,8 +6,8 @@ import (
 
 // VM Options
 type Options struct {
-	Loader          ir.ClassLoader
-	EntryClass      string
-	EntryMethod     string
-	EntryArgs       []string
+	Loader      ir.ClassLoader
+	EntryClass  string
+	EntryMethod string
+	EntryArgs   []string
 }
