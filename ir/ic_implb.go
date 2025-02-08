@@ -10,8 +10,8 @@ type ICbaload struct{}
 func (*ICbaload) Op() ops.Op { return ops.Baload }
 func (*ICbaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt8()
 	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt8()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -27,9 +27,9 @@ type ICbastore struct{}
 func (*ICbastore) Op() ops.Op { return ops.Bastore }
 func (*ICbastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt8()
-	index := stack.PopInt32()
 	value := stack.PopInt8()
+	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt8()
 	if arr == nil {
 		return errs.NullPointerException
 	}

@@ -13,8 +13,8 @@ type ICaaload struct{}
 func (*ICaaload) Op() ops.Op { return ops.Aaload }
 func (*ICaaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrRef()
 	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrRef()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -30,10 +30,10 @@ type ICaastore struct{}
 func (*ICaastore) Op() ops.Op { return ops.Aastore }
 func (*ICaastore) Execute(vm VM) error {
 	stack := vm.GetStack()
+	value := stack.PopRef()
+	index := stack.PopInt32()
 	ref := stack.PopRef()
 	arr := ref.GetArrRef()
-	index := stack.PopInt32()
-	value := stack.PopRef()
 	if arr == nil {
 		return errs.NullPointerException
 	}

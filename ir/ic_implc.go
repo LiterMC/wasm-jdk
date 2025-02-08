@@ -10,8 +10,8 @@ type ICcaload struct{}
 func (*ICcaload) Op() ops.Op { return ops.Caload }
 func (*ICcaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt16()
 	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt16()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -27,9 +27,9 @@ type ICcastore struct{}
 func (*ICcastore) Op() ops.Op { return ops.Castore }
 func (*ICcastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt16()
-	index := stack.PopInt32()
 	value := stack.PopInt16()
+	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt16()
 	if arr == nil {
 		return errs.NullPointerException
 	}

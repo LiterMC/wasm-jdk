@@ -61,8 +61,8 @@ type ICdaload struct{}
 func (*ICdaload) Op() ops.Op { return ops.Daload }
 func (*ICdaload) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt64()
 	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt64()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -78,9 +78,9 @@ type ICdastore struct{}
 func (*ICdastore) Op() ops.Op { return ops.Dastore }
 func (*ICdastore) Execute(vm VM) error {
 	stack := vm.GetStack()
-	arr := stack.PopRef().GetArrInt64()
-	index := stack.PopInt32()
 	value := stack.PopInt64()
+	index := stack.PopInt32()
+	arr := stack.PopRef().GetArrInt64()
 	if arr == nil {
 		return errs.NullPointerException
 	}
