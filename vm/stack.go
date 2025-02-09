@@ -1,7 +1,9 @@
 package vm
 
 import (
+	"fmt"
 	"math"
+	"strings"
 
 	"github.com/LiterMC/wasm-jdk/ir"
 )
@@ -249,4 +251,31 @@ func (s *Stack) PushRef(v ir.Ref) {
 func (s *Stack) IsRef() bool {
 	i := len(s.stack) - 1
 	return len(s.stackRefs) > i && s.stackRefs[i] != nil
+}
+
+func (s *Stack) GoString() string {
+	var sb strings.Builder
+	sb.WriteString("Stack {\n")
+	sb.WriteString("  Vars:\n")
+	for i, v := range s.vars {
+		fmt.Fprintf(&sb, "    0x%02x: ", i)
+		if r := s.varRefs[i]; r != nil {
+			sb.WriteString(r.GoString())
+		} else {
+			fmt.Fprintf(&sb, "%d", v)
+		}
+		sb.WriteByte('\n')
+	}
+	sb.WriteString("  Stack:\n")
+	for i, v := range s.stack {
+		sb.WriteString("    - ")
+		if r := s.stackRefs[i]; r != nil {
+			sb.WriteString(r.GoString())
+		} else {
+			fmt.Fprintf(&sb, "%d", v)
+		}
+		sb.WriteByte('\n')
+	}
+	sb.WriteByte('}')
+	return sb.String()
 }

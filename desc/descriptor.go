@@ -2,6 +2,7 @@ package desc
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -62,6 +63,7 @@ func (t Type) AsReflect() reflect.Type {
 	switch t {
 	case Class, Array:
 		return typePointer
+	// sync/atomic does not work for int8/int16
 	// case Boolean, Byte:
 	// 	return typeInt8
 	// case Char, Short:
@@ -102,6 +104,18 @@ var (
 		ArrDim:  1,
 		EndType: Byte,
 	}
+	DescShortArray = &Desc{
+		ArrDim:  1,
+		EndType: Short,
+	}
+	DescIntArray = &Desc{
+		ArrDim:  1,
+		EndType: Int,
+	}
+	DescLongArray = &Desc{
+		ArrDim:  1,
+		EndType: Long,
+	}
 	DescClassArray = &Desc{
 		ArrDim:  1,
 		EndType: Class,
@@ -115,11 +129,11 @@ var (
 )
 
 func ParseDesc(s string) (*Desc, error) {
-	s, d := parseDesc(s)
+	t, d := parseDesc(s)
 	if d == nil {
-		return nil, ErrInvalid
+		return nil, fmt.Errorf("%w: %s", ErrInvalid, s)
 	}
-	if s != "" {
+	if t != "" {
 		return nil, ErrEndTooLate
 	}
 	return d, nil
@@ -202,7 +216,7 @@ func (d *Desc) Type() Type {
 
 func (d *Desc) ElemType() Type {
 	if d.ArrDim == 0 {
-		panic("the descriptor is not an array")
+		panic("the descriptor is not an array: " + d.String())
 	}
 	if d.ArrDim > 1 {
 		return Array
@@ -214,7 +228,7 @@ func (d *Desc) Elem() *Desc {
 	o := d.Clone()
 	o.ArrDim--
 	if o.ArrDim < 0 {
-		panic("the descriptor is not an array")
+		panic("the descriptor is not an array: " + d.String())
 	}
 	return o
 }
@@ -245,11 +259,11 @@ type MethodDesc struct {
 	Output *Desc
 }
 
-func ParseMethodDesc(s string) (*MethodDesc, error) {
-	if s[0] != Method {
-		return nil, ErrInvalid
+func ParseMethodDesc(o string) (*MethodDesc, error) {
+	if o[0] != Method {
+		return nil, fmt.Errorf("%w: %s", ErrInvalid, o)
 	}
-	s = s[1:]
+	s := o[1:]
 	md := new(MethodDesc)
 	for {
 		if len(s) <= 1 {
@@ -261,7 +275,7 @@ func ParseMethodDesc(s string) (*MethodDesc, error) {
 		}
 		var d *Desc
 		if s, d = parseDesc(s); d == nil {
-			return nil, ErrInvalid
+			return nil, fmt.Errorf("%w: %s", ErrInvalid, o)
 		}
 		md.Inputs = append(md.Inputs, d)
 	}

@@ -5,6 +5,8 @@ import (
 	"math/rand"
 	"reflect"
 	"sync"
+	"sync/atomic"
+	"time"
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
@@ -13,32 +15,43 @@ import (
 )
 
 type Ref struct {
-	lock      sync.Cond
-	locked    ir.VM
+	lock      sync.Mutex
+	locked    atomic.Pointer[VM]
 	lockCount int32
+	notify    chan struct{}
+	notifyAll atomic.Pointer[chan struct{}]
 
 	desc  *desc.Desc
-	class ir.Class
+	class *Class
 
 	identity int32
 
+	// userData stored native datas for specific objects, such as java.lang.Class and java.lang.Thread
 	userData any
+
 	arrayLen int32
 	data     unsafe.Pointer
 }
 
 var _ ir.Ref = (*Ref)(nil)
 
+func newRefBase(cls *Class, data unsafe.Pointer) *Ref {
+	r := &Ref{
+		notify:   make(chan struct{}, 0),
+		desc:     cls.Desc(),
+		class:    cls,
+		identity: (int32)(rand.Int63()),
+		data:     data,
+	}
+	nch := make(chan struct{}, 0)
+	r.notifyAll.Store(&nch)
+	return r
+}
+
 func newObjectRef(cls ir.Class) *Ref {
 	class := cls.(*Class)
 	data := reflect.New(class.refType).UnsafePointer()
-	return &Ref{
-		lock:     sync.Cond{L: new(sync.Mutex)},
-		desc:     cls.Desc(),
-		class:    class,
-		identity: (int32)(rand.Int63n(32)),
-		data:     data,
-	}
+	return newRefBase(class, data)
 }
 
 func newRefArray(cls ir.Class, length int32) *Ref {
@@ -56,10 +69,9 @@ func newRefArray(cls ir.Class, length int32) *Ref {
 
 func newRefArrayWithData(cls ir.Class, length int32, data unsafe.Pointer) *Ref {
 	return &Ref{
-		lock:     sync.Cond{L: new(sync.Mutex)},
 		desc:     cls.Desc(),
 		class:    cls.(*Class),
-		identity: (int32)(rand.Int63n(32)),
+		identity: (int32)(rand.Int63()),
 		arrayLen: length,
 		data:     data,
 	}
@@ -103,6 +115,10 @@ func (r *Ref) Data() unsafe.Pointer {
 	return r.data
 }
 
+func (r *Ref) GoString() string {
+	return fmt.Sprintf("<Ref 0x%08x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
+}
+
 func (r *Ref) GetArrRef() []ir.Ref {
 	if !r.desc.ElemType().IsRef() {
 		panic("Underlying array is not reference")
@@ -138,26 +154,108 @@ func (r *Ref) GetArrInt64() []int64 {
 	return unsafe.Slice((*int64)(r.data), r.arrayLen)
 }
 
-func (r *Ref) Lock(vm ir.VM) int {
-	if r.locked != vm {
-		r.lock.L.Lock()
+func (r *Ref) IsLocked(vm ir.VM) int {
+	if r.locked.Load() == vm.(*VM) {
+		return (int)(r.lockCount)
 	}
+	return 0
+}
+
+func (r *Ref) Lock(vm ir.VM) int {
+	return r.Lock0(vm.(*VM))
+}
+
+func (r *Ref) Lock0(vm *VM) int {
+	if r.locked.Load() != vm {
+		r.lock.Lock()
+		r.locked.Store(vm)
+	}
+	// if r.locked == vm, it is impossible to unlock concurrently
 	r.lockCount++
 	return (int)(r.lockCount)
 }
 
 func (r *Ref) Unlock(vm ir.VM) (int, error) {
-	if r.locked != vm {
+	return r.Unlock0(vm.(*VM))
+}
+
+func (r *Ref) Unlock0(vm *VM) (int, error) {
+	if r.locked.Load() != vm {
 		return 0, errs.IllegalMonitorStateException
 	}
 	r.lockCount--
 	c := (int)(r.lockCount)
 	if c == 0 {
-		r.lock.L.Unlock()
+		r.locked.Store(nil)
+		r.lock.Unlock()
 	}
 	return c, nil
 }
 
-func (r *Ref) GoString() string {
-	return fmt.Sprintf("<Ref %x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
+func (r *Ref) Notify(vm ir.VM) error {
+	if r.locked.Load() != vm {
+		return errs.IllegalMonitorStateException
+	}
+	select {
+	case r.notify <- struct{}{}:
+	default:
+	}
+	return nil
+}
+
+func (r *Ref) NotifyAll(vm ir.VM) error {
+	if r.locked.Load() != vm {
+		return errs.IllegalMonitorStateException
+	}
+	nch := make(chan struct{}, 0)
+	old := r.notifyAll.Swap(&nch)
+	close(*old)
+	return nil
+}
+
+func (r *Ref) Wait(vm ir.VM, millis int64) error {
+	return r.Wait0(vm.(*VM), time.Millisecond*(time.Duration)(millis))
+}
+
+func (r *Ref) Wait0(vm *VM, dur time.Duration) error {
+	if r.locked.Load() != vm {
+		return errs.IllegalMonitorStateException
+	}
+	r.lock.Unlock()
+	select {
+	case <-vm.interruptNotifier:
+		if vm.GetAndClearInterrupt() {
+			r.lock.Lock()
+			return errs.InterruptedException
+		}
+	default:
+	}
+	if dur == 0 {
+	SELECT_NO_TIMER:
+		select {
+		case <-vm.interruptNotifier:
+			if vm.GetAndClearInterrupt() {
+				r.lock.Lock()
+				return errs.InterruptedException
+			}
+			goto SELECT_NO_TIMER
+		case <-r.notify:
+		case <-*r.notifyAll.Load():
+		}
+	} else {
+	SELECT_WITH_TIMER:
+		select {
+		case <-vm.interruptNotifier:
+			if vm.GetAndClearInterrupt() {
+				r.lock.Lock()
+				return errs.InterruptedException
+			}
+			goto SELECT_WITH_TIMER
+		case <-r.notify:
+		case <-*r.notifyAll.Load():
+		case <-time.After(dur):
+		}
+	}
+	r.lock.Lock()
+	return nil
 }

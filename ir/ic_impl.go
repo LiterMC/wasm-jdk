@@ -609,7 +609,8 @@ type ICmonitorenter struct{}
 func (*ICmonitorenter) Op() ops.Op { return ops.Monitorenter }
 func (*ICmonitorenter) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
-	return vm.MonitorLock(ref)
+	ref.Lock(vm)
+	return nil
 }
 
 type ICmonitorexit struct{}
@@ -617,7 +618,8 @@ type ICmonitorexit struct{}
 func (*ICmonitorexit) Op() ops.Op { return ops.Monitorexit }
 func (*ICmonitorexit) Execute(vm VM) error {
 	ref := vm.GetStack().PopRef()
-	return vm.MonitorUnlock(ref)
+	_, err := ref.Unlock(vm)
+	return err
 }
 
 type ICnop struct{}

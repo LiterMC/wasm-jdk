@@ -29,6 +29,9 @@ func main() {
 		EntryClass:  class,
 		EntryMethod: "main([Ljava/lang/String;)V",
 	})
+	fmt.Println("Loading native library ...")
+	native.LoadDefaultNatives(vm, cl)
+	vm.SetupEntryMethod()
 	{
 		arr := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-2))
 		refs := arr.GetArrRef()
@@ -37,8 +40,6 @@ func main() {
 		}
 		vm.GetStack().SetVarRef(0, arr)
 	}
-	fmt.Println("Loading native library ...")
-	native.LoadDefaultNatives(vm, cl)
 	fmt.Println("Running ...")
 	for vm.Running() {
 		if err := vm.Step(); err != nil {

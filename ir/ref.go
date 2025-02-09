@@ -20,8 +20,12 @@ type Ref interface {
 	GetArrInt32() []int32
 	GetArrInt64() []int64
 
-	Lock(vm VM) int
-	Unlock(vm VM) (int, error)
+	IsLocked(VM) int
+	Lock(VM) int
+	Unlock(VM) (int, error)
+	Notify(VM) error
+	NotifyAll(VM) error
+	Wait(VM, int64) error
 }
 
 type Class interface {
@@ -53,8 +57,8 @@ type Field interface {
 	IsStatic() bool
 
 	GetPointer(Ref) unsafe.Pointer
-	GetAndPush(Ref, Stack)
-	PopAndSet(Ref, Stack)
+	GetAndPush(Stack) error
+	PopAndSet(Stack) error
 }
 
 type Method interface {

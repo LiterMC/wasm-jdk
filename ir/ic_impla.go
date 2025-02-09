@@ -43,8 +43,8 @@ func (*ICaastore) Execute(vm VM) error {
 	if value == nil {
 		arr[index] = value
 	}
-	if !vm.GetClass(value).IsAssignableFrom(ref.Class()) {
-		return errs.ClassCastException
+	if vcls, arrElem := vm.GetClass(value), ref.Class().Elem(); !arrElem.IsAssignableFrom(vcls) {
+		return &errs.ClassCastException{vcls.Name(), arrElem.Name()}
 	}
 	arr[index] = value
 	return nil
@@ -223,7 +223,7 @@ func (ic *ICcheckcast) Execute(vm VM) error {
 		return err
 	}
 	if ref != nil && !class.IsInstance(ref) {
-		return errs.ClassCastException
+		return &errs.ClassCastException{ref.Class().Name(), class.Name()}
 	}
 	return nil
 }
@@ -235,10 +235,6 @@ type ICgetfield struct {
 func (*ICgetfield) Op() ops.Op { return ops.Getfield }
 func (ic *ICgetfield) Execute(vm VM) error {
 	stack := vm.GetStack()
-	ref := stack.PopRef()
-	if ref == nil {
-		return errs.NullPointerException
-	}
 	field := vm.GetCurrentClass().GetField(ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
@@ -247,7 +243,7 @@ func (ic *ICgetfield) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.GetAndPush(ref, stack)
+	field.GetAndPush(stack)
 	return nil
 }
 
@@ -266,7 +262,7 @@ func (ic *ICgetstatic) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.GetAndPush(nil, stack)
+	field.GetAndPush(stack)
 	return nil
 }
 
@@ -306,8 +302,6 @@ type ICinvokeinterface struct {
 
 func (*ICinvokeinterface) Op() ops.Op { return ops.Invokeinterface }
 func (ic *ICinvokeinterface) Execute(vm VM) error {
-	stack := vm.GetStack()
-	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
@@ -316,7 +310,7 @@ func (ic *ICinvokeinterface) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.Invoke(method, ref)
+	vm.InvokeInterface(method)
 	return nil
 }
 
@@ -326,8 +320,6 @@ type ICinvokespecial struct {
 
 func (*ICinvokespecial) Op() ops.Op { return ops.Invokespecial }
 func (ic *ICinvokespecial) Execute(vm VM) error {
-	stack := vm.GetStack()
-	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
@@ -336,7 +328,7 @@ func (ic *ICinvokespecial) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.Invoke(method, ref)
+	vm.Invoke(method)
 	return nil
 }
 
@@ -364,8 +356,6 @@ type ICinvokevirtual struct {
 
 func (*ICinvokevirtual) Op() ops.Op { return ops.Invokevirtual }
 func (ic *ICinvokevirtual) Execute(vm VM) error {
-	stack := vm.GetStack()
-	ref := stack.PopRef()
 	method := vm.GetCurrentClass().GetMethod(ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
@@ -374,7 +364,7 @@ func (ic *ICinvokevirtual) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.Invoke(method, ref)
+	vm.Invoke(method)
 	return nil
 }
 
@@ -429,13 +419,13 @@ func (ic *ICnewarray) Execute(vm VM) error {
 	var arr Ref
 	switch ic.Atype {
 	case 4, 8: // T_BOOLEAN, T_BYTE
-		arr = vm.NewArray(desc.DescInt8, count)
+		arr = vm.NewArray(desc.DescByteArray, count)
 	case 5, 9: // T_CHAR, T_SHORT
-		arr = vm.NewArray(desc.DescInt16, count)
+		arr = vm.NewArray(desc.DescShortArray, count)
 	case 6, 10: // T_FLOAT, T_INT
-		arr = vm.NewArray(desc.DescInt32, count)
+		arr = vm.NewArray(desc.DescIntArray, count)
 	case 7, 11: // T_DOUBLE, T_LONG
-		arr = vm.NewArray(desc.DescInt64, count)
+		arr = vm.NewArray(desc.DescLongArray, count)
 	default:
 		panic(fmt.Errorf("ir.newarray: unknown atype %d", ic.Atype))
 	}
@@ -450,10 +440,6 @@ type ICputfield struct {
 func (*ICputfield) Op() ops.Op { return ops.Putfield }
 func (ic *ICputfield) Execute(vm VM) error {
 	stack := vm.GetStack()
-	ref := stack.PopRef()
-	if ref == nil {
-		return errs.NullPointerException
-	}
 	field := vm.GetCurrentClass().GetField(ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
@@ -462,8 +448,7 @@ func (ic *ICputfield) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.PopAndSet(ref, stack)
-	return nil
+	return field.PopAndSet(stack)
 }
 
 type ICputstatic struct {
@@ -481,6 +466,6 @@ func (ic *ICputstatic) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.PopAndSet(nil, stack)
+	field.PopAndSet(stack)
 	return nil
 }

@@ -47,16 +47,22 @@ type VM interface {
 	GetClassLoader() ClassLoader
 	GetCurrentClass() Class
 	GetCurrentMethod() Method
+
 	LoadNativeMethod(Method, func(VM) error)
-	Invoke(Method, Ref)
+	Invoke(Method)
 	InvokeStatic(Method)
+	InvokeInterface(Method)
 	InvokeDynamic(uint16) error
+
 	Return()
 	Throw(Ref)
 	Goto(*ICNode)
 
-	MonitorLock(Ref) error
-	MonitorUnlock(Ref) error
+	GetCarrierThread() Ref
+	GetCurrentThread() Ref
+	SetCurrentThread(Ref)
+	Interrupt(Ref)
+	ClearInterrupt()
 }
 
 type Stack interface {

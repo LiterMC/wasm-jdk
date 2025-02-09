@@ -5,10 +5,10 @@ import (
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
 )
-import "fmt"
 
 type Field struct {
 	*jcls.Field
@@ -34,7 +34,13 @@ func (f *Field) GetPointer(r ir.Ref) unsafe.Pointer {
 	return unsafe.Add(r.Data(), f.offset)
 }
 
-func (f *Field) GetAndPush(r ir.Ref, s ir.Stack) {
+func (f *Field) GetAndPush(s ir.Stack) error {
+	var r ir.Ref
+	if !f.IsStatic() {
+		if r = s.PopRef(); r == nil {
+			return errs.NullPointerException
+		}
+	}
 	ptr := f.GetPointer(r)
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
@@ -50,28 +56,63 @@ func (f *Field) GetAndPush(r ir.Ref, s ir.Stack) {
 	default:
 		panic("unreachable")
 	}
+	return nil
 }
 
-func (f *Field) PopAndSet(r ir.Ref, s ir.Stack) {
-	ptr := f.GetPointer(r)
-	fmt.Printf("stack:\n - %d\n - %d\n", s.(*Stack).vars, s.(*Stack).stack)
+func (f *Field) getPtrFromStack(s ir.Stack) unsafe.Pointer {
+	if f.IsStatic() {
+		return unsafe.Add(f.class.staticData, f.offset)
+	}
+	r := s.PopRef()
+	if r == nil {
+		return nil
+	}
+	return unsafe.Add(r.Data(), f.offset)
+}
+
+func (f *Field) PopAndSet(s ir.Stack) error {
 	switch f.Desc.Type() {
 	case desc.Class, desc.Array:
 		v := s.PopRef()
-		var r *Ref
+		var w *Ref
 		if v != nil {
-			r = v.(*Ref)
+			w = v.(*Ref)
 		}
-		atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(r))
+		ptr := f.getPtrFromStack(s)
+		if ptr == nil {
+			return errs.NullPointerException
+		}
+		atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(w))
 	case desc.Boolean, desc.Byte:
-		atomic.StoreInt32((*int32)(ptr), (int32)(s.PopInt8()))
+		v := (int32)(s.PopInt8())
+		ptr := f.getPtrFromStack(s)
+		if ptr == nil {
+			return errs.NullPointerException
+		}
+		atomic.StoreInt32((*int32)(ptr), v)
 	case desc.Char, desc.Short:
-		atomic.StoreInt32((*int32)(ptr), (int32)(s.PopInt16()))
+		v := (int32)(s.PopInt16())
+		ptr := f.getPtrFromStack(s)
+		if ptr == nil {
+			return errs.NullPointerException
+		}
+		atomic.StoreInt32((*int32)(ptr), v)
 	case desc.Int, desc.Float:
-		atomic.StoreInt32((*int32)(ptr), s.PopInt32())
+		v := s.PopInt32()
+		ptr := f.getPtrFromStack(s)
+		if ptr == nil {
+			return errs.NullPointerException
+		}
+		atomic.StoreInt32((*int32)(ptr), v)
 	case desc.Long, desc.Double:
-		atomic.StoreInt64((*int64)(ptr), s.PopInt64())
+		v := s.PopInt64()
+		ptr := f.getPtrFromStack(s)
+		if ptr == nil {
+			return errs.NullPointerException
+		}
+		atomic.StoreInt64((*int64)(ptr), v)
 	default:
 		panic("unreachable")
 	}
+	return nil
 }

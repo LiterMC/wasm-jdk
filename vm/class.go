@@ -46,13 +46,13 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 	}
 	var err error
 	if c.SuperSym != nil {
-		if c.super, err = c.loader.LoadClass(c.SuperSym.Name); err != nil {
+		if c.super, err = loader.LoadClass(c.SuperSym.Name); err != nil {
 			panic(err)
 		}
 	}
 	c.interfaces = make([]ir.Class, len(c.InterfacesSym))
 	for i, in := range c.InterfacesSym {
-		if c.interfaces[i], err = c.loader.LoadClass(in.Name); err != nil {
+		if c.interfaces[i], err = loader.LoadClass(in.Name); err != nil {
 			panic(err)
 		}
 	}
@@ -84,7 +84,7 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 			})
 		}
 	}
-	staticType := reflect.StructOf(fields)
+	staticType := reflect.StructOf(statics)
 	c.refType = reflect.StructOf(fields)
 	c.Fields = make([]Field, len(c.Class.Fields))
 	for i, f := range c.Class.Fields {
@@ -122,6 +122,13 @@ func (c *Class) NewArrayClass(dim int) *Class {
 		arrayDim: dim,
 		elem:     c,
 	}
+}
+
+func (c *Class) ShouldInit() bool {
+	if c.arrayDim > 0 {
+		return c.elem.ShouldInit()
+	}
+	return c.initVM.Load() == nil
 }
 
 func (c *Class) InitBeforeUse(vm *VM) {
@@ -165,20 +172,18 @@ func (c *Class) initFM() {
 	c.scanCodes()
 
 	if c.staticInit != nil {
-		vm := NewVM(&Options{
-			Loader: c.loader,
-		})
-		vm.creator = c.initVM.Load()
+		vm := c.initVM.Load()
+		prev := vm.stack
 		vm.stack = &Stack{
+			prev:   prev,
 			class:  c,
 			method: c.staticInit,
 		}
 		fmt.Println("==> invoking " + c.Name() + ".<clinit>")
 		vm.nextPc = c.staticInit.Code.Code
-		for vm.Running() {
-			if err := vm.Step(); err != nil {
-				panic(err)
-			}
+		err := vm.RunStack()
+		if err != nil {
+			panic(err)
 		}
 	}
 }
@@ -195,6 +200,13 @@ func (c *Class) Elem() ir.Class {
 		return c.elem
 	}
 	return c.elem.NewArrayClass(c.arrayDim - 1)
+}
+
+func (c *Class) Name() string {
+	if c.arrayDim > 0 {
+		return c.elem.Name() + "[]"
+	}
+	return c.Class.Name()
 }
 
 func (c *Class) Desc() *desc.Desc {
@@ -274,10 +286,19 @@ func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 		s.PushRef(c.initVM.Load().GetStringInternOrNew(v.Utf8))
 	case *jcls.ConstantClass:
 		vm := c.initVM.Load()
-		s.PushRef(vm.GetClassRef(vm.GetClassFromDesc(&desc.Desc{
-			EndType: desc.Class,
-			Class:   v.Name,
-		})))
+		var dc *desc.Desc
+		if v.Name[0] == '[' {
+			var err error
+			if dc, err = desc.ParseDesc(v.Name); err != nil {
+				panic(err)
+			}
+		} else {
+			dc = &desc.Desc{
+				EndType: desc.Class,
+				Class:   v.Name,
+			}
+		}
+		s.PushRef(vm.GetClassRef(vm.GetClassFromDesc(dc)))
 	default:
 		return fmt.Errorf("Unexpected constant type %T", v)
 	}
@@ -315,13 +336,17 @@ func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
 	if err != nil {
 		panic(err)
 	}
+	return c.GetMethodByDesc(name, dc)
+}
+
+func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
 	x := c
 	for i := range len(x.Methods) {
 		m := &x.Methods[i]
 		if m.Name() == name && m.Desc().EqInputs(dc) {
-			if !m.Desc().Output.Eq(dc.Output) {
-				panic("Methods " + name + typ + " have same inputs but different output " + m.Desc().String())
-			}
+			// if !m.Desc().Output.Eq(dc.Output) {
+			// 	panic("Methods " + name + dc.String() + " have same inputs but different output " + m.Desc().String())
+			// }
 			return m
 		}
 	}
@@ -394,7 +419,7 @@ func (c *Class) loadField(ref *jcls.ConstantRef, canLoadClass bool) *Field {
 		return nil
 	}
 	for i, f := range x.Class.Fields {
-		if (x == c || !f.AccessFlags.Has(jcls.AccPrivate)) && f.Name() == ref.NameAndType.Name {
+		if f.Name() == ref.NameAndType.Name {
 			if f.Desc.String() != ref.NameAndType.Desc {
 				panic(fmt.Errorf("cannot load class: field %s is %s, but one operation requires %s", ref.NameAndType.Name, f.Desc.String(), ref.NameAndType.Desc))
 			}
@@ -421,12 +446,16 @@ func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
 	}
 	x := k.(*Class)
 	x.InitBeforeUse(c.initVM.Load())
-	for ; x != nil; x = x.super.(*Class) {
+	for x != nil {
 		for i, m := range x.Class.Methods {
-			if (x == c || !m.AccessFlags.Has(jcls.AccPrivate)) && m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
+			if m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
 				return &x.Methods[i]
 			}
 		}
+		if x.super == nil {
+			break
+		}
+		x = x.super.(*Class)
 	}
 	panic(fmt.Errorf("cannot load class: cannot find method %s", ref))
 }
