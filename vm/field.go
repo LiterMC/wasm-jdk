@@ -19,6 +19,10 @@ type Field struct {
 
 var _ ir.Field = (*Field)(nil)
 
+func (f *Field) Offset() int64 {
+	return (int64)(f.offset)
+}
+
 func (f *Field) Type() ir.Class {
 	return f.typ
 }

@@ -172,14 +172,15 @@ func (c *Class) initFM() {
 	c.scanCodes()
 
 	if c.staticInit != nil {
+		fmt.Println("==> invoking " + c.Name() + ".<clinit>")
 		vm := c.initVM.Load()
 		prev := vm.stack
+		prev.pc = vm.nextPc
 		vm.stack = &Stack{
 			prev:   prev,
 			class:  c,
 			method: c.staticInit,
 		}
-		fmt.Println("==> invoking " + c.Name() + ".<clinit>")
 		vm.nextPc = c.staticInit.Code.Code
 		err := vm.RunStack()
 		if err != nil {
@@ -234,7 +235,25 @@ func (c *Class) Interfaces() []ir.Class {
 	return c.interfaces
 }
 
+func (c *Class) IsInterface() bool {
+	if c.arrayDim != 0 {
+		return false
+	}
+	return c.Class.IsInterface()
+}
+
 func (c *Class) IsAssignableFrom(k ir.Class) bool {
+	println(k)
+	if c.arrayDim != 0 {
+		kk := k.(*Class)
+		if c.arrayDim != kk.arrayDim {
+			return false
+		}
+		if c.arrayDim == -1 {
+			return c == kk
+		}
+		return c.elem.IsAssignableFrom(kk.elem)
+	}
 	if !c.IsInterface() {
 		if c == k {
 			return true
@@ -286,19 +305,11 @@ func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 		s.PushRef(c.initVM.Load().GetStringInternOrNew(v.Utf8))
 	case *jcls.ConstantClass:
 		vm := c.initVM.Load()
-		var dc *desc.Desc
-		if v.Name[0] == '[' {
-			var err error
-			if dc, err = desc.ParseDesc(v.Name); err != nil {
-				panic(err)
-			}
-		} else {
-			dc = &desc.Desc{
-				EndType: desc.Class,
-				Class:   v.Name,
-			}
+		class, err := vm.getClassFromDescString(v.Name)
+		if err != nil {
+			return err
 		}
-		s.PushRef(vm.GetClassRef(vm.GetClassFromDesc(dc)))
+		s.PushRef(vm.GetClassRef(class))
 	default:
 		return fmt.Errorf("Unexpected constant type %T", v)
 	}
@@ -340,14 +351,15 @@ func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
 }
 
 func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
-	x := c
-	for i := range len(x.Methods) {
-		m := &x.Methods[i]
-		if m.Name() == name && m.Desc().EqInputs(dc) {
-			// if !m.Desc().Output.Eq(dc.Output) {
-			// 	panic("Methods " + name + dc.String() + " have same inputs but different output " + m.Desc().String())
-			// }
-			return m
+	for x := c; x != nil; x = x.super.(*Class) {
+		for i := range len(x.Methods) {
+			m := &x.Methods[i]
+			if m.Name() == name && m.Desc().EqInputs(dc) {
+				// if !m.Desc().Output.Eq(dc.Output) {
+				// 	panic("Methods " + name + dc.String() + " have same inputs but different output " + m.Desc().String())
+				// }
+				return m
+			}
 		}
 	}
 	return nil

@@ -65,12 +65,28 @@ var (
 	ByteArrayClass = ByteClass.NewArrayClass(1)
 )
 
-func (vm *VM) GetClassFromDesc(dc *desc.Desc) *Class {
+func (vm *VM) getClassFromDescString(name string) (*Class, error) {
+	var dc *desc.Desc
+	if name[0] == '[' {
+		var err error
+		if dc, err = desc.ParseDesc(name); err != nil {
+			return nil, err
+		}
+	} else {
+		dc = &desc.Desc{
+			EndType: desc.Class,
+			Class:   name,
+		}
+	}
+	return vm.GetClassFromDesc(dc)
+}
+
+func (vm *VM) GetClassFromDesc(dc *desc.Desc) (*Class, error) {
 	var elem *Class
 	switch dc.EndType {
 	case desc.Class:
 		if cls, err := vm.GetClassLoader().LoadClass(dc.Class); err != nil {
-			panic(err)
+			return nil, err
 		} else {
 			elem = cls.(*Class)
 		}
@@ -94,9 +110,9 @@ func (vm *VM) GetClassFromDesc(dc *desc.Desc) *Class {
 		panic("unexpected EndType")
 	}
 	if dc.ArrDim == 0 {
-		return elem
+		return elem, nil
 	}
-	return elem.NewArrayClass(dc.ArrDim)
+	return elem.NewArrayClass(dc.ArrDim), nil
 }
 
 func (vm *VM) GetClassRef(cls ir.Class) ir.Ref {
@@ -137,12 +153,27 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 	rtypePtr := (**Ref)(vm.javaLangInvokeMethodType_rtype.GetPointer(ref))
 	ptypesPtr := (**Ref)(vm.javaLangInvokeMethodType_ptypes.GetPointer(ref))
 
-	*rtypePtr = vm.GetClassRef(vm.GetClassFromDesc(md.Output)).(*Ref)
+	outCls, err := vm.GetClassFromDesc(md.Output)
+	if err != nil {
+		panic(err)
+	}
+	*rtypePtr = vm.GetClassRef(outCls).(*Ref)
 	ptypesRef := vm.NewArray(desc.DescClassArray, (int32)(len(md.Inputs)))
 	ptypesArr := ptypesRef.GetArrRef()
 	for i, in := range md.Inputs {
-		ptypesArr[i] = vm.GetClassRef(vm.GetClassFromDesc(in)).(*Ref)
+		inCls, err := vm.GetClassFromDesc(in)
+		if err != nil {
+			panic(err)
+		}
+		ptypesArr[i] = vm.GetClassRef(inCls).(*Ref)
 	}
 	*ptypesPtr = ptypesRef.(*Ref)
 	return ref
+}
+
+func (vm *VM) FillThrowableStackTrace(throwable ir.Ref) {
+	st := vm.stack.Prev().Prev()
+	backtrace := vm.New(vm.GetObjectClass()).(*Ref)
+	*backtrace.UserData() = NewStackInfo(st, -1)
+	*(**Ref)(vm.javaLangThrowable_backtrace.GetPointer(throwable)) = backtrace
 }

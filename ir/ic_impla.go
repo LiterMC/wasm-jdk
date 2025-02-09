@@ -243,8 +243,7 @@ func (ic *ICgetfield) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.GetAndPush(stack)
-	return nil
+	return field.GetAndPush(stack)
 }
 
 type ICgetstatic struct {
@@ -262,8 +261,7 @@ func (ic *ICgetstatic) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	field.GetAndPush(stack)
-	return nil
+	return field.GetAndPush(stack)
 }
 
 type ICinstanceof struct {
@@ -310,7 +308,7 @@ func (ic *ICinvokeinterface) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.InvokeInterface(method)
+	vm.InvokeVirtual(method)
 	return nil
 }
 
@@ -364,7 +362,7 @@ func (ic *ICinvokevirtual) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
-	vm.Invoke(method)
+	vm.InvokeVirtual(method)
 	return nil
 }
 

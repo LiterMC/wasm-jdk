@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/jcls"
 )
 
 type Stack struct {
@@ -20,6 +21,18 @@ type Stack struct {
 }
 
 var _ ir.Stack = (*Stack)(nil)
+
+func (s *Stack) Prev() ir.Stack {
+	return s.prev
+}
+
+func (s *Stack) Method() ir.Method {
+	return s.method
+}
+
+func (s *Stack) PC() *ir.ICNode {
+	return s.pc
+}
 
 func (s *Stack) GetVar(i uint16) uint32 {
 	return s.vars[i]
@@ -147,7 +160,11 @@ func (s *Stack) PeekFloat64() float64 {
 }
 
 func (s *Stack) PeekRef() ir.Ref {
-	return s.stackRefs[len(s.stack)-1]
+	v := s.stackRefs[len(s.stack)-1]
+	if v == nil {
+		return nil
+	}
+	return v
 }
 
 func (s *Stack) Pop() uint32 {
@@ -277,5 +294,72 @@ func (s *Stack) GoString() string {
 		sb.WriteByte('\n')
 	}
 	sb.WriteByte('}')
+	return sb.String()
+}
+
+type StackInfo struct {
+	Frames     []StackFrameInfo
+	TotalDepth int
+}
+
+type StackFrameInfo struct {
+	Method *Method
+	PC     *ir.ICNode
+}
+
+func NewStackInfo(stack ir.Stack, depth int) *StackInfo {
+	var frames []StackFrameInfo
+	if depth == -1 {
+		frames = make([]StackFrameInfo, 0, 8)
+	} else {
+		frames = make([]StackFrameInfo, 0, depth)
+	}
+	si := new(StackInfo)
+	for s := stack; s != nil; s = s.Prev() {
+		if s.Method() == nil { // JVM initialization stack
+			break
+		}
+		if si.TotalDepth++; si.TotalDepth <= depth {
+			continue
+		}
+		frames = append(frames, StackFrameInfo{
+			Method: s.Method().(*Method),
+			PC:     s.PC(),
+		})
+	}
+	si.Frames = frames
+	return si
+}
+
+func (s *StackInfo) String() string {
+	var sb strings.Builder
+	more := s.TotalDepth - len(s.Frames)
+	for _, f := range s.Frames {
+		sb.WriteString("  at ")
+		sb.WriteString(f.String())
+		sb.WriteByte('\n')
+	}
+	if more > 0 {
+		fmt.Fprintf(&sb, " ... %d more", more)
+	}
+	return sb.String()
+}
+
+func (fi *StackFrameInfo) String() string {
+	var sb strings.Builder
+	fmt.Fprintf(&sb, "%s.%s%s (",
+		fi.Method.class.Name(),
+		fi.Method.Name(),
+		fi.Method.Desc().String())
+	if sourceFile, ok := fi.Method.class.GetAttr("SourceFile").(*jcls.AttrSourceFile); ok {
+		sb.WriteString(sourceFile.String())
+		sb.WriteByte(':')
+	}
+	if fi.Method.AccessFlags.Has(jcls.AccNative) {
+		sb.WriteString("native")
+	} else {
+		fmt.Fprintf(&sb, "0x%04x", fi.PC.Offset)
+	}
+	sb.WriteByte(')')
 	return sb.String()
 }

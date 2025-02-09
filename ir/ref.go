@@ -52,6 +52,7 @@ type Class interface {
 
 type Field interface {
 	Name() string
+	Offset() int64
 
 	GetDeclaringClass() Class
 	IsStatic() bool

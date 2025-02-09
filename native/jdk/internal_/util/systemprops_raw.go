@@ -14,9 +14,17 @@ func init() {
 	registerDefaultNative("jdk/internal/util/SystemProps$Raw.platformProperties()[Ljava/lang/String;", SystemProps_Raw_platformProperties)
 }
 
+var vmProperties = []string{
+	"java.home", "/java",
+}
+
 // private static native String[] vmProperties();
 func SystemProps_Raw_vmProperties(vm ir.VM) error {
-	propertiesRef := vm.NewArray(desc.DescStringArray, 0)
+	propertiesRef := vm.NewArray(desc.DescStringArray, (int32)(len(vmProperties)))
+	properties := propertiesRef.GetArrRef()
+	for i, v := range vmProperties {
+		properties[i] = vm.NewString(v)
+	}
 	vm.GetStack().PushRef(propertiesRef)
 	return nil
 }

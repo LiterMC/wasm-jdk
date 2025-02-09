@@ -38,6 +38,7 @@ type VM interface {
 	GetStringClass() Class
 	GetString(Ref) string
 	GetStringIntern(Ref) Ref
+	GetStringInternOrNew(string) Ref
 	GetClassRef(Class) Ref
 
 	GetDesc(uint16) *desc.Desc
@@ -51,7 +52,7 @@ type VM interface {
 	LoadNativeMethod(Method, func(VM) error)
 	Invoke(Method)
 	InvokeStatic(Method)
-	InvokeInterface(Method)
+	InvokeVirtual(Method)
 	InvokeDynamic(uint16) error
 
 	Return()
@@ -63,9 +64,15 @@ type VM interface {
 	SetCurrentThread(Ref)
 	Interrupt(Ref)
 	ClearInterrupt()
+
+	FillThrowableStackTrace(Ref)
 }
 
 type Stack interface {
+	Prev() Stack
+	Method() Method
+	PC() *ICNode
+
 	GetVar(uint16) uint32
 	GetVar64(uint16) uint64
 	GetVarInt8(uint16) int8

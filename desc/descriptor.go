@@ -59,6 +59,19 @@ func (t Type) Size() uintptr {
 	}
 }
 
+func (t Type) Slot() uint16 {
+	switch t {
+	case Void:
+		return 0
+	case Class, Array, Boolean, Byte, Char, Short, Int, Float:
+		return 1
+	case Long, Double:
+		return 2
+	default:
+		panic("unknown desc.Type")
+	}
+}
+
 func (t Type) AsReflect() reflect.Type {
 	switch t {
 	case Class, Array:
@@ -328,4 +341,12 @@ func (d *MethodDesc) AsReflect() reflect.Type {
 		inputs[i] = in.AsReflect()
 	}
 	return reflect.FuncOf(inputs, []reflect.Type{output}, false)
+}
+
+func (d *MethodDesc) InputSlots() uint16 {
+	var slots uint16 = 0
+	for _, in := range d.Inputs {
+		slots += in.Type().Slot()
+	}
+	return slots
 }

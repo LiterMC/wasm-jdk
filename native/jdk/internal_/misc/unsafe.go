@@ -123,9 +123,9 @@ func Unsafe_putReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVarRef(4)
+	value := asJvmRef(stack.GetVarRef(4))
 	ptr := unsafe.Add(ref.Data(), offset)
-	atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(value.(*jvm.Ref)))
+	atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(value))
 	return nil
 }
 
@@ -332,8 +332,8 @@ func Unsafe_compareAndSetReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVarRef(4).(*jvm.Ref)
-	value := stack.GetVarRef(5).(*jvm.Ref)
+	expected := asJvmRef(stack.GetVarRef(4))
+	value := asJvmRef(stack.GetVarRef(5))
 	ptr := unsafe.Add(ref.Data(), offset)
 	if atomic.CompareAndSwapPointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(expected), (unsafe.Pointer)(value)) {
 		stack.Push(1)
@@ -348,12 +348,12 @@ func Unsafe_compareAndExchangeReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVarRef(4)
-	value := stack.GetVarRef(5).(*jvm.Ref)
+	expected := asJvmRef(stack.GetVarRef(4))
+	value := asJvmRef(stack.GetVarRef(5))
 	ptr := (*unsafe.Pointer)(unsafe.Add(ref.Data(), offset))
 	old := atomic.LoadPointer(ptr)
 	for {
-		if atomic.CompareAndSwapPointer(ptr, (unsafe.Pointer)(expected.(*jvm.Ref)), (unsafe.Pointer)(value)) {
+		if atomic.CompareAndSwapPointer(ptr, (unsafe.Pointer)(expected), (unsafe.Pointer)(value)) {
 			stack.PushRef(expected)
 			return nil
 		}
@@ -705,4 +705,11 @@ func Unsafe_getLoadAverage0(vm ir.VM) error {
 	_, _ = loadavgRef, nelems
 	stack.PushInt32(-1)
 	return nil
+}
+
+func asJvmRef(ref ir.Ref) *jvm.Ref {
+	if ref == nil {
+		return nil
+	}
+	return ref.(*jvm.Ref)
 }
