@@ -68,13 +68,9 @@ func newRefArray(cls ir.Class, length int32) *Ref {
 }
 
 func newRefArrayWithData(cls ir.Class, length int32, data unsafe.Pointer) *Ref {
-	return &Ref{
-		desc:     cls.Desc(),
-		class:    cls.(*Class),
-		identity: (int32)(rand.Int63()),
-		arrayLen: length,
-		data:     data,
-	}
+	ref := newRefBase(cls.(*Class), data)
+	ref.arrayLen = length
+	return ref
 }
 
 func newMultiDimArray(cls ir.Class, lengths []int32) *Ref {
@@ -82,7 +78,7 @@ func newMultiDimArray(cls ir.Class, lengths []int32) *Ref {
 	arr := newRefArray(cls, l)
 	elem := cls.Elem()
 	lengths = lengths[1:]
-	if len(lengths) > 0 {
+	if len(lengths) > 0 && elem.ArrayDim() > 0 {
 		refs := arr.GetArrRef()
 		for i := (int32)(0); i < l; i++ {
 			refs[i] = newMultiDimArray(elem, lengths)

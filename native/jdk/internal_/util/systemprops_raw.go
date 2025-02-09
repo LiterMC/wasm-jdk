@@ -7,6 +7,8 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+
+	misc "github.com/LiterMC/wasm-jdk/native/jdk/internal_/misc"
 )
 
 func init() {
@@ -73,24 +75,17 @@ const (
 )
 
 var (
-	isBigEndian        bool
 	cpuEndianStr       string
 	unicodeEncodingStr string
 )
 
 func init() {
-	i := (uint16)(0x0124)
-	v := (*(*[2]byte)((unsafe.Pointer)(&i)))[0]
-	if v == 0x01 {
-		isBigEndian = true
+	if misc.BigEndian {
 		cpuEndianStr = "big"
 		unicodeEncodingStr = "UnicodeBig"
-	} else if v == 0x24 {
-		isBigEndian = false
+	} else {
 		cpuEndianStr = "little"
 		unicodeEncodingStr = "UnicodeLittle"
-	} else {
-		panic("unexpected int encoding")
 	}
 }
 

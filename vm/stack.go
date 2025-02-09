@@ -358,7 +358,12 @@ func (fi *StackFrameInfo) String() string {
 	if fi.Method.AccessFlags.Has(jcls.AccNative) {
 		sb.WriteString("native")
 	} else {
-		fmt.Fprintf(&sb, "0x%04x", fi.PC.Offset)
+		line := fi.Method.Code.GetLine((uint16)(fi.PC.Offset))
+		if line >= 0 {
+			fmt.Fprintf(&sb, "%d", line)
+		} else {
+			fmt.Fprintf(&sb, "0x%04x", fi.PC.Offset)
+		}
 	}
 	sb.WriteByte(')')
 	return sb.String()

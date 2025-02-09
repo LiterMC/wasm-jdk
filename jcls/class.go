@@ -161,7 +161,7 @@ func (c *Class) String() string {
 	var sb strings.Builder
 	sb.WriteString("Class ")
 	sb.WriteString(c.AccessFlags.String())
-	sb.WriteString(c.ThisSym.Name)
+	sb.WriteString(c.ThisDesc.Class)
 	if c.SuperSym != nil {
 		sb.WriteString(" extends ")
 		sb.WriteString(c.SuperSym.Name)
@@ -200,7 +200,7 @@ func (c *Class) String() string {
 }
 
 func (c *Class) Name() string {
-	return c.ThisSym.Name
+	return c.ThisDesc.Class
 }
 
 func (c *Class) Desc() *desc.Desc {

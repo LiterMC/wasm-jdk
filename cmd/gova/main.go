@@ -11,6 +11,7 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/native"
 	_ "github.com/LiterMC/wasm-jdk/native/init_all"
+	misc "github.com/LiterMC/wasm-jdk/native/jdk/internal_/misc"
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 		EntryMethod: "main([Ljava/lang/String;)V",
 	})
 	fmt.Println("Loading native library ...")
+	misc.InitUnsafeConstants(vm)
 	native.LoadDefaultNatives(vm, cl)
 	vm.SetupEntryMethod()
 	{

@@ -238,11 +238,11 @@ func (d *Desc) ElemType() Type {
 }
 
 func (d *Desc) Elem() *Desc {
-	o := d.Clone()
-	o.ArrDim--
-	if o.ArrDim < 0 {
+	if d.ArrDim == 0 {
 		panic("the descriptor is not an array: " + d.String())
 	}
+	o := d.Clone()
+	o.ArrDim--
 	return o
 }
 

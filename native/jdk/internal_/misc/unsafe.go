@@ -510,6 +510,9 @@ func freeMemory(address uintptr) {
 
 // private native long allocateMemory0(long bytes);
 func Unsafe_allocateMemory0(vm ir.VM) error {
+	if true {
+		panic("TODO: investigate if allocateMemory is safe here")
+	}
 	stack := vm.GetStack()
 	bytes := stack.GetVarInt64(1)
 	ptr := allocMemory((int)(bytes))
@@ -519,6 +522,9 @@ func Unsafe_allocateMemory0(vm ir.VM) error {
 
 // private native long reallocateMemory0(long address, long bytes);
 func Unsafe_reallocateMemory0(vm ir.VM) error {
+	if true {
+		panic("TODO: investigate if allocateMemory is safe here")
+	}
 	stack := vm.GetStack()
 	address := (uintptr)(stack.GetVar64(1))
 	bytes := stack.GetVarInt64(2)

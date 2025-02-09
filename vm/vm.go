@@ -2,10 +2,10 @@ package vm
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 	"sync"
 	"unsafe"
+	"runtime"
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -33,33 +33,33 @@ type VM struct {
 }
 
 type preloadClasses struct {
-	javaLangObject          ir.Class
+	javaLangObject          *Class
 	javaLangObject_toString ir.Method
 
-	javaLangThrowable               ir.Class
+	javaLangThrowable               *Class
 	javaLangThrowable_backtrace     ir.Field
 	javaLangThrowable_detailMessage ir.Field
 
-	javaLangString       ir.Class
+	javaLangString       *Class
 	javaLangString_value ir.Field
 
-	javaLangClass             ir.Class
+	javaLangClass             *Class
 	javaLangClass_classLoader ir.Field
 
-	javaLangThread             ir.Class
+	javaLangThread             *Class
 	javaLangThread_interrupted ir.Field
 
-	javaLangSystem            ir.Class
+	javaLangSystem            *Class
 	javaLangSystem_initPhase1 ir.Method
 	javaLangSystem_initPhase2 ir.Method
 	javaLangSystem_initPhase3 ir.Method
 
-	javaLangInvokeMethodHandlesLookup              ir.Class
+	javaLangInvokeMethodHandlesLookup              *Class
 	javaLangInvokeMethodHandlesLookup_lookupClass  ir.Field
 	javaLangInvokeMethodHandlesLookup_allowedModes ir.Field
 
-	javaLangInvokeMethodHandle      ir.Class
-	javaLangInvokeMethodType        ir.Class
+	javaLangInvokeMethodHandle      *Class
+	javaLangInvokeMethodType        *Class
 	javaLangInvokeMethodType_rtype  ir.Field
 	javaLangInvokeMethodType_ptypes ir.Field
 }
@@ -75,52 +75,60 @@ func NewVM(opts *Options) *VM {
 		preloadClasses:    new(preloadClasses),
 	}
 	vm.stack = &Stack{}
-	vm.preloadClasses.load(vm.loader)
+	vm.preloadClasses.load(vm)
 	return vm
 }
 
-func (p *preloadClasses) load(loader ir.ClassLoader) {
+func (vm *VM) loadClass(name string) (*Class, error) {
+	class, err := vm.loader.LoadClass(name)
+	if err != nil {
+		return nil, err
+	}
+	return class.(*Class), nil
+}
+
+func (p *preloadClasses) load(vm *VM) {
 	var err error
-	if p.javaLangObject, err = loader.LoadClass("java/lang/Object"); err != nil {
+	if p.javaLangObject, err = vm.loadClass("java/lang/Object"); err != nil {
 		panic(err)
 	}
 	p.javaLangObject_toString = p.javaLangObject.GetMethodByNameAndType("toString", "()Ljava/lang/String;")
 
-	if p.javaLangThrowable, err = loader.LoadClass("java/lang/Throwable"); err != nil {
-		panic(err)
-	}
-	p.javaLangThrowable_backtrace = p.javaLangThrowable.GetFieldByName("backtrace")
-	p.javaLangThrowable_detailMessage = p.javaLangThrowable.GetFieldByName("detailMessage")
-
-	if p.javaLangString, err = loader.LoadClass("java/lang/String"); err != nil {
+	if p.javaLangString, err = vm.loadClass("java/lang/String"); err != nil {
 		panic(err)
 	}
 	p.javaLangString_value = p.javaLangString.GetFieldByName("value")
 
-	if p.javaLangClass, err = loader.LoadClass("java/lang/Class"); err != nil {
-		panic(err)
-	}
-	p.javaLangClass_classLoader = p.javaLangClass.GetFieldByName("classLoader")
-
-	if p.javaLangThread, err = loader.LoadClass("java/lang/Thread"); err != nil {
-		panic(err)
-	}
-	p.javaLangThread_interrupted = p.javaLangThread.GetFieldByName("interrupted")
-
-	if p.javaLangSystem, err = loader.LoadClass("java/lang/System"); err != nil {
+	if p.javaLangSystem, err = vm.loadClass("java/lang/System"); err != nil {
 		panic(err)
 	}
 	p.javaLangSystem_initPhase1 = p.javaLangSystem.GetMethodByNameAndType("initPhase1", "()V")
 	p.javaLangSystem_initPhase2 = p.javaLangSystem.GetMethodByNameAndType("initPhase2", "(ZZ)I")
 	p.javaLangSystem_initPhase3 = p.javaLangSystem.GetMethodByNameAndType("initPhase3", "()V")
 
-	if p.javaLangInvokeMethodHandlesLookup, err = loader.LoadClass("java/lang/invoke/MethodHandles$Lookup"); err != nil {
+	if p.javaLangClass, err = vm.loadClass("java/lang/Class"); err != nil {
+		panic(err)
+	}
+	p.javaLangClass_classLoader = p.javaLangClass.GetFieldByName("classLoader")
+
+	if p.javaLangThread, err = vm.loadClass("java/lang/Thread"); err != nil {
+		panic(err)
+	}
+	p.javaLangThread_interrupted = p.javaLangThread.GetFieldByName("interrupted")
+
+	if p.javaLangThrowable, err = vm.loadClass("java/lang/Throwable"); err != nil {
+		panic(err)
+	}
+	p.javaLangThrowable_backtrace = p.javaLangThrowable.GetFieldByName("backtrace")
+	p.javaLangThrowable_detailMessage = p.javaLangThrowable.GetFieldByName("detailMessage")
+
+	if p.javaLangInvokeMethodHandlesLookup, err = vm.loadClass("java/lang/invoke/MethodHandles$Lookup"); err != nil {
 		panic(err)
 	}
 	p.javaLangInvokeMethodHandlesLookup_lookupClass = p.javaLangInvokeMethodHandlesLookup.GetFieldByName("lookupClass")
 	p.javaLangInvokeMethodHandlesLookup_allowedModes = p.javaLangInvokeMethodHandlesLookup.GetFieldByName("allowedModes")
 
-	if p.javaLangInvokeMethodType, err = loader.LoadClass("java/lang/invoke/MethodType"); err != nil {
+	if p.javaLangInvokeMethodType, err = vm.loadClass("java/lang/invoke/MethodType"); err != nil {
 		panic(err)
 	}
 	p.javaLangInvokeMethodType_rtype = p.javaLangClass.GetFieldByName("rtype")
@@ -128,12 +136,16 @@ func (p *preloadClasses) load(loader ir.ClassLoader) {
 }
 
 func (vm *VM) SetupEntryMethod() {
+	vm.javaLangString.InitBeforeUse(vm)
+	vm.javaLangSystem.InitBeforeUse(vm)
+	vm.javaLangClass.InitBeforeUse(vm)
+	vm.javaLangThread.InitBeforeUse(vm)
+
 	if vm.opts.EntryClass == "" {
 		panic("Entry class is not defined")
 	}
 
 	// TODO: initialize thread
-	vm.javaLangThread.(*Class).InitBeforeUse(vm)
 	vm.carrierThread = vm.New(vm.javaLangThread).(*Ref)
 	vm.carrierThread.userData = &ThreadUserData{
 		VM: vm,
@@ -142,11 +154,10 @@ func (vm *VM) SetupEntryMethod() {
 
 	vm.initSystem()
 
-	entryClass0, err := vm.loader.LoadClass(vm.opts.EntryClass)
+	entryClass, err := vm.loadClass(vm.opts.EntryClass)
 	if err != nil {
 		panic(err)
 	}
-	entryClass := entryClass0.(*Class)
 	entryClass.InitBeforeUse(vm)
 	entryMethod := entryClass.GetMethodByName(vm.opts.EntryMethod).(*Method)
 	vm.stack = &Stack{
@@ -183,7 +194,6 @@ func (vm *VM) newSubVM(thread *Ref) *VM {
 }
 
 func (vm *VM) initSystem() {
-	vm.javaLangSystem.(*Class).InitBeforeUse(vm)
 	vm.InvokeStatic(vm.javaLangSystem_initPhase1)
 	if err := vm.RunStack(); err != nil {
 		panic(err)
@@ -208,29 +218,42 @@ func (vm *VM) Running() bool {
 	return vm.stack != nil
 }
 
+var step int = 0
+
 func (vm *VM) Step() error {
-	defer func(m *Method, pc *ir.ICNode) {
-		if err := recover(); err != nil {
-			fmt.Println("current method:", m.class.Name()+":", m)
-			for c := m.Code.Code; c != nil; c = c.Next {
-				ics := fmt.Sprintf("%#v", c.IC)
-				if strings.HasSuffix(ics, "(nil)") {
-					ics = ""
-				} else {
-					_, ics, _ = strings.Cut(ics, "{")
-					ics = "{" + ics
-				}
-				if c == pc {
-					fmt.Print("-> ")
-				} else {
-					fmt.Print("   ")
-				}
-				fmt.Printf("%-16s %s\n", c.IC.Op(), ics)
+	if step % 1000 == -1 {
+		runtime.GC()
+	}
+	m, pc := vm.stack.method.(*Method), vm.nextPc
+	printStack := func() { // early stage debug only
+		fmt.Println("current method:", m.class.Name()+":", m)
+		fmt.Println(NewStackInfo(vm.stack, -1).String())
+		if m.AccessFlags.Has(jcls.AccNative) {
+			return
+		}
+		for c := m.Code.Code; c != nil; c = c.Next {
+			ics := fmt.Sprintf("%#v", c.IC)
+			if strings.HasSuffix(ics, "(nil)") {
+				ics = ""
+			} else {
+				_, ics, _ = strings.Cut(ics, "{")
+				ics = "{" + ics
 			}
-			fmt.Println()
+			if c == pc {
+				fmt.Print("-> ")
+			} else {
+				fmt.Print("   ")
+			}
+			fmt.Printf("%-16s %s\n", c.IC.Op(), ics)
+		}
+		fmt.Println()
+	}
+	defer func() {
+		if err := recover(); err != nil {
+			printStack()
 			panic(err)
 		}
-	}(vm.stack.method.(*Method), vm.nextPc)
+	}()
 
 	var err error
 	if vm.nextNative != nil {
@@ -243,7 +266,8 @@ func (vm *VM) Step() error {
 	} else {
 		vm.stack.pc = vm.nextPc
 		vm.nextPc = vm.stack.pc.Next
-		fmt.Printf(" == step: %04x: %#v --> %#v\n", vm.stack.pc.Offset, vm.stack.pc.IC, vm.stack.pc.Next)
+		step++
+		fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, step, vm.stack.pc.IC, vm.stack.pc.Next)
 		// fmt.Printf("    stack: %p %#v\n", vm.stack, vm.stack)
 		err = vm.stack.pc.IC.Execute(vm)
 		if vm.stack == nil {
@@ -251,6 +275,9 @@ func (vm *VM) Step() error {
 			delete(vm.creator.created, vm)
 			vm.creator.createdMux.Unlock()
 		}
+	}
+	if err != nil {
+		printStack()
 	}
 	return err
 }
@@ -284,7 +311,6 @@ func (vm *VM) NewString(str string) ir.Ref {
 		arr = newRefArray(ByteArrayClass, 0)
 	}
 	*byteArr = arr
-	fmt.Printf("--- getting string %q\n", str)
 	return ref
 }
 
@@ -293,11 +319,14 @@ func (vm *VM) NewArray(dc *desc.Desc, length int32) ir.Ref {
 	if err != nil {
 		panic(err)
 	}
+	class.InitBeforeUse(vm)
 	return newRefArray(class, length)
 }
 
-func (vm *VM) NewArrayByClass(class ir.Class, length int32) ir.Ref {
-	return newRefArray(class.(*Class).NewArrayClass(1), length)
+func (vm *VM) NewArrayByClass(cls ir.Class, length int32) ir.Ref {
+	class := cls.(*Class)
+	class.InitBeforeUse(vm)
+	return newRefArray(class.NewArrayClass(1), length)
 }
 
 func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
@@ -305,6 +334,7 @@ func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
 	if err != nil {
 		panic(err)
 	}
+	class.InitBeforeUse(vm)
 	return newMultiDimArray(class, lengths)
 }
 
@@ -331,14 +361,12 @@ func (vm *VM) GetString(ref ir.Ref) string {
 func (vm *VM) GetStringIntern(ref ir.Ref) ir.Ref {
 	root := vm.Root()
 	str := vm.GetString(ref)
-	fmt.Printf("--- getting string %q\n", str)
 	strRef, _ := root.stringPool.LoadOrStore(str, ref)
 	return strRef.(ir.Ref)
 }
 
 func (vm *VM) GetStringInternOrNew(str string) ir.Ref {
 	root := vm.Root()
-	fmt.Printf("--- getting string %q\n", str)
 	strRef, _ := root.stringPool.Load(str)
 	if strRef == nil {
 		strRef, _ = root.stringPool.LoadOrStore(str, vm.NewString(str))
@@ -385,205 +413,6 @@ func (vm *VM) GetCurrentClass() ir.Class {
 
 func (vm *VM) GetCurrentMethod() ir.Method {
 	return vm.stack.method
-}
-
-func (vm *VM) LoadNativeMethod(method ir.Method, native NativeMethodCallback) {
-	m := method.(*Method)
-	if !m.AccessFlags.Has(jcls.AccNative) {
-		panic("method " + m.Location() + " is not native")
-	}
-	if m.native != nil {
-		panic("method " + m.Location() + " is already loaded")
-	}
-	m.native = native
-}
-
-func (vm *VM) Invoke(method ir.Method) {
-	m := method.(*Method)
-	fmt.Println("==> invoking", m.Location())
-	defer fmt.Println("   post invoke", m.Location())
-	prev := vm.stack
-	prev.pc = vm.nextPc
-	isNative := m.AccessFlags.Has(jcls.AccNative)
-	if isNative {
-		if m.native == nil {
-			panic("native method " + m.Location() + " is not loaded")
-		}
-		vm.nextNative = m.native
-	} else {
-		vm.nextPc = m.Code.Code
-	}
-	vm.stack = &Stack{
-		prev:   prev,
-		class:  m.class,
-		method: m,
-	}
-	inputs := m.Desc().Inputs
-	j := m.Desc().InputSlots() + 1
-	for _, d := range slices.Backward(inputs) {
-		j -= d.Type().Slot()
-		switch d.Type() {
-		case desc.Void:
-		case desc.Class, desc.Array:
-			vm.stack.SetVarRef(j, prev.PopRef())
-		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-			vm.stack.SetVar(j, prev.Pop())
-		case desc.Long, desc.Double:
-			vm.stack.SetVar64(j, prev.Pop64())
-		default:
-			panic("vm: unknown MethodDesc.Input.Type")
-		}
-	}
-	this := prev.PopRef()
-	vm.stack.SetVarRef(0, this)
-}
-
-func (vm *VM) InvokeStatic(method ir.Method) {
-	m := method.(*Method)
-	fmt.Println("==> invoking static " + m.Location())
-	defer fmt.Println("   post invoke static " + m.Location())
-	prev := vm.stack
-	prev.pc = vm.nextPc
-	if m.AccessFlags.Has(jcls.AccNative) {
-		if m.native == nil {
-			panic("native method " + m.Location() + " is not loaded")
-		}
-		vm.nextNative = m.native
-	} else {
-		vm.nextPc = m.Code.Code
-	}
-	vm.stack = &Stack{
-		prev:   prev,
-		class:  m.class,
-		method: m,
-	}
-	inputs := m.Desc().Inputs
-	j := m.Desc().InputSlots()
-	for _, d := range slices.Backward(inputs) {
-		j -= d.Type().Slot()
-		switch d.Type() {
-		case desc.Void:
-		case desc.Class, desc.Array:
-			vm.stack.SetVarRef(j, prev.PopRef())
-		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-			vm.stack.SetVar(j, prev.Pop())
-		case desc.Long, desc.Double:
-			vm.stack.SetVar64(j, prev.Pop64())
-		default:
-			panic("vm.invokestatic: unknown MethodDesc.Input.Type")
-		}
-	}
-}
-
-func (vm *VM) InvokeVirtual(method ir.Method) {
-	m := method.(*Method)
-	fmt.Println("==> invoking virtual " + m.Location())
-	defer fmt.Println("   post invoke virtual " + m.Location())
-	prev := vm.stack
-	prev.pc = vm.nextPc
-	vm.stack = &Stack{
-		prev: prev,
-	}
-	inputs := m.Desc().Inputs
-	j := m.Desc().InputSlots() + 1
-	for _, d := range slices.Backward(inputs) {
-		j -= d.Type().Slot()
-		switch d.Type() {
-		case desc.Void:
-		case desc.Class, desc.Array:
-			vm.stack.SetVarRef(j, prev.PopRef())
-		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-			vm.stack.SetVar(j, prev.Pop())
-		case desc.Long, desc.Double:
-			vm.stack.SetVar64(j, prev.Pop64())
-		default:
-			panic("vm: unknown MethodDesc.Input.Type")
-		}
-	}
-	this := prev.PopRef().(*Ref)
-	vm.stack.SetVarRef(0, this)
-	m2 := this.class.GetMethodByDesc(method.Name(), method.Desc()).(*Method)
-	vm.stack.class = m2.class
-	vm.stack.method = m2
-	if m2.AccessFlags.Has(jcls.AccNative) {
-		if m2.native == nil {
-			panic("native method " + m2.Location() + " is not loaded")
-		}
-		vm.nextNative = m2.native
-	} else {
-		vm.nextPc = m2.Code.Code
-	}
-}
-
-func (vm *VM) InvokeDynamic(ind uint16) error {
-	info := vm.stack.class.loadedDynamics[ind]
-	bootMe := info.bootstrap.Method
-	if bootMe.Kind != jcls.RefInvokeStatic {
-		panic("TODO: bootstrap " + bootMe.Kind.String())
-	}
-	bootCls, err := vm.GetClassLoader().LoadClass(bootMe.Ref.Class.Name)
-	if err != nil {
-		return err
-	}
-	bootMethod0 := bootCls.GetMethodByNameAndType(bootMe.Ref.NameAndType.Name, bootMe.Ref.NameAndType.Desc)
-	if bootMethod0 == nil {
-		panic("bootstrap method " + bootMe.String() + " is nil")
-	}
-	fmt.Println("==> invoking dynamic " + bootMe.String())
-	defer fmt.Println("   post invoke dynamic " + bootMe.String())
-	bootMethod := bootMethod0.(*Method)
-	prev := vm.stack
-	vm.stack = &Stack{
-		prev:   prev,
-		class:  bootCls.(*Class),
-		method: bootMethod,
-	}
-	vm.nextPc = bootMethod.Code.Code
-
-	hasVarargs := bootMethod.AccessFlags.Has(jcls.AccVarargs)
-	inputs := bootMethod.Desc().Inputs
-	inputsLen := len(inputs)
-	var varargs []ir.Ref
-
-	vm.stack.SetVarRef(0, vm.NewLookup())
-	vm.stack.SetVarRef(1, vm.GetStringInternOrNew(info.info.NameAndType.Name))
-	vm.stack.SetVarRef(2, vm.NewMethodType(info.info.NameAndType.Desc))
-	for i, arg := range info.bootstrap.Args {
-		var ref ir.Ref
-		switch arg := arg.(type) {
-		case *jcls.ConstantString:
-			ref = vm.GetStringInternOrNew(arg.Utf8)
-		case *jcls.ConstantMethodHandle:
-			ref = vm.NewMethodHandle(arg)
-		case *jcls.ConstantMethodType:
-			ref = vm.NewMethodType(arg.Desc)
-		default:
-			panic(fmt.Errorf("vm.invokedynamic: unknown argument type %T", arg))
-		}
-		if hasVarargs && i+4 >= inputsLen {
-			varargs = append(varargs, ref)
-		} else {
-			vm.stack.SetVarRef((uint16)(3+i), ref)
-		}
-	}
-	if hasVarargs {
-		varargsRef := vm.NewArray(inputs[inputsLen-1].Elem(), (int32)(len(varargs)))
-		copy(varargsRef.GetArrRef(), varargs)
-		vm.stack.SetVarRef((uint16)(inputsLen-1), varargsRef)
-	}
-
-	return vm.RunStack()
-}
-
-// RunStack steps the VM until the current stack pops
-func (vm *VM) RunStack() error {
-	prev := vm.stack.prev
-	for vm.stack != prev {
-		if err := vm.Step(); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (vm *VM) Return() {

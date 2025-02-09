@@ -152,7 +152,7 @@ func (c *Class) initFM() {
 
 	ivm := c.initVM.Load()
 	if super, ok := c.super.(*Class); ok {
-		fmt.Println("waiting", super.Name())
+		// fmt.Println("waiting", super.Name())
 		super.InitBeforeUse(ivm)
 	}
 
@@ -243,9 +243,14 @@ func (c *Class) IsInterface() bool {
 }
 
 func (c *Class) IsAssignableFrom(k ir.Class) bool {
-	println(k)
+	if k == nil {
+		return false
+	}
+	kk := k.(*Class)
+	if (c == nil || kk == nil) && c != kk {
+		return false
+	}
 	if c.arrayDim != 0 {
-		kk := k.(*Class)
 		if c.arrayDim != kk.arrayDim {
 			return false
 		}

@@ -3,6 +3,7 @@ package jcls
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -27,11 +28,12 @@ func (a *AttrConstantValue) String() string {
 }
 
 type AttrCode struct {
-	MaxStack   uint16
-	MaxLocals  uint16
-	Code       *ir.ICNode
-	Exceptions []ExceptionHandlers
-	Attrs      []Attribute
+	MaxStack    uint16
+	MaxLocals   uint16
+	Code        *ir.ICNode
+	Exceptions  []ExceptionHandlers
+	Attrs       []Attribute
+	LineNumbers []*LineNumberEntry
 }
 
 type ExceptionHandlers struct {
@@ -91,16 +93,75 @@ func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 	if n, err = readUint16(r); err != nil {
 		return err
 	}
-	a.Attrs = make([]Attribute, n)
-	for i := range n {
-		if a.Attrs[i], err = ParseAttr(r, consts); err != nil {
+	a.Attrs = make([]Attribute, 0, n)
+	for range n {
+		var at Attribute
+		if at, err = ParseAttr(r, consts); err != nil {
 			return err
 		}
+		if table, ok := at.(*AttrLineNumberTable); ok {
+			a.LineNumbers = append(a.LineNumbers, table.Items...)
+		} else {
+			a.Attrs = append(a.Attrs, at)
+		}
 	}
+	slices.SortFunc(a.LineNumbers, func(a, b *LineNumberEntry) int {
+		if a.StartPc > b.StartPc {
+			return 1
+		}
+		return -1
+	})
 	return nil
 }
+
 func (a *AttrCode) String() string {
 	return fmt.Sprintf("%#v", a.Code)
+}
+
+func (a *AttrCode) GetLine(pc uint16) int {
+	if len(a.LineNumbers) == 0 {
+		return -1
+	}
+	ind, _ := slices.BinarySearchFunc(a.LineNumbers, pc, func(e *LineNumberEntry, pc uint16) int {
+		x := e.StartPc - pc
+		if x < 0 {
+			return -1
+		}
+		if x == 0 {
+			return 0
+		}
+		return 1
+	})
+	return (int)(a.LineNumbers[ind].LineNum)
+}
+
+type AttrLineNumberTable struct {
+	Items []*LineNumberEntry
+}
+
+type LineNumberEntry struct {
+	StartPc uint16
+	LineNum uint16
+}
+
+func (*AttrLineNumberTable) Name() string { return "LineNumberTable" }
+func (a *AttrLineNumberTable) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
+	n, err := readUint16(r)
+	if err != nil {
+		return err
+	}
+	a.Items = make([]*LineNumberEntry, n)
+	for i := range n {
+		entry := new(LineNumberEntry)
+		if entry.StartPc, err = readUint16(r); err != nil {
+			return err
+		}
+		if entry.LineNum, err = readUint16(r); err != nil {
+			return err
+		}
+		a.Items[i] = entry
+	}
+	return nil
 }
 
 type AttrExceptions struct {
@@ -269,6 +330,7 @@ func (m *BootstrapMethod) String() string {
 func init() {
 	RegisterAttr(func() ParsableAttribute { return new(AttrConstantValue) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrCode) })
+	RegisterAttr(func() ParsableAttribute { return new(AttrLineNumberTable) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrExceptions) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrInnerClasses) })
 	RegisterAttr(func() ParsableAttribute { return new(AttrEnclosingMethod) })
