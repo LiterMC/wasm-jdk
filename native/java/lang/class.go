@@ -3,6 +3,7 @@ package java_lang
 import (
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
 func init() {
@@ -72,7 +73,7 @@ func Class_isInstance(vm ir.VM) error {
 func Class_isAssignableFrom(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	cls := (*stack.GetVarRef(0).UserData()).(ir.Class)
+	cls := (*stack.GetVarRef(1).UserData()).(ir.Class)
 	if this.IsAssignableFrom(cls) {
 		stack.PushInt32(1)
 	} else {
@@ -213,8 +214,33 @@ func Class_getProtectionDomain0(vm ir.VM) error {
 func Class_getPrimitiveClass(vm ir.VM) error {
 	stack := vm.GetStack()
 	name := vm.GetString(stack.GetVarRef(0))
-	_ = name
+	stack.PushRef(vm.GetClassRef(getPrimitiveClassByName(name)))
 	return nil
+}
+
+func getPrimitiveClassByName(name string) *jvm.Class {
+	switch name {
+	case "void":
+		return jvm.VoidClass
+	case "boolean":
+		return jvm.BooleanClass
+	case "char":
+		return jvm.CharClass
+	case "byte":
+		return jvm.ByteClass
+	case "short":
+		return jvm.ShortClass
+	case "int":
+		return jvm.IntClass
+	case "long":
+		return jvm.LongClass
+	case "float":
+		return jvm.FloatClass
+	case "double":
+		return jvm.DoubleClass
+	default:
+		panic("Unexpected name \"" + name + "\"")
+	}
 }
 
 // private native String getGenericSignature0();
