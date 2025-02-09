@@ -78,10 +78,10 @@ func System_arraycopy(vm ir.VM) error {
 	if length == 0 {
 		return nil
 	}
-	elemSize := (int32)(srcTyp.Type().Size())
+	elemSize := (int32)(srcTyp.ElemType().Size())
 	srcData := unsafe.Slice((*byte)(unsafe.Add(src.Data(), srcPos*elemSize)), length*elemSize)
 	destData := unsafe.Slice((*byte)(unsafe.Add(dest.Data(), destPos*elemSize)), length*elemSize)
-	copy(srcData, destData)
+	copy(destData, srcData)
 	return nil
 }
 
