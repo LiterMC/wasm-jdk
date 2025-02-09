@@ -1,4 +1,4 @@
-package java_lang
+package jdk_internal_util
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"

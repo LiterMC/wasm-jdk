@@ -1,0 +1,123 @@
+package jdk_internal_util
+
+import (
+	"runtime"
+	"strconv"
+	"unsafe"
+
+	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/ir"
+)
+
+func init() {
+	registerDefaultNative("jdk/internal/util/SystemProps$Raw.vmProperties()[Ljava/lang/String;", SystemProps_Raw_vmProperties)
+	registerDefaultNative("jdk/internal/util/SystemProps$Raw.platformProperties()[Ljava/lang/String;", SystemProps_Raw_platformProperties)
+}
+
+// private static native String[] vmProperties();
+func SystemProps_Raw_vmProperties(vm ir.VM) error {
+	propertiesRef := vm.NewArray(desc.DescStringArray, 0)
+	vm.GetStack().PushRef(propertiesRef)
+	return nil
+}
+
+const (
+	SystemProps_Raw__display_country_NDX = iota // 0
+	SystemProps_Raw__display_language_NDX
+	SystemProps_Raw__display_script_NDX
+	SystemProps_Raw__display_variant_NDX
+	SystemProps_Raw__file_encoding_NDX
+	SystemProps_Raw__file_separator_NDX
+	SystemProps_Raw__format_country_NDX
+	SystemProps_Raw__format_language_NDX
+	SystemProps_Raw__format_script_NDX
+	SystemProps_Raw__format_variant_NDX
+	SystemProps_Raw__ftp_nonProxyHosts_NDX
+	SystemProps_Raw__ftp_proxyHost_NDX
+	SystemProps_Raw__ftp_proxyPort_NDX
+	SystemProps_Raw__http_nonProxyHosts_NDX
+	SystemProps_Raw__http_proxyHost_NDX
+	SystemProps_Raw__http_proxyPort_NDX
+	SystemProps_Raw__https_proxyHost_NDX
+	SystemProps_Raw__https_proxyPort_NDX
+	SystemProps_Raw__java_io_tmpdir_NDX
+	SystemProps_Raw__line_separator_NDX
+	SystemProps_Raw__os_arch_NDX
+	SystemProps_Raw__os_name_NDX
+	SystemProps_Raw__os_version_NDX
+	SystemProps_Raw__path_separator_NDX
+	SystemProps_Raw__socksNonProxyHosts_NDX
+	SystemProps_Raw__socksProxyHost_NDX
+	SystemProps_Raw__socksProxyPort_NDX
+	SystemProps_Raw__stderr_encoding_NDX
+	SystemProps_Raw__stdout_encoding_NDX
+	SystemProps_Raw__sun_arch_abi_NDX
+	SystemProps_Raw__sun_arch_data_model_NDX
+	SystemProps_Raw__sun_cpu_endian_NDX
+	SystemProps_Raw__sun_cpu_isalist_NDX
+	SystemProps_Raw__sun_io_unicode_encoding_NDX
+	SystemProps_Raw__sun_jnu_encoding_NDX
+	SystemProps_Raw__sun_os_patch_level_NDX
+	SystemProps_Raw__user_dir_NDX
+	SystemProps_Raw__user_home_NDX
+	SystemProps_Raw__user_name_NDX
+	SystemProps_Raw_FIXED_LENGTH
+)
+
+var (
+	isBigEndian        bool
+	cpuEndianStr       string
+	unicodeEncodingStr string
+)
+
+func init() {
+	i := (uint16)(0x0124)
+	v := (*(*[2]byte)((unsafe.Pointer)(&i)))[0]
+	if v == 0x01 {
+		isBigEndian = true
+		cpuEndianStr = "big"
+		unicodeEncodingStr = "UnicodeBig"
+	} else if v == 0x24 {
+		isBigEndian = false
+		cpuEndianStr = "little"
+		unicodeEncodingStr = "UnicodeLittle"
+	} else {
+		panic("unexpected int encoding")
+	}
+}
+
+// private static native String[] platformProperties();
+func SystemProps_Raw_platformProperties(vm ir.VM) error {
+	emptyStr := vm.GetStringInternOrNew("")
+	utf8Str := vm.GetStringInternOrNew("UTF-8")
+
+	propertiesRef := vm.NewArray(desc.DescStringArray, SystemProps_Raw_FIXED_LENGTH)
+	properties := propertiesRef.GetArrRef()
+	for i := range SystemProps_Raw_FIXED_LENGTH {
+		properties[i] = emptyStr
+	}
+	properties[SystemProps_Raw__display_country_NDX] = vm.GetStringInternOrNew("us")
+	properties[SystemProps_Raw__display_language_NDX] = vm.GetStringInternOrNew("en")
+	properties[SystemProps_Raw__display_script_NDX] = vm.GetStringInternOrNew("English")
+	properties[SystemProps_Raw__file_encoding_NDX] = utf8Str
+	properties[SystemProps_Raw__file_separator_NDX] = vm.GetStringInternOrNew("/")
+	properties[SystemProps_Raw__format_country_NDX] = properties[SystemProps_Raw__display_country_NDX]
+	properties[SystemProps_Raw__format_language_NDX] = properties[SystemProps_Raw__display_language_NDX]
+	properties[SystemProps_Raw__format_script_NDX] = properties[SystemProps_Raw__display_script_NDX]
+	properties[SystemProps_Raw__java_io_tmpdir_NDX] = vm.GetStringInternOrNew("/tmp")
+	properties[SystemProps_Raw__line_separator_NDX] = vm.GetStringInternOrNew("\n")
+	properties[SystemProps_Raw__os_arch_NDX] = vm.GetStringInternOrNew(runtime.GOARCH)
+	properties[SystemProps_Raw__os_name_NDX] = vm.GetStringInternOrNew(runtime.GOOS)
+	properties[SystemProps_Raw__path_separator_NDX] = vm.GetStringInternOrNew(":")
+	properties[SystemProps_Raw__stderr_encoding_NDX] = utf8Str
+	properties[SystemProps_Raw__stdout_encoding_NDX] = utf8Str
+	properties[SystemProps_Raw__sun_arch_data_model_NDX] = vm.GetStringInternOrNew(strconv.Itoa((int)(unsafe.Sizeof(uintptr(0))) * 8))
+	properties[SystemProps_Raw__sun_cpu_endian_NDX] = vm.GetStringInternOrNew(cpuEndianStr)
+	properties[SystemProps_Raw__sun_io_unicode_encoding_NDX] = vm.GetStringInternOrNew(unicodeEncodingStr)
+	properties[SystemProps_Raw__sun_jnu_encoding_NDX] = utf8Str
+	properties[SystemProps_Raw__user_dir_NDX] = vm.GetStringInternOrNew("/wome")
+	properties[SystemProps_Raw__user_home_NDX] = vm.GetStringInternOrNew("/wome")
+	properties[SystemProps_Raw__user_name_NDX] = vm.GetStringInternOrNew("browser_user")
+	vm.GetStack().PushRef(propertiesRef)
+	return nil
+}

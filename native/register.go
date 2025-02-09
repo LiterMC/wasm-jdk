@@ -25,6 +25,22 @@ func loadNative(vm ir.VM, cl ir.ClassLoader, location string, callback jvm.Nativ
 	vm.LoadNativeMethod(method, callback)
 }
 
+func LoadNative(vm ir.VM, location string, callback jvm.NativeMethodCallback) {
+	cls, name, ok := strings.Cut(location, ".")
+	if !ok {
+		panic("no class name in location " + location)
+	}
+	class, err := vm.GetClassLoader().LoadClass(cls)
+	if err != nil {
+		panic("cannot load class " + cls + ": " + err.Error())
+	}
+	method := class.GetMethodByName(name)
+	if method == nil {
+		panic("method " + location + "is not found")
+	}
+	vm.LoadNativeMethod(method, callback)
+}
+
 func LoadDefaultNatives(vm ir.VM, cl ir.ClassLoader) {
 	for loc, cb := range defaultNatives {
 		loadNative(vm, cl, loc, cb)
