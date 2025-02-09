@@ -221,7 +221,7 @@ func (vm *VM) Running() bool {
 var step int = 0
 
 func (vm *VM) Step() error {
-	if step % 1000 == -1 {
+	if step % 1000 == 0 {
 		runtime.GC()
 	}
 	m, pc := vm.stack.method.(*Method), vm.nextPc
