@@ -102,7 +102,7 @@ func Unsafe_putInt(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -123,7 +123,7 @@ func Unsafe_putReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVarRef(3)
+	value := stack.GetVarRef(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(value.(*jvm.Ref)))
 	return nil
@@ -144,7 +144,7 @@ func Unsafe_putBoolean(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -165,7 +165,7 @@ func Unsafe_putByte(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -186,7 +186,7 @@ func Unsafe_putShort(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -207,7 +207,7 @@ func Unsafe_putChar(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -228,7 +228,7 @@ func Unsafe_putLong(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar64(3)
+	value := stack.GetVar64(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint64((*uint64)(ptr), value)
 	return nil
@@ -249,7 +249,7 @@ func Unsafe_putFloat(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar(3)
+	value := stack.GetVar(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
@@ -270,7 +270,7 @@ func Unsafe_putDouble(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	value := stack.GetVar64(3)
+	value := stack.GetVar64(4)
 	ptr := unsafe.Add(ref.Data(), offset)
 	atomic.StoreUint64((*uint64)(ptr), value)
 	return nil
@@ -332,8 +332,8 @@ func Unsafe_compareAndSetReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVarRef(3).(*jvm.Ref)
-	value := stack.GetVarRef(4).(*jvm.Ref)
+	expected := stack.GetVarRef(4).(*jvm.Ref)
+	value := stack.GetVarRef(5).(*jvm.Ref)
 	ptr := unsafe.Add(ref.Data(), offset)
 	if atomic.CompareAndSwapPointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(expected), (unsafe.Pointer)(value)) {
 		stack.Push(1)
@@ -348,8 +348,8 @@ func Unsafe_compareAndExchangeReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVarRef(3)
-	value := stack.GetVarRef(4).(*jvm.Ref)
+	expected := stack.GetVarRef(4)
+	value := stack.GetVarRef(5).(*jvm.Ref)
 	ptr := (*unsafe.Pointer)(unsafe.Add(ref.Data(), offset))
 	old := atomic.LoadPointer(ptr)
 	for {
@@ -370,9 +370,10 @@ func Unsafe_compareAndSetInt(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVar(3)
-	value := stack.GetVar(4)
+	expected := stack.GetVar(4)
+	value := stack.GetVar(5)
 	ptr := unsafe.Add(ref.Data(), offset)
+	println("CompareAndSwapUint32", *(*uint32)(ptr), expected, value)
 	if atomic.CompareAndSwapUint32((*uint32)(ptr), expected, value) {
 		stack.Push(1)
 	} else {
@@ -386,8 +387,8 @@ func Unsafe_compareAndExchangeInt(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVar(3)
-	value := stack.GetVar(4)
+	expected := stack.GetVar(4)
+	value := stack.GetVar(5)
 	ptr := (*uint32)(unsafe.Add(ref.Data(), offset))
 	old := atomic.LoadUint32(ptr)
 	for {
@@ -408,8 +409,8 @@ func Unsafe_compareAndSetLong(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVar64(3)
-	value := stack.GetVar64(4)
+	expected := stack.GetVar64(4)
+	value := stack.GetVar64(6)
 	ptr := unsafe.Add(ref.Data(), offset)
 	if atomic.CompareAndSwapUint64((*uint64)(ptr), expected, value) {
 		stack.Push64(1)
@@ -424,8 +425,8 @@ func Unsafe_compareAndExchangeLong(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	expected := stack.GetVar64(3)
-	value := stack.GetVar64(4)
+	expected := stack.GetVar64(4)
+	value := stack.GetVar64(6)
 	ptr := (*uint64)(unsafe.Add(ref.Data(), offset))
 	old := atomic.LoadUint64(ptr)
 	for {
@@ -539,8 +540,8 @@ func Unsafe_setMemory0(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	bytes := stack.GetVarInt64(3)
-	value := (byte)(stack.GetVarInt8(4))
+	bytes := stack.GetVarInt64(4)
+	value := (byte)(stack.GetVarInt8(6))
 	if bytes == 0 {
 		return nil
 	}
@@ -563,15 +564,15 @@ func Unsafe_copyMemory0(vm ir.VM) error {
 	stack := vm.GetStack()
 	srcRef := stack.GetVarRef(1)
 	srcOffset := stack.GetVarInt64(2)
-	destRef := stack.GetVarRef(3)
-	destOffset := stack.GetVarInt64(4)
-	bytes := stack.GetVarInt64(5)
+	destRef := stack.GetVarRef(4)
+	destOffset := stack.GetVarInt64(5)
+	bytes := stack.GetVarInt64(7)
 	if bytes == 0 {
 		return nil
 	}
 	srcPtr := (*byte)(unsafe.Add(srcRef.Data(), srcOffset))
 	destPtr := (*byte)(unsafe.Add(destRef.Data(), destOffset))
-	copy(unsafe.Slice(srcPtr, bytes), unsafe.Slice(destPtr, bytes))
+	copy(unsafe.Slice(destPtr, bytes), unsafe.Slice(srcPtr, bytes))
 	return nil
 }
 
@@ -580,10 +581,10 @@ func Unsafe_copySwapMemory0(vm ir.VM) error {
 	stack := vm.GetStack()
 	srcRef := stack.GetVarRef(1)
 	srcOffset := stack.GetVarInt64(2)
-	destRef := stack.GetVarRef(3)
-	destOffset := stack.GetVarInt64(4)
-	bytes := stack.GetVarInt64(5)
-	elemSize := stack.GetVarInt64(6)
+	destRef := stack.GetVarRef(4)
+	destOffset := stack.GetVarInt64(5)
+	bytes := stack.GetVarInt64(7)
+	elemSize := stack.GetVarInt64(9)
 	if bytes == 0 {
 		return nil
 	}
@@ -627,10 +628,8 @@ func Unsafe_objectFieldOffset1(vm ir.VM) error {
 	stack := vm.GetStack()
 	class := (*stack.GetVarRef(1).UserData()).(ir.Class)
 	name := vm.GetString(stack.GetVarRef(2))
-	if true {
-		_, _ = class, name
-		panic("TODO: Unsafe.objectFieldOffset1")
-	}
+	field := class.GetFieldByName(name)
+	stack.PushInt64(field.Offset())
 	return nil
 }
 
