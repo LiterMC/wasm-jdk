@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"strings"
+	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
@@ -74,6 +75,10 @@ func (s *Stack) GetVarRef(i uint16) ir.Ref {
 	return v
 }
 
+func (s *Stack) GetVarPointer(i uint16) unsafe.Pointer {
+	return (unsafe.Pointer)(s.varRefs[i])
+}
+
 func (s *Stack) SetVar(i uint16, v uint32) {
 	if n := (int)(i) - len(s.vars) + 1; n > 0 {
 		s.vars = append(s.vars, make([]uint32, n)...)
@@ -127,6 +132,11 @@ func (s *Stack) SetVarRef(i uint16, v ir.Ref) {
 	}
 }
 
+func (s *Stack) SetVarPointer(i uint16, v unsafe.Pointer) {
+	s.SetVar(i, 0)
+	s.varRefs[i] = (*Ref)(v)
+}
+
 func (s *Stack) Peek() uint32 {
 	return s.stack[len(s.stack)-1]
 }
@@ -165,6 +175,10 @@ func (s *Stack) PeekRef() ir.Ref {
 		return nil
 	}
 	return v
+}
+
+func (s *Stack) PeekPointer() unsafe.Pointer {
+	return (unsafe.Pointer)(s.stackRefs[len(s.stack)-1])
 }
 
 func (s *Stack) Pop() uint32 {
@@ -222,6 +236,15 @@ func (s *Stack) PopRef() ir.Ref {
 	return v
 }
 
+func (s *Stack) PopPointer() unsafe.Pointer {
+	i := len(s.stack) - 1
+	v := s.stackRefs[i]
+	s.stack = s.stack[:i]
+	s.stackRefs[i] = nil
+	s.stackRefs = s.stackRefs[:i]
+	return (unsafe.Pointer)(v)
+}
+
 func (s *Stack) Push(v uint32) {
 	s.stack = append(s.stack, v)
 	s.stackRefs = append(s.stackRefs, nil)
@@ -264,7 +287,13 @@ func (s *Stack) PushRef(v ir.Ref) {
 	}
 }
 
-// returns whether the top element is a reference or not
+func (s *Stack) PushPointer(v unsafe.Pointer) {
+	i := len(s.stack)
+	s.Push(0)
+	s.stackRefs[i] = (*Ref)(v)
+}
+
+// returns true only if the top element is a non-null reference
 func (s *Stack) IsRef() bool {
 	i := len(s.stack) - 1
 	return len(s.stackRefs) > i && s.stackRefs[i] != nil

@@ -2,10 +2,10 @@ package vm
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 	"sync"
 	"unsafe"
-	"runtime"
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -221,7 +221,7 @@ func (vm *VM) Running() bool {
 var step int = 0
 
 func (vm *VM) Step() error {
-	if step % 1000 == 0 {
+	if step%2000 == 0 {
 		runtime.GC()
 	}
 	m, pc := vm.stack.method.(*Method), vm.nextPc
@@ -336,6 +336,19 @@ func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
 	}
 	class.InitBeforeUse(vm)
 	return newMultiDimArray(class, lengths)
+}
+
+func (vm *VM) RefToPtr(ref ir.Ref) unsafe.Pointer {
+	if ref == nil {
+		return nil
+	}
+	return (unsafe.Pointer)(ref.(*Ref))
+}
+func (vm *VM) PtrToRef(ptr unsafe.Pointer) ir.Ref {
+	if ptr == nil {
+		return nil
+	}
+	return (*Ref)(ptr)
 }
 
 func (vm *VM) GetObjectClass() ir.Class {

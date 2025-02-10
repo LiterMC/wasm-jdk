@@ -699,6 +699,8 @@ func Unsafe_arrayIndexScale0(vm ir.VM) error {
 		stack.Push(4)
 	} else if size == 8 {
 		stack.Push(8)
+	} else {
+		panic("unexpected array element size")
 	}
 	return nil
 }

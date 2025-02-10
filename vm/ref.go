@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -45,6 +46,10 @@ func newRefBase(cls *Class, data unsafe.Pointer) *Ref {
 	}
 	nch := make(chan struct{}, 0)
 	r.notifyAll.Store(&nch)
+	fmt.Printf("New Ref: %#v\n", r)
+	runtime.SetFinalizer(r, func(r *Ref) {
+		fmt.Printf("Finalizing: %p %#v\n", r, r)
+	})
 	return r
 }
 
@@ -58,7 +63,7 @@ func newRefArray(cls ir.Class, length int32) *Ref {
 	var ptr unsafe.Pointer
 	et := cls.Desc().ElemType()
 	if et.IsRef() {
-		data := make([]ir.Ref, length)
+		data := make([]unsafe.Pointer, length)
 		ptr = (unsafe.Pointer)(unsafe.SliceData(data))
 	} else {
 		bytes := make([]byte, et.Size()*(uintptr)(length))
@@ -81,7 +86,7 @@ func newMultiDimArray(cls ir.Class, lengths []int32) *Ref {
 	if len(lengths) > 0 && elem.ArrayDim() > 0 {
 		refs := arr.GetArrRef()
 		for i := (int32)(0); i < l; i++ {
-			refs[i] = newMultiDimArray(elem, lengths)
+			refs[i] = (unsafe.Pointer)(newMultiDimArray(elem, lengths))
 		}
 	}
 	return arr
@@ -115,11 +120,11 @@ func (r *Ref) GoString() string {
 	return fmt.Sprintf("<Ref 0x%08x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
 }
 
-func (r *Ref) GetArrRef() []ir.Ref {
+func (r *Ref) GetArrRef() []unsafe.Pointer {
 	if !r.desc.ElemType().IsRef() {
 		panic("Underlying array is not reference")
 	}
-	return unsafe.Slice((*ir.Ref)(r.data), r.arrayLen)
+	return unsafe.Slice((*unsafe.Pointer)(r.data), r.arrayLen)
 }
 
 func (r *Ref) GetArrInt8() []int8 {

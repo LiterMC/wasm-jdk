@@ -14,7 +14,7 @@ type Ref interface {
 	Len() int32
 	UserData() *any
 	Data() unsafe.Pointer
-	GetArrRef() []Ref
+	GetArrRef() []unsafe.Pointer
 	GetArrInt8() []int8
 	GetArrInt16() []int16
 	GetArrInt32() []int32

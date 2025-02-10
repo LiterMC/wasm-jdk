@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"slices"
+	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
@@ -183,7 +184,7 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 	hasVarargs := bootMethod.AccessFlags.Has(jcls.AccVarargs)
 	inputs := bootMethod.Desc().Inputs
 	inputsLen := len(inputs)
-	var varargs []ir.Ref
+	var varargs []unsafe.Pointer
 
 	vm.stack.SetVarRef(0, vm.NewLookup())
 	vm.stack.SetVarRef(1, vm.GetStringInternOrNew(info.info.NameAndType.Name))
@@ -201,7 +202,7 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 			panic(fmt.Errorf("vm.invokedynamic: unknown argument type %T", arg))
 		}
 		if hasVarargs && i+4 >= inputsLen {
-			varargs = append(varargs, ref)
+			varargs = append(varargs, vm.RefToPtr(ref))
 		} else {
 			vm.stack.SetVarRef((uint16)(3+i), ref)
 		}

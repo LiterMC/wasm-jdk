@@ -25,7 +25,7 @@ func SystemProps_Raw_vmProperties(vm ir.VM) error {
 	propertiesRef := vm.NewArray(desc.DescStringArray, (int32)(len(vmProperties)))
 	properties := propertiesRef.GetArrRef()
 	for i, v := range vmProperties {
-		properties[i] = vm.NewString(v)
+		properties[i] = vm.RefToPtr(vm.NewString(v))
 	}
 	vm.GetStack().PushRef(propertiesRef)
 	return nil
@@ -91,36 +91,36 @@ func init() {
 
 // private static native String[] platformProperties();
 func SystemProps_Raw_platformProperties(vm ir.VM) error {
-	emptyStr := vm.GetStringInternOrNew("")
-	utf8Str := vm.GetStringInternOrNew("UTF-8")
+	emptyStr := vm.RefToPtr(vm.GetStringInternOrNew(""))
+	utf8Str := vm.RefToPtr(vm.GetStringInternOrNew("UTF-8"))
 
 	propertiesRef := vm.NewArray(desc.DescStringArray, SystemProps_Raw_FIXED_LENGTH)
 	properties := propertiesRef.GetArrRef()
 	for i := range SystemProps_Raw_FIXED_LENGTH {
 		properties[i] = emptyStr
 	}
-	properties[SystemProps_Raw__display_country_NDX] = vm.GetStringInternOrNew("us")
-	properties[SystemProps_Raw__display_language_NDX] = vm.GetStringInternOrNew("en")
-	properties[SystemProps_Raw__display_script_NDX] = vm.GetStringInternOrNew("English")
+	properties[SystemProps_Raw__display_country_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("us"))
+	properties[SystemProps_Raw__display_language_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("en"))
+	properties[SystemProps_Raw__display_script_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("English"))
 	properties[SystemProps_Raw__file_encoding_NDX] = utf8Str
-	properties[SystemProps_Raw__file_separator_NDX] = vm.GetStringInternOrNew("/")
+	properties[SystemProps_Raw__file_separator_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("/"))
 	properties[SystemProps_Raw__format_country_NDX] = properties[SystemProps_Raw__display_country_NDX]
 	properties[SystemProps_Raw__format_language_NDX] = properties[SystemProps_Raw__display_language_NDX]
 	properties[SystemProps_Raw__format_script_NDX] = properties[SystemProps_Raw__display_script_NDX]
-	properties[SystemProps_Raw__java_io_tmpdir_NDX] = vm.GetStringInternOrNew("/tmp")
-	properties[SystemProps_Raw__line_separator_NDX] = vm.GetStringInternOrNew("\n")
-	properties[SystemProps_Raw__os_arch_NDX] = vm.GetStringInternOrNew(runtime.GOARCH)
-	properties[SystemProps_Raw__os_name_NDX] = vm.GetStringInternOrNew(runtime.GOOS)
-	properties[SystemProps_Raw__path_separator_NDX] = vm.GetStringInternOrNew(":")
+	properties[SystemProps_Raw__java_io_tmpdir_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("/tmp"))
+	properties[SystemProps_Raw__line_separator_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("\n"))
+	properties[SystemProps_Raw__os_arch_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(runtime.GOARCH))
+	properties[SystemProps_Raw__os_name_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(runtime.GOOS))
+	properties[SystemProps_Raw__path_separator_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(":"))
 	properties[SystemProps_Raw__stderr_encoding_NDX] = utf8Str
 	properties[SystemProps_Raw__stdout_encoding_NDX] = utf8Str
-	properties[SystemProps_Raw__sun_arch_data_model_NDX] = vm.GetStringInternOrNew(strconv.Itoa((int)(unsafe.Sizeof(uintptr(0))) * 8))
-	properties[SystemProps_Raw__sun_cpu_endian_NDX] = vm.GetStringInternOrNew(cpuEndianStr)
-	properties[SystemProps_Raw__sun_io_unicode_encoding_NDX] = vm.GetStringInternOrNew(unicodeEncodingStr)
+	properties[SystemProps_Raw__sun_arch_data_model_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(strconv.Itoa((int)(unsafe.Sizeof(uintptr(0))) * 8)))
+	properties[SystemProps_Raw__sun_cpu_endian_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(cpuEndianStr))
+	properties[SystemProps_Raw__sun_io_unicode_encoding_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(unicodeEncodingStr))
 	properties[SystemProps_Raw__sun_jnu_encoding_NDX] = utf8Str
-	properties[SystemProps_Raw__user_dir_NDX] = vm.GetStringInternOrNew("/wome")
-	properties[SystemProps_Raw__user_home_NDX] = vm.GetStringInternOrNew("/wome")
-	properties[SystemProps_Raw__user_name_NDX] = vm.GetStringInternOrNew("browser_user")
+	properties[SystemProps_Raw__user_dir_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("/wome"))
+	properties[SystemProps_Raw__user_home_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("/wome"))
+	properties[SystemProps_Raw__user_name_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("browser_user"))
 	vm.GetStack().PushRef(propertiesRef)
 	return nil
 }

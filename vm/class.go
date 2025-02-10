@@ -62,7 +62,7 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 	if c.super == nil {
 		fields[0] = reflect.StructField{
 			Name: "S",
-			Type: reflect.TypeOf(struct{}{}),
+			Type: reflect.TypeOf(false),
 		}
 	} else {
 		fields[0] = reflect.StructField{
@@ -205,7 +205,7 @@ func (c *Class) Elem() ir.Class {
 
 func (c *Class) Name() string {
 	if c.arrayDim > 0 {
-		return c.elem.Name() + "[]"
+		return c.Desc().String()
 	}
 	return c.Class.Name()
 }

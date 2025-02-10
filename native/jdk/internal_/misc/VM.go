@@ -63,7 +63,7 @@ func VM_getRuntimeArguments(vm ir.VM) error {
 	argumentsRef := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-1))
 	arguments := argumentsRef.GetArrRef()
 	for i, a := range os.Args[1:] {
-		arguments[i] = vm.GetStringInternOrNew(a)
+		arguments[i] = vm.RefToPtr(vm.GetStringInternOrNew(a))
 	}
 	vm.GetStack().PushRef(argumentsRef)
 	return nil

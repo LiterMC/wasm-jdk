@@ -1,6 +1,8 @@
 package ir
 
 import (
+	"unsafe"
+
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ops"
 )
@@ -32,6 +34,9 @@ type VM interface {
 	NewArray(*desc.Desc, int32) Ref
 	NewArrayByClass(Class, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
+
+	RefToPtr(Ref) unsafe.Pointer
+	PtrToRef(unsafe.Pointer) Ref
 
 	GetObjectClass() Class
 	GetThrowableClass() Class
@@ -82,6 +87,7 @@ type Stack interface {
 	GetVarFloat32(uint16) float32
 	GetVarFloat64(uint16) float64
 	GetVarRef(uint16) Ref
+	GetVarPointer(uint16) unsafe.Pointer
 	SetVar(uint16, uint32)
 	SetVar64(uint16, uint64)
 	SetVarInt8(uint16, int8)
@@ -91,6 +97,7 @@ type Stack interface {
 	SetVarFloat32(uint16, float32)
 	SetVarFloat64(uint16, float64)
 	SetVarRef(uint16, Ref)
+	SetVarPointer(uint16, unsafe.Pointer)
 
 	Peek() uint32
 	Peek64() uint64
@@ -101,6 +108,7 @@ type Stack interface {
 	PeekFloat32() float32
 	PeekFloat64() float64
 	PeekRef() Ref
+	PeekPointer() unsafe.Pointer
 	Pop() uint32
 	Pop64() uint64
 	PopInt8() int8
@@ -110,6 +118,7 @@ type Stack interface {
 	PopFloat32() float32
 	PopFloat64() float64
 	PopRef() Ref
+	PopPointer() unsafe.Pointer
 	Push(uint32)
 	Push64(uint64)
 	PushInt8(int8)
@@ -119,6 +128,7 @@ type Stack interface {
 	PushFloat32(float32)
 	PushFloat64(float64)
 	PushRef(Ref)
+	PushPointer(unsafe.Pointer)
 
 	// returns whether the top element is a reference or not
 	IsRef() bool

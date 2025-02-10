@@ -38,7 +38,7 @@ func main() {
 		arr := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-2))
 		refs := arr.GetArrRef()
 		for i, arg := range os.Args[2:] {
-			refs[i] = vm.NewString(arg)
+			refs[i] = vm.RefToPtr(vm.NewString(arg))
 		}
 		vm.GetStack().SetVarRef(0, arr)
 	}

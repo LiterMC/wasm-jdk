@@ -21,7 +21,7 @@ func (*ICaaload) Execute(vm VM) error {
 	if index < 0 || (int)(index) >= len(arr) {
 		return errs.ArrayIndexOutOfBoundsException
 	}
-	stack.PushRef(arr[index])
+	stack.PushPointer(arr[index])
 	return nil
 }
 
@@ -41,12 +41,12 @@ func (*ICaastore) Execute(vm VM) error {
 		return errs.ArrayIndexOutOfBoundsException
 	}
 	if value == nil {
-		arr[index] = value
+		arr[index] = vm.RefToPtr(value)
 	}
 	if vcls, arrElem := vm.GetClass(value), ref.Class().Elem(); !arrElem.IsAssignableFrom(vcls) {
-		return &errs.ClassCastException{vcls.Name(), arrElem.Name()}
+		return &errs.ClassCastException{Have: vcls.Name(), Want: arrElem.Name()}
 	}
-	arr[index] = value
+	arr[index] = vm.RefToPtr(value)
 	return nil
 }
 
@@ -223,7 +223,7 @@ func (ic *ICcheckcast) Execute(vm VM) error {
 		return err
 	}
 	if ref != nil && !class.IsInstance(ref) {
-		return &errs.ClassCastException{ref.Class().Name(), class.Name()}
+		return &errs.ClassCastException{Have: ref.Class().Name(), Want: class.Name()}
 	}
 	return nil
 }

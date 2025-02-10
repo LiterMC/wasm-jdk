@@ -1,6 +1,8 @@
 package vm
 
 import (
+	"unsafe"
+
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
@@ -150,14 +152,14 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 		panic(err)
 	}
 	ref := vm.New(vm.javaLangInvokeMethodType)
-	rtypePtr := (**Ref)(vm.javaLangInvokeMethodType_rtype.GetPointer(ref))
-	ptypesPtr := (**Ref)(vm.javaLangInvokeMethodType_ptypes.GetPointer(ref))
+	rtypePtr := (*unsafe.Pointer)(vm.javaLangInvokeMethodType_rtype.GetPointer(ref))
+	ptypesPtr := (*unsafe.Pointer)(vm.javaLangInvokeMethodType_ptypes.GetPointer(ref))
 
 	outCls, err := vm.GetClassFromDesc(md.Output)
 	if err != nil {
 		panic(err)
 	}
-	*rtypePtr = vm.GetClassRef(outCls).(*Ref)
+	*rtypePtr = vm.RefToPtr(vm.GetClassRef(outCls))
 	ptypesRef := vm.NewArray(desc.DescClassArray, (int32)(len(md.Inputs)))
 	ptypesArr := ptypesRef.GetArrRef()
 	for i, in := range md.Inputs {
@@ -165,9 +167,9 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 		if err != nil {
 			panic(err)
 		}
-		ptypesArr[i] = vm.GetClassRef(inCls).(*Ref)
+		ptypesArr[i] = vm.RefToPtr(vm.GetClassRef(inCls))
 	}
-	*ptypesPtr = ptypesRef.(*Ref)
+	*ptypesPtr = vm.RefToPtr(ptypesRef)
 	return ref
 }
 
