@@ -16,7 +16,7 @@
    ```bash
    mkdir /tmp/govm-test
    cd build/*-server-release/jdk/modules
-   cp ./*/* /tmp/govm-test/
+   cp -r ./*/* /tmp/govm-test/ 2>/dev/null
    ```
 5. Write and compile a java test file (can just have the main function), or copy the [existing test file](https://github.com/LiterMC/wasm-jdk/blob/main/jcls/testdata/Test.class) to `/tmp/govm-test/`
 6. Run gova in the directory (where you placed the java classfiles):
