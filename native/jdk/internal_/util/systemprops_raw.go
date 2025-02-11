@@ -23,7 +23,7 @@ var vmProperties = []string{
 // private static native String[] vmProperties();
 func SystemProps_Raw_vmProperties(vm ir.VM) error {
 	propertiesRef := vm.NewArray(desc.DescStringArray, (int32)(len(vmProperties)))
-	properties := propertiesRef.GetArrRef()
+	properties := propertiesRef.GetRefArr()
 	for i, v := range vmProperties {
 		properties[i] = vm.RefToPtr(vm.NewString(v))
 	}
@@ -95,7 +95,7 @@ func SystemProps_Raw_platformProperties(vm ir.VM) error {
 	utf8Str := vm.RefToPtr(vm.GetStringInternOrNew("UTF-8"))
 
 	propertiesRef := vm.NewArray(desc.DescStringArray, SystemProps_Raw_FIXED_LENGTH)
-	properties := propertiesRef.GetArrRef()
+	properties := propertiesRef.GetRefArr()
 	for i := range SystemProps_Raw_FIXED_LENGTH {
 		properties[i] = emptyStr
 	}
@@ -111,6 +111,7 @@ func SystemProps_Raw_platformProperties(vm ir.VM) error {
 	properties[SystemProps_Raw__line_separator_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("\n"))
 	properties[SystemProps_Raw__os_arch_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(runtime.GOARCH))
 	properties[SystemProps_Raw__os_name_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(runtime.GOOS))
+	properties[SystemProps_Raw__os_version_NDX] = vm.RefToPtr(vm.GetStringInternOrNew("1.0"))
 	properties[SystemProps_Raw__path_separator_NDX] = vm.RefToPtr(vm.GetStringInternOrNew(":"))
 	properties[SystemProps_Raw__stderr_encoding_NDX] = utf8Str
 	properties[SystemProps_Raw__stdout_encoding_NDX] = utf8Str

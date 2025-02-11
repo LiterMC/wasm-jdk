@@ -336,7 +336,7 @@ type StackFrameInfo struct {
 	PC     *ir.ICNode
 }
 
-func NewStackInfo(stack ir.Stack, depth int) *StackInfo {
+func NewStackInfo(vm *VM, stack ir.Stack, depth int) *StackInfo {
 	var frames []StackFrameInfo
 	if depth == -1 {
 		frames = make([]StackFrameInfo, 0, 8)
@@ -344,7 +344,13 @@ func NewStackInfo(stack ir.Stack, depth int) *StackInfo {
 		frames = make([]StackFrameInfo, 0, depth)
 	}
 	si := new(StackInfo)
-	for s := stack; s != nil; s = s.Prev() {
+
+	throwable := vm.javaLangThrowable
+	s := stack
+	for throwable.IsAssignableFrom(s.Method().GetDeclaringClass()) && s.Method().Name() == "<init>" {
+		s = s.Prev()
+	}
+	for ; s != nil; s = s.Prev() {
 		if s.Method() == nil { // JVM initialization stack
 			break
 		}

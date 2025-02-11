@@ -141,7 +141,7 @@ func Class_getInterfaces0(vm ir.VM) error {
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	ints := this.Interfaces()
 	intsRef := vm.NewArray(desc.DescClassArray, (int32)(len(ints)))
-	intsArr := intsRef.GetArrRef()
+	intsArr := intsRef.GetRefArr()
 	for i, in := range ints {
 		intsArr[i] = vm.RefToPtr(vm.GetClassRef(in))
 	}

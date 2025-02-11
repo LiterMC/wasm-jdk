@@ -129,6 +129,23 @@ var (
 		ArrDim:  1,
 		EndType: Long,
 	}
+	DescBooleanArray = &Desc{
+		ArrDim:  1,
+		EndType: Boolean,
+	}
+	DescCharArray = &Desc{
+		ArrDim:  1,
+		EndType: Char,
+	}
+	DescFloatArray = &Desc{
+		ArrDim:  1,
+		EndType: Float,
+	}
+	DescDoubleArray = &Desc{
+		ArrDim:  1,
+		EndType: Double,
+	}
+
 	DescClassArray = &Desc{
 		ArrDim:  1,
 		EndType: Class,
@@ -252,6 +269,10 @@ func (d *Desc) AsReflect() reflect.Type {
 
 func (d *Desc) Eq(o *Desc) bool {
 	return d.ArrDim == o.ArrDim && d.EndType == o.EndType && d.Class == o.Class
+}
+
+func (d *Desc) EqType(o *Desc) bool {
+	return d.ArrDim == o.ArrDim && d.EndType == o.EndType
 }
 
 func (d *Desc) String() string {

@@ -62,7 +62,7 @@ func (*ICfaload) Op() ops.Op { return ops.Faload }
 func (*ICfaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrInt32()
+	arr := stack.PopRef().GetInt32Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -80,7 +80,7 @@ func (*ICfastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt32()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrInt32()
+	arr := stack.PopRef().GetInt32Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}

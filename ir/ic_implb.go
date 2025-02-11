@@ -11,7 +11,7 @@ func (*ICbaload) Op() ops.Op { return ops.Baload }
 func (*ICbaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrInt8()
+	arr := stack.PopRef().GetInt8Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -29,7 +29,7 @@ func (*ICbastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt8()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrInt8()
+	arr := stack.PopRef().GetInt8Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}

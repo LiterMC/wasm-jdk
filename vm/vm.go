@@ -2,7 +2,6 @@ package vm
 
 import (
 	"fmt"
-	"runtime"
 	"strings"
 	"sync"
 	"unsafe"
@@ -23,9 +22,11 @@ type VM struct {
 	createdMux sync.RWMutex
 	created    map[*VM]struct{}
 
+	step              uint64
 	carrierThread     *Ref
 	currentThread     *Ref
 	interruptNotifier chan struct{}
+	throwing ir.Ref
 
 	stringPool sync.Map
 
@@ -49,10 +50,14 @@ type preloadClasses struct {
 	javaLangThread             *Class
 	javaLangThread_interrupted ir.Field
 
+	javaLangThreadGroup *Class
+
 	javaLangSystem            *Class
 	javaLangSystem_initPhase1 ir.Method
 	javaLangSystem_initPhase2 ir.Method
 	javaLangSystem_initPhase3 ir.Method
+
+	javaLangRefFinalizer *Class
 
 	javaLangInvokeMethodHandlesLookup              *Class
 	javaLangInvokeMethodHandlesLookup_lookupClass  ir.Field
@@ -116,11 +121,19 @@ func (p *preloadClasses) load(vm *VM) {
 	}
 	p.javaLangThread_interrupted = p.javaLangThread.GetFieldByName("interrupted")
 
+	if p.javaLangThreadGroup, err = vm.loadClass("java/lang/ThreadGroup"); err != nil {
+		panic(err)
+	}
+
 	if p.javaLangThrowable, err = vm.loadClass("java/lang/Throwable"); err != nil {
 		panic(err)
 	}
 	p.javaLangThrowable_backtrace = p.javaLangThrowable.GetFieldByName("backtrace")
 	p.javaLangThrowable_detailMessage = p.javaLangThrowable.GetFieldByName("detailMessage")
+
+	if p.javaLangRefFinalizer, err = vm.loadClass("java/lang/ref/Finalizer"); err != nil {
+		panic(err)
+	}
 
 	if p.javaLangInvokeMethodHandlesLookup, err = vm.loadClass("java/lang/invoke/MethodHandles$Lookup"); err != nil {
 		panic(err)
@@ -139,21 +152,15 @@ func (vm *VM) SetupEntryMethod() {
 	vm.javaLangString.InitBeforeUse(vm)
 	vm.javaLangSystem.InitBeforeUse(vm)
 	vm.javaLangClass.InitBeforeUse(vm)
+	vm.javaLangThreadGroup.InitBeforeUse(vm)
 	vm.javaLangThread.InitBeforeUse(vm)
+
+	vm.initSystemThread()
+	vm.initSystem()
 
 	if vm.opts.EntryClass == "" {
 		panic("Entry class is not defined")
 	}
-
-	// TODO: initialize thread
-	vm.carrierThread = vm.New(vm.javaLangThread).(*Ref)
-	vm.carrierThread.userData = &ThreadUserData{
-		VM: vm,
-	}
-	vm.currentThread = vm.carrierThread
-
-	vm.initSystem()
-
 	entryClass, err := vm.loadClass(vm.opts.EntryClass)
 	if err != nil {
 		panic(err)
@@ -167,14 +174,16 @@ func (vm *VM) SetupEntryMethod() {
 	vm.nextPc = entryMethod.Code.Code
 }
 
-func (vm *VM) newSubVM(thread *Ref) *VM {
+func (vm *VM) NewSubVM(thread0 ir.Ref) ir.VM {
 	sub := &VM{
 		opts:              vm.opts,
 		loader:            vm.loader,
+		creator:           vm,
 		created:           make(map[*VM]struct{}),
 		interruptNotifier: make(chan struct{}, 1),
 		preloadClasses:    vm.preloadClasses,
 	}
+	thread := thread0.(*Ref)
 	entryClass := thread.Class().(*Class)
 	entryMethod := entryClass.GetMethodByNameAndType("run", "()V").(*Method)
 	sub.stack = &Stack{
@@ -182,18 +191,49 @@ func (vm *VM) newSubVM(thread *Ref) *VM {
 		method: entryMethod,
 	}
 	sub.nextPc = entryMethod.Code.Code
+	sub.stack.SetVarRef(0, thread)
 
+	if thread.userData == nil {
+		thread.userData = new(ThreadUserData)
+	}
 	thread.userData.(*ThreadUserData).VM = sub
 	sub.carrierThread = thread
 	sub.currentThread = thread
 
-	vm.creator.createdMux.Lock()
-	delete(vm.creator.created, vm)
-	vm.creator.createdMux.Unlock()
+	vm.createdMux.Lock()
+	vm.created[sub] = struct{}{}
+	vm.createdMux.Unlock()
 	return sub
 }
 
+func (vm *VM) initSystemThread() {
+	systemThreadGroup := vm.New(vm.javaLangThreadGroup)
+	vm.stack.PushRef(systemThreadGroup)
+	vm.Invoke(vm.javaLangThreadGroup.GetMethodByNameAndType("<init>", "()V"))
+	if err := vm.RunStack(); err != nil {
+		panic(err)
+	}
+
+	vm.carrierThread = vm.New(vm.javaLangThread).(*Ref)
+	vm.carrierThread.userData = &ThreadUserData{
+		VM: vm,
+	}
+	vm.currentThread = vm.carrierThread
+	vm.stack.PushRef(vm.carrierThread)
+	vm.stack.PushRef(systemThreadGroup)
+	vm.stack.PushRef(vm.GetStringInternOrNew("Main Thread"))
+	vm.stack.PushInt32(0)
+	vm.stack.PushRef(nil)
+	vm.stack.PushInt64(0)
+	vm.stack.PushRef(nil)
+	vm.Invoke(vm.javaLangThread.GetMethodByNameAndType("<init>", "(Ljava/lang/ThreadGroup;Ljava/lang/String;ILjava/lang/Runnable;JLjava/security/AccessControlContext;)V"))
+	if err := vm.RunStack(); err != nil {
+		panic(err)
+	}
+}
+
 func (vm *VM) initSystem() {
+	vm.javaLangRefFinalizer.InitBeforeUse(vm)
 	vm.InvokeStatic(vm.javaLangSystem_initPhase1)
 	if err := vm.RunStack(); err != nil {
 		panic(err)
@@ -218,16 +258,11 @@ func (vm *VM) Running() bool {
 	return vm.stack != nil
 }
 
-var step int = 0
-
 func (vm *VM) Step() error {
-	if step%2000 == 0 {
-		runtime.GC()
-	}
 	m, pc := vm.stack.method.(*Method), vm.nextPc
 	printStack := func() { // early stage debug only
 		fmt.Println("current method:", m.class.Name()+":", m)
-		fmt.Println(NewStackInfo(vm.stack, -1).String())
+		fmt.Println(NewStackInfo(vm, vm.stack, -1).String())
 		if m.AccessFlags.Has(jcls.AccNative) {
 			return
 		}
@@ -249,7 +284,15 @@ func (vm *VM) Step() error {
 		fmt.Println()
 	}
 	defer func() {
+		if vm.Throwing() != nil {
+			panic(vm.Throwing())
+		}
+	}()
+	defer func() {
 		if err := recover(); err != nil {
+			if vm.Throwing() != nil {
+				return
+			}
 			printStack()
 			panic(err)
 		}
@@ -266,9 +309,8 @@ func (vm *VM) Step() error {
 	} else {
 		vm.stack.pc = vm.nextPc
 		vm.nextPc = vm.stack.pc.Next
-		step++
-		fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, step, vm.stack.pc.IC, vm.stack.pc.Next)
-		// fmt.Printf("    stack: %p %#v\n", vm.stack, vm.stack)
+		vm.step++
+		fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, vm.step, vm.stack.pc.IC, vm.stack.pc.Next)
 		err = vm.stack.pc.IC.Execute(vm)
 		if vm.stack == nil {
 			vm.creator.createdMux.Lock()
@@ -314,6 +356,7 @@ func (vm *VM) NewString(str string) ir.Ref {
 	return ref
 }
 
+// Alloc an array with the descriptor as the array's type
 func (vm *VM) NewArray(dc *desc.Desc, length int32) ir.Ref {
 	class, err := vm.GetClassFromDesc(dc)
 	if err != nil {
@@ -323,12 +366,6 @@ func (vm *VM) NewArray(dc *desc.Desc, length int32) ir.Ref {
 	return newRefArray(class, length)
 }
 
-func (vm *VM) NewArrayByClass(cls ir.Class, length int32) ir.Ref {
-	class := cls.(*Class)
-	class.InitBeforeUse(vm)
-	return newRefArray(class.NewArrayClass(1), length)
-}
-
 func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
 	class, err := vm.GetClassFromDesc(dc)
 	if err != nil {
@@ -336,6 +373,13 @@ func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
 	}
 	class.InitBeforeUse(vm)
 	return newMultiDimArray(class, lengths)
+}
+
+// Alloc an array with the class as the elements' type
+func (vm *VM) NewObjectArray(cls ir.Class, length int32) ir.Ref {
+	class := cls.(*Class)
+	class.InitBeforeUse(vm)
+	return newRefArray(class.NewArrayClass(1), length)
 }
 
 func (vm *VM) RefToPtr(ref ir.Ref) unsafe.Pointer {
@@ -416,6 +460,10 @@ func (vm *VM) GetClass(r ir.Ref) ir.Class {
 	return r.(*Ref).class
 }
 
+func (vm *VM) GetBootLoader() ir.ClassLoader {
+	return vm.opts.Loader
+}
+
 func (vm *VM) GetClassLoader() ir.ClassLoader {
 	return vm.loader
 }
@@ -452,6 +500,7 @@ func (vm *VM) Return() {
 
 func (vm *VM) Throw(r ir.Ref) {
 	// TODO: try/catch logic
+	vm.throwing = r
 	message := vm.GetString(*(**Ref)(vm.javaLangThrowable_detailMessage.GetPointer(r)))
 	backtrace := *(**Ref)(vm.javaLangThrowable_backtrace.GetPointer(r))
 	fmt.Printf("Throwing: %s: %s\n", r.Class().Name(), message)
@@ -460,6 +509,10 @@ func (vm *VM) Throw(r ir.Ref) {
 		fmt.Println(stackInfo.String())
 	}
 	panic(r)
+}
+
+func (vm *VM) Throwing() ir.Ref {
+	return vm.throwing
 }
 
 func (vm *VM) Goto(n *ir.ICNode) {

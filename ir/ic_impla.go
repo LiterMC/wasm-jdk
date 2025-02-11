@@ -14,7 +14,7 @@ func (*ICaaload) Op() ops.Op { return ops.Aaload }
 func (*ICaaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrRef()
+	arr := stack.PopRef().GetRefArr()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -33,18 +33,17 @@ func (*ICaastore) Execute(vm VM) error {
 	value := stack.PopRef()
 	index := stack.PopInt32()
 	ref := stack.PopRef()
-	arr := ref.GetArrRef()
+	arr := ref.GetRefArr()
 	if arr == nil {
 		return errs.NullPointerException
 	}
 	if index < 0 || (int)(index) >= len(arr) {
 		return errs.ArrayIndexOutOfBoundsException
 	}
-	if value == nil {
-		arr[index] = vm.RefToPtr(value)
-	}
-	if vcls, arrElem := vm.GetClass(value), ref.Class().Elem(); !arrElem.IsAssignableFrom(vcls) {
-		return &errs.ClassCastException{Have: vcls.Name(), Want: arrElem.Name()}
+	if value != nil {
+		if vcls, arrElem := vm.GetClass(value), ref.Class().Elem(); !arrElem.IsAssignableFrom(vcls) {
+			return &errs.ClassCastException{Have: vcls.Name(), Want: arrElem.Name()}
+		}
 	}
 	arr[index] = vm.RefToPtr(value)
 	return nil
@@ -125,7 +124,7 @@ func (ic *ICanewarray) Execute(vm VM) error {
 	if err != nil {
 		return err
 	}
-	arr := vm.NewArrayByClass(class, count)
+	arr := vm.NewObjectArray(class, count)
 	stack.PushRef(arr)
 	return nil
 }

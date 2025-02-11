@@ -20,7 +20,7 @@ func loadNative(vm ir.VM, cl ir.ClassLoader, location string, callback jvm.Nativ
 	}
 	method := class.GetMethodByName(name)
 	if method == nil {
-		panic("method " + location + "is not found")
+		panic("method " + location + " is not found")
 	}
 	vm.LoadNativeMethod(method, callback)
 }
@@ -36,7 +36,7 @@ func LoadNative(vm ir.VM, location string, callback jvm.NativeMethodCallback) {
 	}
 	method := class.GetMethodByName(name)
 	if method == nil {
-		panic("method " + location + "is not found")
+		panic("method " + location + " is not found")
 	}
 	vm.LoadNativeMethod(method, callback)
 }

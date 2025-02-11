@@ -9,7 +9,8 @@ import (
 	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
-var threadDesc = &desc.Desc{
+var threadArrayDesc = &desc.Desc{
+	ArrDim:  1,
 	EndType: desc.Class,
 	Class:   "java/lang/Thread",
 }
@@ -20,6 +21,25 @@ func init() {
 
 // private static native void registerNatives();
 func Thread_registerNatives(vm ir.VM) error {
+	loadNative(vm, "java/lang/Thread.findScopedValueBindings()Ljava/lang/Object;", Thread_findScopedValueBindings)
+	loadNative(vm, "java/lang/Thread.currentCarrierThread()Ljava/lang/Thread;", Thread_currentCarrierThread)
+	loadNative(vm, "java/lang/Thread.currentThread()Ljava/lang/Thread;", Thread_currentThread)
+	loadNative(vm, "java/lang/Thread.setCurrentThread(Ljava/lang/Thread;)V", Thread_setCurrentThread)
+	loadNative(vm, "java/lang/Thread.scopedValueCache()[Ljava/lang/Object;", Thread_scopedValueCache)
+	loadNative(vm, "java/lang/Thread.setScopedValueCache([Ljava/lang/Object;)V", Thread_setScopedValueCache)
+	loadNative(vm, "java/lang/Thread.ensureMaterializedForStackWalk(Ljava/lang/Object;)V", Thread_ensureMaterializedForStackWalk)
+	loadNative(vm, "java/lang/Thread.yield0()V", Thread_yield0)
+	loadNative(vm, "java/lang/Thread.sleep0(J)V", Thread_sleep0)
+	loadNative(vm, "java/lang/Thread.start0()V", Thread_start0)
+	loadNative(vm, "java/lang/Thread.holdsLock(Ljava/lang/Object;)Z", Thread_holdsLock)
+	loadNative(vm, "java/lang/Thread.getStackTrace0()Ljava/lang/Object;", Thread_getStackTrace0)
+	loadNative(vm, "java/lang/Thread.dumpThreads([Ljava/lang/Thread;)[[Ljava/lang/StackTraceElement;", Thread_dumpThreads)
+	loadNative(vm, "java/lang/Thread.getThreads()[Ljava/lang/Thread;", Thread_getThreads)
+	loadNative(vm, "java/lang/Thread.setPriority0(I)V", Thread_setPriority0)
+	loadNative(vm, "java/lang/Thread.interrupt0()V", Thread_interrupt0)
+	loadNative(vm, "java/lang/Thread.clearInterruptEvent()V", Thread_clearInterruptEvent)
+	loadNative(vm, "java/lang/Thread.setNativeName(Ljava/lang/String;)V", Thread_setNativeName)
+	loadNative(vm, "java/lang/Thread.getNextThreadIdOffset()J", Thread_getNextThreadIdOffset)
 	return nil
 }
 
@@ -83,8 +103,19 @@ func Thread_sleep0(vm ir.VM) error {
 
 // private native void start0();
 func Thread_start0(vm ir.VM) error {
-	panic("TODO: Thread.start0")
-	// return nil
+	this := vm.GetStack().GetVarRef(0)
+	sub := vm.NewSubVM(this)
+	go func() {
+		println("*** thread", this, "started on", sub)
+		defer println("*** thread", this, "finished on", sub)
+		for sub.Running() {
+			err := sub.Step()
+			if err != nil {
+				panic(err)
+			}
+		}
+	}()
+	return nil
 }
 
 // public static native boolean holdsLock(Object obj);
@@ -115,7 +146,7 @@ func Thread_dumpThreads(vm ir.VM) error {
 func Thread_getThreads(vm ir.VM) error {
 	panic("TODO: Thread.getThreads")
 	// threads := vm.GetThreads()
-	// ref := vm.NewArray(threadDesc, len(threads))
+	// ref := vm.NewArray(threadArrayDesc, len(threads))
 	// copy(ref.GetArrRef(), threads)
 	// vm.GetStack().PushRef(ref)
 	// return nil
@@ -126,7 +157,11 @@ func Thread_setPriority0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := stack.GetVarRef(0)
 	newPriority := stack.GetVarInt32(1)
-	(*this.UserData()).(*jvm.ThreadUserData).Priority = newPriority
+	userData := this.UserData()
+	if *userData == nil {
+		*userData = new(jvm.ThreadUserData)
+	}
+	(*userData).(*jvm.ThreadUserData).Priority = newPriority
 	return nil
 }
 
@@ -148,7 +183,11 @@ func Thread_setNativeName(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := stack.GetVarRef(0)
 	name := vm.GetString(stack.GetVarRef(1))
-	(*this.UserData()).(*jvm.ThreadUserData).Name = name
+	userData := this.UserData()
+	if *userData == nil {
+		*userData = new(jvm.ThreadUserData)
+	}
+	(*userData).(*jvm.ThreadUserData).Name = name
 	return nil
 }
 

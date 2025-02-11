@@ -118,9 +118,16 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 }
 
 func (c *Class) NewArrayClass(dim int) *Class {
+	elem := c.elem
+	if elem == nil {
+		elem = c
+	} else {
+		elem = c.elem
+		dim += c.arrayDim
+	}
 	return &Class{
 		arrayDim: dim,
-		elem:     c,
+		elem:     elem,
 	}
 }
 
@@ -356,7 +363,11 @@ func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
 }
 
 func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
-	for x := c; x != nil; x = x.super.(*Class) {
+	if c.arrayDim > 0 {
+		return c.initVM.Load().getArrayMethod(c, name)
+	}
+	x := c
+	for {
 		for i := range len(x.Methods) {
 			m := &x.Methods[i]
 			if m.Name() == name && m.Desc().EqInputs(dc) {
@@ -366,8 +377,11 @@ func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
 				return m
 			}
 		}
+		if x.super == nil {
+			return nil
+		}
+		x = x.super.(*Class)
 	}
-	return nil
 }
 
 func (c *Class) scanCodes() {
@@ -435,25 +449,48 @@ func (c *Class) loadField(ref *jcls.ConstantRef, canLoadClass bool) *Field {
 	} else {
 		return nil
 	}
-	for i, f := range x.Class.Fields {
-		if f.Name() == ref.NameAndType.Name {
-			if f.Desc.String() != ref.NameAndType.Desc {
-				panic(fmt.Errorf("cannot load class: field %s is %s, but one operation requires %s", ref.NameAndType.Name, f.Desc.String(), ref.NameAndType.Desc))
+	for {
+		for i, f := range x.Class.Fields {
+			if f.Name() == ref.NameAndType.Name {
+				if f.Desc.String() != ref.NameAndType.Desc {
+					panic(fmt.Errorf("cannot load class: field %s is %s, but one operation requires %s", ref.NameAndType.Name, f.Desc.String(), ref.NameAndType.Desc))
+				}
+				return &x.Fields[i]
 			}
-			return &x.Fields[i]
 		}
+		if x.super == nil {
+			return nil
+		}
+		x = x.super.(*Class)
 	}
-	return nil
 }
 
 func (c *Class) loadMethodGetter(ind uint16) {
+	if _, ok := c.loadedMethods[ind]; ok {
+		return
+	}
 	ref, ok := c.ConstPool[ind-1].(*jcls.ConstantRef)
 	if !ok || (ref.ConstTag != jcls.TagMethodref && ref.ConstTag != jcls.TagInterfaceMethodref) {
 		panic(fmt.Errorf("cannot load class: constant at %d is not a method reference", ind-1))
 	}
-	c.loadedMethods[ind] = sync.OnceValue(func() *Method {
-		return c.loadMethod(ref)
-	})
+	if ref.Class.Name[0] == '[' {
+		vm := c.initVM.Load()
+		if ref.Class.Name[len(ref.Class.Name)-1] == ';' {
+			// lazy load class
+			c.loadedMethods[ind] = sync.OnceValue(func() *Method {
+				return vm.getArrayMethodByName(ref)
+			})
+		} else {
+			arrayMethod := vm.getArrayMethodByName(ref)
+			c.loadedMethods[ind] = func() *Method {
+				return arrayMethod
+			}
+		}
+	} else {
+		c.loadedMethods[ind] = sync.OnceValue(func() *Method {
+			return c.loadMethod(ref)
+		})
+	}
 }
 
 func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
@@ -463,7 +500,15 @@ func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
 	}
 	x := k.(*Class)
 	x.InitBeforeUse(c.initVM.Load())
-	for x != nil {
+	method := x.loadMethod0(ref)
+	if method == nil {
+		panic(fmt.Errorf("cannot load class: missing method %s", ref))
+	}
+	return method
+}
+
+func (c *Class) loadMethod0(ref *jcls.ConstantRef) *Method {
+	for x := c; x != nil; x = x.super.(*Class) {
 		for i, m := range x.Class.Methods {
 			if m.Name() == ref.NameAndType.Name && m.Desc().String() == ref.NameAndType.Desc {
 				return &x.Methods[i]
@@ -472,9 +517,14 @@ func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
 		if x.super == nil {
 			break
 		}
-		x = x.super.(*Class)
 	}
-	panic(fmt.Errorf("cannot load class: cannot find method %s", ref))
+	for _, in := range c.interfaces {
+		m := in.(*Class).loadMethod0(ref)
+		if m != nil {
+			return m
+		}
+	}
+	return nil
 }
 
 type dynamicInfo struct {

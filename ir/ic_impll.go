@@ -52,7 +52,7 @@ func (*IClaload) Op() ops.Op { return ops.Laload }
 func (*IClaload) Execute(vm VM) error {
 	stack := vm.GetStack()
 	index := stack.PopInt64()
-	arr := stack.PopRef().GetArrInt64()
+	arr := stack.PopRef().GetInt64Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}
@@ -81,7 +81,7 @@ func (*IClastore) Execute(vm VM) error {
 	stack := vm.GetStack()
 	value := stack.PopInt64()
 	index := stack.PopInt32()
-	arr := stack.PopRef().GetArrInt64()
+	arr := stack.PopRef().GetInt64Arr()
 	if arr == nil {
 		return errs.NullPointerException
 	}

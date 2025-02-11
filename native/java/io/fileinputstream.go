@@ -1,8 +1,6 @@
 package java_io
 
 import (
-	"errors"
-
 	"github.com/LiterMC/wasm-jdk/ir"
 )
 
@@ -11,5 +9,5 @@ func init() {
 }
 
 func FileInputStream_initIDs(vm ir.VM) error {
-	return errors.New("TODO")
+	return nil
 }

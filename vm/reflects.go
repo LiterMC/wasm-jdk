@@ -63,8 +63,6 @@ var (
 		},
 		arrayDim: -1,
 	}
-
-	ByteArrayClass = ByteClass.NewArrayClass(1)
 )
 
 func (vm *VM) getClassFromDescString(name string) (*Class, error) {
@@ -161,7 +159,7 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 	}
 	*rtypePtr = vm.RefToPtr(vm.GetClassRef(outCls))
 	ptypesRef := vm.NewArray(desc.DescClassArray, (int32)(len(md.Inputs)))
-	ptypesArr := ptypesRef.GetArrRef()
+	ptypesArr := ptypesRef.GetRefArr()
 	for i, in := range md.Inputs {
 		inCls, err := vm.GetClassFromDesc(in)
 		if err != nil {
@@ -176,6 +174,6 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 func (vm *VM) FillThrowableStackTrace(throwable ir.Ref) {
 	st := vm.stack.Prev().Prev()
 	backtrace := vm.New(vm.GetObjectClass()).(*Ref)
-	*backtrace.UserData() = NewStackInfo(st, -1)
+	*backtrace.UserData() = NewStackInfo(vm, st, -1)
 	*(**Ref)(vm.javaLangThrowable_backtrace.GetPointer(throwable)) = backtrace
 }

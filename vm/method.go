@@ -122,7 +122,7 @@ func (vm *VM) InvokeVirtual(method ir.Method) {
 	defer fmt.Println("   post invoke virtual " + m.Location())
 	prev := vm.stack
 	prev.pc = vm.nextPc
-	vm.stack = &Stack{
+	newStack := &Stack{
 		prev: prev,
 	}
 	inputs := m.Desc().Inputs
@@ -132,20 +132,21 @@ func (vm *VM) InvokeVirtual(method ir.Method) {
 		switch d.Type() {
 		case desc.Void:
 		case desc.Class, desc.Array:
-			vm.stack.SetVarRef(j, prev.PopRef())
+			newStack.SetVarRef(j, prev.PopRef())
 		case desc.Boolean, desc.Byte, desc.Char, desc.Short, desc.Int, desc.Float:
-			vm.stack.SetVar(j, prev.Pop())
+			newStack.SetVar(j, prev.Pop())
 		case desc.Long, desc.Double:
-			vm.stack.SetVar64(j, prev.Pop64())
+			newStack.SetVar64(j, prev.Pop64())
 		default:
 			panic("vm: unknown MethodDesc.Input.Type")
 		}
 	}
 	this := prev.PopRef().(*Ref)
-	vm.stack.SetVarRef(0, this)
+	newStack.SetVarRef(0, this)
 	m2 := this.class.GetMethodByDesc(method.Name(), method.Desc()).(*Method)
-	vm.stack.class = m2.class
-	vm.stack.method = m2
+	newStack.class = m2.class
+	newStack.method = m2
+	vm.stack = newStack
 	if m2.AccessFlags.Has(jcls.AccNative) {
 		if m2.native == nil {
 			panic("native method " + m2.Location() + " is not loaded")
@@ -208,8 +209,8 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 		}
 	}
 	if hasVarargs {
-		varargsRef := vm.NewArray(inputs[inputsLen-1].Elem(), (int32)(len(varargs)))
-		copy(varargsRef.GetArrRef(), varargs)
+		varargsRef := vm.NewArray(inputs[inputsLen-1], (int32)(len(varargs)))
+		copy(varargsRef.GetRefArr(), varargs)
 		vm.stack.SetVarRef((uint16)(inputsLen-1), varargsRef)
 	}
 

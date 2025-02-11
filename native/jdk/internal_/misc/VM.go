@@ -61,7 +61,7 @@ func VM_getNanoTimeAdjustment(vm ir.VM) error {
 // public static native String[] getRuntimeArguments();
 func VM_getRuntimeArguments(vm ir.VM) error {
 	argumentsRef := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-1))
-	arguments := argumentsRef.GetArrRef()
+	arguments := argumentsRef.GetRefArr()
 	for i, a := range os.Args[1:] {
 		arguments[i] = vm.RefToPtr(vm.GetStringInternOrNew(a))
 	}

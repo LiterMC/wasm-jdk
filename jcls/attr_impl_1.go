@@ -123,16 +123,22 @@ func (a *AttrCode) GetLine(pc uint16) int {
 		return -1
 	}
 	ind, _ := slices.BinarySearchFunc(a.LineNumbers, pc, func(e *LineNumberEntry, pc uint16) int {
-		x := e.StartPc - pc
-		if x < 0 {
+		if e.StartPc < pc {
 			return -1
 		}
-		if x == 0 {
+		if e.StartPc == pc {
 			return 0
 		}
 		return 1
 	})
-	return (int)(a.LineNumbers[ind].LineNum)
+	if ind >= len(a.LineNumbers) {
+		ind = len(a.LineNumbers) - 1
+	}
+	e := a.LineNumbers[ind]
+	if e.StartPc > pc {
+		e = a.LineNumbers[ind - 1]
+	}
+	return (int)(e.LineNum)
 }
 
 type AttrLineNumberTable struct {

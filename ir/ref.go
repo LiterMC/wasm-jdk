@@ -14,11 +14,11 @@ type Ref interface {
 	Len() int32
 	UserData() *any
 	Data() unsafe.Pointer
-	GetArrRef() []unsafe.Pointer
-	GetArrInt8() []int8
-	GetArrInt16() []int16
-	GetArrInt32() []int32
-	GetArrInt64() []int64
+	GetRefArr() []unsafe.Pointer
+	GetInt8Arr() []int8
+	GetInt16Arr() []int16
+	GetInt32Arr() []int32
+	GetInt64Arr() []int64
 
 	IsLocked(VM) int
 	Lock(VM) int

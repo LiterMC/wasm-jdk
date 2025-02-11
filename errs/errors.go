@@ -25,3 +25,11 @@ type ClassCastException struct {
 func (e *ClassCastException) Error() string {
 	return fmt.Sprintf("ClassCastException: have %s, want %s", e.Have, e.Want)
 }
+
+type UnsatisfiedLinkError struct {
+	Name string
+}
+
+func (e *UnsatisfiedLinkError) Error() string {
+	return fmt.Sprintf("UnsatisfiedLinkError: %s is not found", e.Name)
+}

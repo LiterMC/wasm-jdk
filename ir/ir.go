@@ -28,12 +28,14 @@ type ICNode struct {
 
 type VM interface {
 	GetStack() Stack
+	Running() bool
+	Step() error
 
 	New(Class) Ref
 	NewString(string) Ref
 	NewArray(*desc.Desc, int32) Ref
-	NewArrayByClass(Class, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
+	NewObjectArray(Class, int32) Ref
 
 	RefToPtr(Ref) unsafe.Pointer
 	PtrToRef(unsafe.Pointer) Ref
@@ -50,6 +52,7 @@ type VM interface {
 	GetClassByIndex(uint16) (Class, error)
 	GetClass(Ref) Class
 
+	GetBootLoader() ClassLoader
 	GetClassLoader() ClassLoader
 	GetCurrentClass() Class
 	GetCurrentMethod() Method
@@ -62,6 +65,7 @@ type VM interface {
 
 	Return()
 	Throw(Ref)
+	Throwing() Ref
 	Goto(*ICNode)
 
 	GetCarrierThread() Ref
@@ -71,6 +75,8 @@ type VM interface {
 	ClearInterrupt()
 
 	FillThrowableStackTrace(Ref)
+
+	NewSubVM(Ref) VM
 }
 
 type Stack interface {
@@ -132,8 +138,4 @@ type Stack interface {
 
 	// returns whether the top element is a reference or not
 	IsRef() bool
-}
-
-type ClassLoader interface {
-	LoadClass(name string) (Class, error)
 }

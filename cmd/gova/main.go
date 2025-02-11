@@ -36,7 +36,7 @@ func main() {
 	vm.SetupEntryMethod()
 	{
 		arr := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-2))
-		refs := arr.GetArrRef()
+		refs := arr.GetRefArr()
 		for i, arg := range os.Args[2:] {
 			refs[i] = vm.RefToPtr(vm.NewString(arg))
 		}

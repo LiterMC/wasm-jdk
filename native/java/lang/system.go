@@ -66,8 +66,8 @@ func System_arraycopy(vm ir.VM) error {
 	destPos := stack.GetVarInt32(3)
 	length := stack.GetVarInt32(4)
 	srcTyp := src.Desc()
-	if !srcTyp.Eq(dest.Desc()) {
-		panic("source and destination type not match")
+	if !srcTyp.EqType(dest.Desc()) {
+		panic("source (" + srcTyp.String() + ") and destination(" + dest.Desc().String() + ") not match")
 	}
 	if srcPos < 0 || srcPos+length > src.Len() {
 		panic("source length too small")

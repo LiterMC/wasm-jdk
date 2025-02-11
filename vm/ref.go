@@ -84,7 +84,7 @@ func newMultiDimArray(cls ir.Class, lengths []int32) *Ref {
 	elem := cls.Elem()
 	lengths = lengths[1:]
 	if len(lengths) > 0 && elem.ArrayDim() > 0 {
-		refs := arr.GetArrRef()
+		refs := arr.GetRefArr()
 		for i := (int32)(0); i < l; i++ {
 			refs[i] = (unsafe.Pointer)(newMultiDimArray(elem, lengths))
 		}
@@ -120,35 +120,35 @@ func (r *Ref) GoString() string {
 	return fmt.Sprintf("<Ref 0x%08x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
 }
 
-func (r *Ref) GetArrRef() []unsafe.Pointer {
+func (r *Ref) GetRefArr() []unsafe.Pointer {
 	if !r.desc.ElemType().IsRef() {
 		panic("Underlying array is not reference")
 	}
 	return unsafe.Slice((*unsafe.Pointer)(r.data), r.arrayLen)
 }
 
-func (r *Ref) GetArrInt8() []int8 {
+func (r *Ref) GetInt8Arr() []int8 {
 	if r.desc.ElemType().Size() != 1 {
 		panic("Underlying array is not int8")
 	}
 	return unsafe.Slice((*int8)(r.data), r.arrayLen)
 }
 
-func (r *Ref) GetArrInt16() []int16 {
+func (r *Ref) GetInt16Arr() []int16 {
 	if r.desc.ElemType().Size() != 2 {
 		panic("Underlying array is not int16")
 	}
 	return unsafe.Slice((*int16)(r.data), r.arrayLen)
 }
 
-func (r *Ref) GetArrInt32() []int32 {
+func (r *Ref) GetInt32Arr() []int32 {
 	if r.desc.ElemType().Size() != 4 {
 		panic("Underlying array is not int32")
 	}
 	return unsafe.Slice((*int32)(r.data), r.arrayLen)
 }
 
-func (r *Ref) GetArrInt64() []int64 {
+func (r *Ref) GetInt64Arr() []int64 {
 	if r.desc.ElemType().Size() != 8 {
 		panic("Underlying array is not int64")
 	}
