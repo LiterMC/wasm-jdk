@@ -3,12 +3,13 @@ package jdk_internal_misc
 import (
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/loader/BootLoader.getSystemPackageNames()[Ljava/lang/String;", BootLoader_getSystemPackageNames)
-	registerDefaultNative("jdk/internal/loader/BootLoader.getSystemPackageLocation(Ljava/lang/String;)Ljava/lang/String;", BootLoader_getSystemPackageLocation)
-	registerDefaultNative("jdk/internal/loader/BootLoader.setBootLoaderUnnamedModule0(Ljava/lang/Module;)V", BootLoader_setBootLoaderUnnamedModule0)
+	native.RegisterDefaultNative("jdk/internal/loader/BootLoader.getSystemPackageNames()[Ljava/lang/String;", BootLoader_getSystemPackageNames)
+	native.RegisterDefaultNative("jdk/internal/loader/BootLoader.getSystemPackageLocation(Ljava/lang/String;)Ljava/lang/String;", BootLoader_getSystemPackageLocation)
+	native.RegisterDefaultNative("jdk/internal/loader/BootLoader.setBootLoaderUnnamedModule0(Ljava/lang/Module;)V", BootLoader_setBootLoaderUnnamedModule0)
 }
 
 // private static native String[] getSystemPackageNames();

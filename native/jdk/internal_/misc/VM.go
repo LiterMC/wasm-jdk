@@ -6,17 +6,18 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/misc/VM.latestUserDefinedLoader0()V", VM_latestUserDefinedLoader0)
-	registerDefaultNative("jdk/internal/misc/VM.getuid()J", VM_getuid)
-	registerDefaultNative("jdk/internal/misc/VM.geteuid()J", VM_geteuid)
-	registerDefaultNative("jdk/internal/misc/VM.getgid()J", VM_getgid)
-	registerDefaultNative("jdk/internal/misc/VM.getegid()J", VM_getegid)
-	registerDefaultNative("jdk/internal/misc/VM.getNanoTimeAdjustment(J)J", VM_getNanoTimeAdjustment)
-	registerDefaultNative("jdk/internal/misc/VM.getRuntimeArguments()Ljava/lang/String;", VM_getRuntimeArguments)
-	registerDefaultNative("jdk/internal/misc/VM.initialize()V", VM_initialize)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.latestUserDefinedLoader0()V", VM_latestUserDefinedLoader0)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.getuid()J", VM_getuid)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.geteuid()J", VM_geteuid)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.getgid()J", VM_getgid)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.getegid()J", VM_getegid)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.getNanoTimeAdjustment(J)J", VM_getNanoTimeAdjustment)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.getRuntimeArguments()Ljava/lang/String;", VM_getRuntimeArguments)
+	native.RegisterDefaultNative("jdk/internal/misc/VM.initialize()V", VM_initialize)
 }
 
 // private static native ClassLoader latestUserDefinedLoader0();

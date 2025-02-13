@@ -2,12 +2,13 @@ package jdk_internal_misc
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/misc/Signal.findSignal0(Ljava/lang/String;)I", Signal_findSignal0)
-	registerDefaultNative("jdk/internal/misc/Signal.handle0(IJ)J", Signal_handle0)
-	registerDefaultNative("jdk/internal/misc/Signal.raise0(I)V", Signal_raise0)
+	native.RegisterDefaultNative("jdk/internal/misc/Signal.findSignal0(Ljava/lang/String;)I", Signal_findSignal0)
+	native.RegisterDefaultNative("jdk/internal/misc/Signal.handle0(IJ)J", Signal_handle0)
+	native.RegisterDefaultNative("jdk/internal/misc/Signal.raise0(I)V", Signal_raise0)
 }
 
 const (

@@ -2,10 +2,11 @@ package java_lang
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/String.intern()Ljava/lang/String;", String_intern)
+	native.RegisterDefaultNative("java/lang/String.intern()Ljava/lang/String;", String_intern)
 }
 
 // public native String intern();

@@ -3,49 +3,50 @@ package java_lang
 import (
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Class.registerNatives()V", Class_registerNatives)
+	native.RegisterDefaultNative("java/lang/Class.registerNatives()V", Class_registerNatives)
 }
 
 // private static native void registerNatives();
 func Class_registerNatives(vm ir.VM) error {
-	loadNative(vm, "java/lang/Class.forName0(Ljava/lang/String;ZLjava/lang/ClassLoader;Ljava/lang/Class;)Ljava/lang/Class;", Class_forName0)
-	loadNative(vm, "java/lang/Class.isInstance(Ljava/lang/Object;)Z", Class_isInstance)
-	loadNative(vm, "java/lang/Class.isAssignableFrom(Ljava/lang/Class;)Z", Class_isAssignableFrom)
-	loadNative(vm, "java/lang/Class.isInterface()Z", Class_isInterface)
-	loadNative(vm, "java/lang/Class.isArray()Z", Class_isArray)
-	loadNative(vm, "java/lang/Class.isPrimitive()Z", Class_isPrimitive)
-	loadNative(vm, "java/lang/Class.initClassName()Ljava/lang/String;", Class_initClassName)
-	loadNative(vm, "java/lang/Class.getSuperclass()Ljava/lang/Class;", Class_getSuperclass)
-	loadNative(vm, "java/lang/Class.getInterfaces0()[Ljava/lang/Class;", Class_getInterfaces0)
-	loadNative(vm, "java/lang/Class.getModifiers()I", Class_getModifiers)
-	loadNative(vm, "java/lang/Class.getSigners()[Ljava/lang/Object;", Class_getSigners)
-	loadNative(vm, "java/lang/Class.setSigners([Ljava/lang/Object;)V", Class_setSigners)
-	loadNative(vm, "java/lang/Class.getEnclosingMethod0()[Ljava/lang/Object;", Class_getEnclosingMethod0)
-	loadNative(vm, "java/lang/Class.getDeclaringClass0()Ljava/lang/Class;", Class_getDeclaringClass0)
-	loadNative(vm, "java/lang/Class.getSimpleBinaryName0()Ljava/lang/String;", Class_getSimpleBinaryName0)
-	loadNative(vm, "java/lang/Class.getProtectionDomain0()Ljava/security/ProtectionDomain;", Class_getProtectionDomain0)
-	loadNative(vm, "java/lang/Class.getPrimitiveClass(Ljava/lang/String;)Ljava/lang/Class;", Class_getPrimitiveClass)
-	loadNative(vm, "java/lang/Class.getGenericSignature0()Ljava/lang/String;", Class_getGenericSignature0)
-	loadNative(vm, "java/lang/Class.getRawAnnotations()[B", Class_getRawAnnotations)
-	loadNative(vm, "java/lang/Class.getRawTypeAnnotations()[B", Class_getRawTypeAnnotations)
-	loadNative(vm, "java/lang/Class.getConstantPool()Ljdk/internal/reflect/ConstantPool;", Class_getConstantPool)
-	loadNative(vm, "java/lang/Class.getDeclaredFields0(Z)[Ljava/lang/reflect/Field;", Class_getDeclaredFields0)
-	loadNative(vm, "java/lang/Class.getDeclaredMethods0(Z)[Ljava/lang/reflect/Method;", Class_getDeclaredMethods0)
-	loadNative(vm, "java/lang/Class.getDeclaredConstructors0(Z)[Ljava/lang/reflect/Constructor;", Class_getDeclaredConstructors0)
-	loadNative(vm, "java/lang/Class.getDeclaredClasses0()[Ljava/lang/Class;", Class_getDeclaredClasses0)
-	loadNative(vm, "java/lang/Class.getRecordComponents0()[Ljava/lang/reflect/RecordComponent;", Class_getRecordComponents0)
-	loadNative(vm, "java/lang/Class.isRecord0()Z", Class_isRecord0)
-	loadNative(vm, "java/lang/Class.desiredAssertionStatus0(Ljava/lang/Class;)Z", Class_desiredAssertionStatus0)
-	loadNative(vm, "java/lang/Class.getNestHost0()Ljava/lang/Class;", Class_getNestHost0)
-	loadNative(vm, "java/lang/Class.getNestMembers0()[Ljava/lang/Class;", Class_getNestMembers0)
-	loadNative(vm, "java/lang/Class.isHidden()Z", Class_isHidden)
-	loadNative(vm, "java/lang/Class.getPermittedSubclasses0()[Ljava/lang/Class;", Class_getPermittedSubclasses0)
-	loadNative(vm, "java/lang/Class.getClassFileVersion0()I", Class_getClassFileVersion0)
-	loadNative(vm, "java/lang/Class.getClassAccessFlagsRaw0()I", Class_getClassAccessFlagsRaw0)
+	native.LoadNative(vm, "java/lang/Class.forName0(Ljava/lang/String;ZLjava/lang/ClassLoader;Ljava/lang/Class;)Ljava/lang/Class;", Class_forName0)
+	native.LoadNative(vm, "java/lang/Class.isInstance(Ljava/lang/Object;)Z", Class_isInstance)
+	native.LoadNative(vm, "java/lang/Class.isAssignableFrom(Ljava/lang/Class;)Z", Class_isAssignableFrom)
+	native.LoadNative(vm, "java/lang/Class.isInterface()Z", Class_isInterface)
+	native.LoadNative(vm, "java/lang/Class.isArray()Z", Class_isArray)
+	native.LoadNative(vm, "java/lang/Class.isPrimitive()Z", Class_isPrimitive)
+	native.LoadNative(vm, "java/lang/Class.initClassName()Ljava/lang/String;", Class_initClassName)
+	native.LoadNative(vm, "java/lang/Class.getSuperclass()Ljava/lang/Class;", Class_getSuperclass)
+	native.LoadNative(vm, "java/lang/Class.getInterfaces0()[Ljava/lang/Class;", Class_getInterfaces0)
+	native.LoadNative(vm, "java/lang/Class.getModifiers()I", Class_getModifiers)
+	native.LoadNative(vm, "java/lang/Class.getSigners()[Ljava/lang/Object;", Class_getSigners)
+	native.LoadNative(vm, "java/lang/Class.setSigners([Ljava/lang/Object;)V", Class_setSigners)
+	native.LoadNative(vm, "java/lang/Class.getEnclosingMethod0()[Ljava/lang/Object;", Class_getEnclosingMethod0)
+	native.LoadNative(vm, "java/lang/Class.getDeclaringClass0()Ljava/lang/Class;", Class_getDeclaringClass0)
+	native.LoadNative(vm, "java/lang/Class.getSimpleBinaryName0()Ljava/lang/String;", Class_getSimpleBinaryName0)
+	native.LoadNative(vm, "java/lang/Class.getProtectionDomain0()Ljava/security/ProtectionDomain;", Class_getProtectionDomain0)
+	native.LoadNative(vm, "java/lang/Class.getPrimitiveClass(Ljava/lang/String;)Ljava/lang/Class;", Class_getPrimitiveClass)
+	native.LoadNative(vm, "java/lang/Class.getGenericSignature0()Ljava/lang/String;", Class_getGenericSignature0)
+	native.LoadNative(vm, "java/lang/Class.getRawAnnotations()[B", Class_getRawAnnotations)
+	native.LoadNative(vm, "java/lang/Class.getRawTypeAnnotations()[B", Class_getRawTypeAnnotations)
+	native.LoadNative(vm, "java/lang/Class.getConstantPool()Ljdk/internal/reflect/ConstantPool;", Class_getConstantPool)
+	native.LoadNative(vm, "java/lang/Class.getDeclaredFields0(Z)[Ljava/lang/reflect/Field;", Class_getDeclaredFields0)
+	native.LoadNative(vm, "java/lang/Class.getDeclaredMethods0(Z)[Ljava/lang/reflect/Method;", Class_getDeclaredMethods0)
+	native.LoadNative(vm, "java/lang/Class.getDeclaredConstructors0(Z)[Ljava/lang/reflect/Constructor;", Class_getDeclaredConstructors0)
+	native.LoadNative(vm, "java/lang/Class.getDeclaredClasses0()[Ljava/lang/Class;", Class_getDeclaredClasses0)
+	native.LoadNative(vm, "java/lang/Class.getRecordComponents0()[Ljava/lang/reflect/RecordComponent;", Class_getRecordComponents0)
+	native.LoadNative(vm, "java/lang/Class.isRecord0()Z", Class_isRecord0)
+	native.LoadNative(vm, "java/lang/Class.desiredAssertionStatus0(Ljava/lang/Class;)Z", Class_desiredAssertionStatus0)
+	native.LoadNative(vm, "java/lang/Class.getNestHost0()Ljava/lang/Class;", Class_getNestHost0)
+	native.LoadNative(vm, "java/lang/Class.getNestMembers0()[Ljava/lang/Class;", Class_getNestMembers0)
+	native.LoadNative(vm, "java/lang/Class.isHidden()Z", Class_isHidden)
+	native.LoadNative(vm, "java/lang/Class.getPermittedSubclasses0()[Ljava/lang/Class;", Class_getPermittedSubclasses0)
+	native.LoadNative(vm, "java/lang/Class.getClassFileVersion0()I", Class_getClassFileVersion0)
+	native.LoadNative(vm, "java/lang/Class.getClassAccessFlagsRaw0()I", Class_getClassAccessFlagsRaw0)
 	return nil
 }
 
@@ -131,7 +132,7 @@ func Class_initClassName(vm ir.VM) error {
 func Class_getSuperclass(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	stack.PushRef(vm.GetClassRef(this.Super()))
+	stack.PushRef(this.Super().AsRef(vm))
 	return nil
 }
 
@@ -143,7 +144,7 @@ func Class_getInterfaces0(vm ir.VM) error {
 	intsRef := vm.NewArray(desc.DescClassArray, (int32)(len(ints)))
 	intsArr := intsRef.GetRefArr()
 	for i, in := range ints {
-		intsArr[i] = vm.RefToPtr(vm.GetClassRef(in))
+		intsArr[i] = vm.RefToPtr(in.AsRef(vm))
 	}
 	stack.PushRef(intsRef)
 	return nil
@@ -214,7 +215,7 @@ func Class_getProtectionDomain0(vm ir.VM) error {
 func Class_getPrimitiveClass(vm ir.VM) error {
 	stack := vm.GetStack()
 	name := vm.GetString(stack.GetVarRef(0))
-	stack.PushRef(vm.GetClassRef(getPrimitiveClassByName(name)))
+	stack.PushRef(getPrimitiveClassByName(name).AsRef(vm))
 	return nil
 }
 

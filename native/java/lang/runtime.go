@@ -5,14 +5,15 @@ import (
 	"runtime/debug"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Runtime.availableProcessors()I", Runtime_availableProcessors)
-	registerDefaultNative("java/lang/Runtime.freeMemory()J", Runtime_freeMemory)
-	registerDefaultNative("java/lang/Runtime.totalMemory()J", Runtime_totalMemory)
-	registerDefaultNative("java/lang/Runtime.maxMemory()J", Runtime_maxMemory)
-	registerDefaultNative("java/lang/Runtime.gc()V", Runtime_gc)
+	native.RegisterDefaultNative("java/lang/Runtime.availableProcessors()I", Runtime_availableProcessors)
+	native.RegisterDefaultNative("java/lang/Runtime.freeMemory()J", Runtime_freeMemory)
+	native.RegisterDefaultNative("java/lang/Runtime.totalMemory()J", Runtime_totalMemory)
+	native.RegisterDefaultNative("java/lang/Runtime.maxMemory()J", Runtime_maxMemory)
+	native.RegisterDefaultNative("java/lang/Runtime.gc()V", Runtime_gc)
 }
 
 // public native int availableProcessors();

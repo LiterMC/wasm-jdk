@@ -2,18 +2,19 @@ package jdk_internal_misc
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/misc/CDS.isDumpingClassList0()Z", CDS_isDumpingClassList0)
-	registerDefaultNative("jdk/internal/misc/CDS.isDumpingArchive0()Z", CDS_isDumpingArchive0)
-	registerDefaultNative("jdk/internal/misc/CDS.isSharingEnabled0()Z", CDS_isSharingEnabled0)
-	registerDefaultNative("jdk/internal/misc/CDS.logLambdaFormInvoker(Ljava/lang/String;)V", CDS_logLambdaFormInvoker)
-	registerDefaultNative("jdk/internal/misc/CDS.initializeFromArchive(Ljava/lang/Class;)V", CDS_initializeFromArchive)
-	registerDefaultNative("jdk/internal/misc/CDS.defineArchivedModules(Ljava/lang/ClassLoader;Ljava/lang/ClassLoader;)V", CDS_defineArchivedModules)
-	registerDefaultNative("jdk/internal/misc/CDS.getRandomSeedForDumping()J", CDS_getRandomSeedForDumping)
-	registerDefaultNative("jdk/internal/misc/CDS.dumpClassList(Ljava/lang/String;)V", CDS_dumpClassList)
-	registerDefaultNative("jdk/internal/misc/CDS.dumpDynamicArchive(Ljava/lang/String;)V", CDS_dumpDynamicArchive)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.isDumpingClassList0()Z", CDS_isDumpingClassList0)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.isDumpingArchive0()Z", CDS_isDumpingArchive0)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.isSharingEnabled0()Z", CDS_isSharingEnabled0)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.logLambdaFormInvoker(Ljava/lang/String;)V", CDS_logLambdaFormInvoker)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.initializeFromArchive(Ljava/lang/Class;)V", CDS_initializeFromArchive)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.defineArchivedModules(Ljava/lang/ClassLoader;Ljava/lang/ClassLoader;)V", CDS_defineArchivedModules)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.getRandomSeedForDumping()J", CDS_getRandomSeedForDumping)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.dumpClassList(Ljava/lang/String;)V", CDS_dumpClassList)
+	native.RegisterDefaultNative("jdk/internal/misc/CDS.dumpDynamicArchive(Ljava/lang/String;)V", CDS_dumpDynamicArchive)
 }
 
 // private static native boolean isDumpingClassList0();

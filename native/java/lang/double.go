@@ -4,11 +4,12 @@ import (
 	"math"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Double.doubleToRawLongBits(D)J", Double_doubleToRawLongBits)
-	registerDefaultNative("java/lang/Double.longBitsToDouble(J)D", Double_longBitsToDouble)
+	native.RegisterDefaultNative("java/lang/Double.doubleToRawLongBits(D)J", Double_doubleToRawLongBits)
+	native.RegisterDefaultNative("java/lang/Double.longBitsToDouble(J)D", Double_longBitsToDouble)
 }
 
 // public static native long doubleToRawLongBits(double value);

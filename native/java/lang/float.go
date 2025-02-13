@@ -4,11 +4,12 @@ import (
 	"math"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Float.floatToRawIntBits(F)I", Float_floatToRawIntBits)
-	registerDefaultNative("java/lang/Float.intBitsToFloat(I)F", Float_intBitsToFloat)
+	native.RegisterDefaultNative("java/lang/Float.floatToRawIntBits(F)I", Float_floatToRawIntBits)
+	native.RegisterDefaultNative("java/lang/Float.intBitsToFloat(I)F", Float_intBitsToFloat)
 }
 
 // public static native int floatToRawIntBits(float value);

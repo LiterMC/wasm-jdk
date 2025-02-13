@@ -6,6 +6,7 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
@@ -16,30 +17,30 @@ var threadArrayDesc = &desc.Desc{
 }
 
 func init() {
-	registerDefaultNative("java/lang/Thread.registerNatives()V", Thread_registerNatives)
+	native.RegisterDefaultNative("java/lang/Thread.registerNatives()V", Thread_registerNatives)
 }
 
 // private static native void registerNatives();
 func Thread_registerNatives(vm ir.VM) error {
-	loadNative(vm, "java/lang/Thread.findScopedValueBindings()Ljava/lang/Object;", Thread_findScopedValueBindings)
-	loadNative(vm, "java/lang/Thread.currentCarrierThread()Ljava/lang/Thread;", Thread_currentCarrierThread)
-	loadNative(vm, "java/lang/Thread.currentThread()Ljava/lang/Thread;", Thread_currentThread)
-	loadNative(vm, "java/lang/Thread.setCurrentThread(Ljava/lang/Thread;)V", Thread_setCurrentThread)
-	loadNative(vm, "java/lang/Thread.scopedValueCache()[Ljava/lang/Object;", Thread_scopedValueCache)
-	loadNative(vm, "java/lang/Thread.setScopedValueCache([Ljava/lang/Object;)V", Thread_setScopedValueCache)
-	loadNative(vm, "java/lang/Thread.ensureMaterializedForStackWalk(Ljava/lang/Object;)V", Thread_ensureMaterializedForStackWalk)
-	loadNative(vm, "java/lang/Thread.yield0()V", Thread_yield0)
-	loadNative(vm, "java/lang/Thread.sleep0(J)V", Thread_sleep0)
-	loadNative(vm, "java/lang/Thread.start0()V", Thread_start0)
-	loadNative(vm, "java/lang/Thread.holdsLock(Ljava/lang/Object;)Z", Thread_holdsLock)
-	loadNative(vm, "java/lang/Thread.getStackTrace0()Ljava/lang/Object;", Thread_getStackTrace0)
-	loadNative(vm, "java/lang/Thread.dumpThreads([Ljava/lang/Thread;)[[Ljava/lang/StackTraceElement;", Thread_dumpThreads)
-	loadNative(vm, "java/lang/Thread.getThreads()[Ljava/lang/Thread;", Thread_getThreads)
-	loadNative(vm, "java/lang/Thread.setPriority0(I)V", Thread_setPriority0)
-	loadNative(vm, "java/lang/Thread.interrupt0()V", Thread_interrupt0)
-	loadNative(vm, "java/lang/Thread.clearInterruptEvent()V", Thread_clearInterruptEvent)
-	loadNative(vm, "java/lang/Thread.setNativeName(Ljava/lang/String;)V", Thread_setNativeName)
-	loadNative(vm, "java/lang/Thread.getNextThreadIdOffset()J", Thread_getNextThreadIdOffset)
+	native.LoadNative(vm, "java/lang/Thread.findScopedValueBindings()Ljava/lang/Object;", Thread_findScopedValueBindings)
+	native.LoadNative(vm, "java/lang/Thread.currentCarrierThread()Ljava/lang/Thread;", Thread_currentCarrierThread)
+	native.LoadNative(vm, "java/lang/Thread.currentThread()Ljava/lang/Thread;", Thread_currentThread)
+	native.LoadNative(vm, "java/lang/Thread.setCurrentThread(Ljava/lang/Thread;)V", Thread_setCurrentThread)
+	native.LoadNative(vm, "java/lang/Thread.scopedValueCache()[Ljava/lang/Object;", Thread_scopedValueCache)
+	native.LoadNative(vm, "java/lang/Thread.setScopedValueCache([Ljava/lang/Object;)V", Thread_setScopedValueCache)
+	native.LoadNative(vm, "java/lang/Thread.ensureMaterializedForStackWalk(Ljava/lang/Object;)V", Thread_ensureMaterializedForStackWalk)
+	native.LoadNative(vm, "java/lang/Thread.yield0()V", Thread_yield0)
+	native.LoadNative(vm, "java/lang/Thread.sleep0(J)V", Thread_sleep0)
+	native.LoadNative(vm, "java/lang/Thread.start0()V", Thread_start0)
+	native.LoadNative(vm, "java/lang/Thread.holdsLock(Ljava/lang/Object;)Z", Thread_holdsLock)
+	native.LoadNative(vm, "java/lang/Thread.getStackTrace0()Ljava/lang/Object;", Thread_getStackTrace0)
+	native.LoadNative(vm, "java/lang/Thread.dumpThreads([Ljava/lang/Thread;)[[Ljava/lang/StackTraceElement;", Thread_dumpThreads)
+	native.LoadNative(vm, "java/lang/Thread.getThreads()[Ljava/lang/Thread;", Thread_getThreads)
+	native.LoadNative(vm, "java/lang/Thread.setPriority0(I)V", Thread_setPriority0)
+	native.LoadNative(vm, "java/lang/Thread.interrupt0()V", Thread_interrupt0)
+	native.LoadNative(vm, "java/lang/Thread.clearInterruptEvent()V", Thread_clearInterruptEvent)
+	native.LoadNative(vm, "java/lang/Thread.setNativeName(Ljava/lang/String;)V", Thread_setNativeName)
+	native.LoadNative(vm, "java/lang/Thread.getNextThreadIdOffset()J", Thread_getNextThreadIdOffset)
 	return nil
 }
 
@@ -147,7 +148,7 @@ func Thread_getThreads(vm ir.VM) error {
 	panic("TODO: Thread.getThreads")
 	// threads := vm.GetThreads()
 	// ref := vm.NewArray(threadArrayDesc, len(threads))
-	// copy(ref.GetArrRef(), threads)
+	// copy(ref.GetRefArr(), threads)
 	// vm.GetStack().PushRef(ref)
 	// return nil
 }

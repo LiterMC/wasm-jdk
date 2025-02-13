@@ -2,10 +2,11 @@ package java_lang
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Throwable.fillInStackTrace(I)Ljava/lang/Throwable;", Throwable_fillInStackTrace)
+	native.RegisterDefaultNative("java/lang/Throwable.fillInStackTrace(I)Ljava/lang/Throwable;", Throwable_fillInStackTrace)
 }
 
 // private native Throwable fillInStackTrace(int dummy);

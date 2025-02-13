@@ -7,13 +7,14 @@ import (
 
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 
 	misc "github.com/LiterMC/wasm-jdk/native/jdk/internal_/misc"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/util/SystemProps$Raw.vmProperties()[Ljava/lang/String;", SystemProps_Raw_vmProperties)
-	registerDefaultNative("jdk/internal/util/SystemProps$Raw.platformProperties()[Ljava/lang/String;", SystemProps_Raw_platformProperties)
+	native.RegisterDefaultNative("jdk/internal/util/SystemProps$Raw.vmProperties()[Ljava/lang/String;", SystemProps_Raw_vmProperties)
+	native.RegisterDefaultNative("jdk/internal/util/SystemProps$Raw.platformProperties()[Ljava/lang/String;", SystemProps_Raw_platformProperties)
 }
 
 var vmProperties = []string{

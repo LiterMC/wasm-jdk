@@ -2,14 +2,15 @@ package java_lang_ref
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/ref/Reference.getAndClearReferencePendingList()Ljava/lang/ref/Reference;", Reference_getAndClearReferencePendingList)
-	registerDefaultNative("java/lang/ref/Reference.hasReferencePendingList()Z", Reference_hasReferencePendingList)
-	registerDefaultNative("java/lang/ref/Reference.waitForReferencePendingList()V", Reference_waitForReferencePendingList)
-	registerDefaultNative("java/lang/ref/Reference.refersTo0(Ljava/lang/Object;)Z", Reference_refersTo0)
-	registerDefaultNative("java/lang/ref/Reference.clear0()V", Reference_clear0)
+	native.RegisterDefaultNative("java/lang/ref/Reference.getAndClearReferencePendingList()Ljava/lang/ref/Reference;", Reference_getAndClearReferencePendingList)
+	native.RegisterDefaultNative("java/lang/ref/Reference.hasReferencePendingList()Z", Reference_hasReferencePendingList)
+	native.RegisterDefaultNative("java/lang/ref/Reference.waitForReferencePendingList()V", Reference_waitForReferencePendingList)
+	native.RegisterDefaultNative("java/lang/ref/Reference.refersTo0(Ljava/lang/Object;)Z", Reference_refersTo0)
+	native.RegisterDefaultNative("java/lang/ref/Reference.clear0()V", Reference_clear0)
 }
 
 var (

@@ -2,11 +2,12 @@ package java_lang_ref
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/ref/Finalizer.isFinalizationEnabled()Z", Finalizer_isFinalizationEnabled)
-	registerDefaultNative("java/lang/ref/Finalizer.reportComplete(Ljava/lang/Object;)V", Finalizer_reportComplete)
+	native.RegisterDefaultNative("java/lang/ref/Finalizer.isFinalizationEnabled()Z", Finalizer_isFinalizationEnabled)
+	native.RegisterDefaultNative("java/lang/ref/Finalizer.reportComplete(Ljava/lang/Object;)V", Finalizer_reportComplete)
 }
 
 // private static native boolean isFinalizationEnabled();

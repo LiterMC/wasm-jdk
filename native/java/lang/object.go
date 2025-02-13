@@ -2,22 +2,23 @@ package java_lang
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/Object.getClass()Ljava/lang/Class;", Object_getClass)
-	registerDefaultNative("java/lang/Object.hashCode()I", Object_hashCode)
-	registerDefaultNative("java/lang/Object.clone()Ljava/lang/Object;", Object_clone)
-	registerDefaultNative("java/lang/Object.notify()V", Object_notify)
-	registerDefaultNative("java/lang/Object.notifyAll()V", Object_notifyAll)
-	registerDefaultNative("java/lang/Object.wait0(J)V", Object_wait0)
+	native.RegisterDefaultNative("java/lang/Object.getClass()Ljava/lang/Class;", Object_getClass)
+	native.RegisterDefaultNative("java/lang/Object.hashCode()I", Object_hashCode)
+	native.RegisterDefaultNative("java/lang/Object.clone()Ljava/lang/Object;", Object_clone)
+	native.RegisterDefaultNative("java/lang/Object.notify()V", Object_notify)
+	native.RegisterDefaultNative("java/lang/Object.notifyAll()V", Object_notifyAll)
+	native.RegisterDefaultNative("java/lang/Object.wait0(J)V", Object_wait0)
 }
 
 // public final native Class<?> getClass();
 func Object_getClass(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := stack.GetVarRef(0)
-	stack.PushRef(vm.GetClassRef(this.Class()))
+	stack.PushRef(this.Class().AsRef(vm))
 	return nil
 }
 

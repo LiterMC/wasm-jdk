@@ -2,13 +2,14 @@ package java_security
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/security/AccessController.getProtectionDomain(Ljava/lang/Class;)Ljava/security/ProtectionDomain;", AccessController_getProtectionDomain)
-	registerDefaultNative("java/security/AccessController.ensureMaterializedForStackWalk(Ljava/lang/Object;)Z", AccessController_ensureMaterializedForStackWalk)
-	registerDefaultNative("java/security/AccessController.getStackAccessControlContext()Ljava/security/AccessControlContext;", AccessController_getStackAccessControlContext)
-	registerDefaultNative("java/security/AccessController.getInheritedAccessControlContext()Ljava/security/AccessControlContext;", AccessController_getInheritedAccessControlContext)
+	native.RegisterDefaultNative("java/security/AccessController.getProtectionDomain(Ljava/lang/Class;)Ljava/security/ProtectionDomain;", AccessController_getProtectionDomain)
+	native.RegisterDefaultNative("java/security/AccessController.ensureMaterializedForStackWalk(Ljava/lang/Object;)Z", AccessController_ensureMaterializedForStackWalk)
+	native.RegisterDefaultNative("java/security/AccessController.getStackAccessControlContext()Ljava/security/AccessControlContext;", AccessController_getStackAccessControlContext)
+	native.RegisterDefaultNative("java/security/AccessController.getInheritedAccessControlContext()Ljava/security/AccessControlContext;", AccessController_getInheritedAccessControlContext)
 }
 
 // private static native ProtectionDomain getProtectionDomain(final Class<?> caller);

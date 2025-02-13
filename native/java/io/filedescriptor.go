@@ -2,12 +2,13 @@ package java_io
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/io/FileDescriptor.initIDs()V", FileDescriptor_initIDs)
-	registerDefaultNative("java/io/FileDescriptor.getHandle(I)J", FileDescriptor_getHandle)
-	registerDefaultNative("java/io/FileDescriptor.getAppend(I)Z", FileDescriptor_getAppend)
+	native.RegisterDefaultNative("java/io/FileDescriptor.initIDs()V", FileDescriptor_initIDs)
+	native.RegisterDefaultNative("java/io/FileDescriptor.getHandle(I)J", FileDescriptor_getHandle)
+	native.RegisterDefaultNative("java/io/FileDescriptor.getAppend(I)Z", FileDescriptor_getAppend)
 }
 
 // private native void sync0() throws SyncFailedException;

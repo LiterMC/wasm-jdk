@@ -5,22 +5,23 @@ import (
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("java/lang/System.registerNatives()V", System_registerNatives)
+	native.RegisterDefaultNative("java/lang/System.registerNatives()V", System_registerNatives)
 }
 
 // private static native void registerNatives();
 func System_registerNatives(vm ir.VM) error {
-	loadNative(vm, "java/lang/System.setIn0(Ljava/io/InputStream;)V", System_setIn0)
-	loadNative(vm, "java/lang/System.setOut0(Ljava/io/PrintStream;)V", System_setOut0)
-	loadNative(vm, "java/lang/System.setErr0(Ljava/io/PrintStream;)V", System_setErr0)
-	loadNative(vm, "java/lang/System.currentTimeMillis()J", System_currentTimeMillis)
-	loadNative(vm, "java/lang/System.nanoTime()J", System_nanoTime)
-	loadNative(vm, "java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V", System_arraycopy)
-	loadNative(vm, "java/lang/System.identityHashCode(Ljava/lang/Object;)I", System_identityHashCode)
-	loadNative(vm, "java/lang/System.mapLibraryName(Ljava/lang/String;)Ljava/lang/String;", System_mapLibraryName)
+	native.LoadNative(vm, "java/lang/System.setIn0(Ljava/io/InputStream;)V", System_setIn0)
+	native.LoadNative(vm, "java/lang/System.setOut0(Ljava/io/PrintStream;)V", System_setOut0)
+	native.LoadNative(vm, "java/lang/System.setErr0(Ljava/io/PrintStream;)V", System_setErr0)
+	native.LoadNative(vm, "java/lang/System.currentTimeMillis()J", System_currentTimeMillis)
+	native.LoadNative(vm, "java/lang/System.nanoTime()J", System_nanoTime)
+	native.LoadNative(vm, "java/lang/System.arraycopy(Ljava/lang/Object;ILjava/lang/Object;II)V", System_arraycopy)
+	native.LoadNative(vm, "java/lang/System.identityHashCode(Ljava/lang/Object;)I", System_identityHashCode)
+	native.LoadNative(vm, "java/lang/System.mapLibraryName(Ljava/lang/String;)Ljava/lang/String;", System_mapLibraryName)
 	return nil
 }
 

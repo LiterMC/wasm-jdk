@@ -3,12 +3,13 @@ package jdk_internal_misc
 import (
 	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/loader/NativeLibraries.load(Ljdk/internal/loader/NativeLibraries$NativeLibraryImpl;Ljava/lang/String;ZZ)Z", NativeLibraries_load)
-	registerDefaultNative("jdk/internal/loader/NativeLibraries.unload(Ljava/lang/String;ZJ)V", NativeLibraries_unload)
-	registerDefaultNative("jdk/internal/loader/NativeLibraries.findBuiltinLib(Ljava/lang/String;)Ljava/lang/String;", NativeLibraries_findBuiltinLib)
+	native.RegisterDefaultNative("jdk/internal/loader/NativeLibraries.load(Ljdk/internal/loader/NativeLibraries$NativeLibraryImpl;Ljava/lang/String;ZZ)Z", NativeLibraries_load)
+	native.RegisterDefaultNative("jdk/internal/loader/NativeLibraries.unload(Ljava/lang/String;ZJ)V", NativeLibraries_unload)
+	native.RegisterDefaultNative("jdk/internal/loader/NativeLibraries.findBuiltinLib(Ljava/lang/String;)Ljava/lang/String;", NativeLibraries_findBuiltinLib)
 }
 
 // private static native boolean load(NativeLibraryImpl impl, String name, boolean isBuiltin, boolean throwExceptionIfFail);

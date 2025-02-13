@@ -2,14 +2,15 @@ package jdk_internal_misc
 
 import (
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/native"
 )
 
 func init() {
-	registerDefaultNative("jdk/internal/misc/ScopedMemoryAccess.registerNatives()V", ScopedMemoryAccess_registerNatives)
+	native.RegisterDefaultNative("jdk/internal/misc/ScopedMemoryAccess.registerNatives()V", ScopedMemoryAccess_registerNatives)
 }
 
 func ScopedMemoryAccess_registerNatives(vm ir.VM) error {
-	loadNative(vm, "jdk/internal/misc/ScopedMemoryAccess.closeScope0(Ljdk/internal/foreign/MemorySessionImpl;)Z", ScopedMemoryAccess_closeScope0)
+	native.LoadNative(vm, "jdk/internal/misc/ScopedMemoryAccess.closeScope0(Ljdk/internal/foreign/MemorySessionImpl;)Z", ScopedMemoryAccess_closeScope0)
 	return nil
 }
 
