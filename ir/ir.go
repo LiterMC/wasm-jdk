@@ -46,7 +46,6 @@ type VM interface {
 	GetString(Ref) string
 	GetStringIntern(Ref) Ref
 	GetStringInternOrNew(string) Ref
-	GetClassRef(Class) Ref
 
 	GetDesc(uint16) *desc.Desc
 	GetClassByIndex(uint16) (Class, error)

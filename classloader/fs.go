@@ -37,6 +37,18 @@ func (l *BasicFSClassLoader) LoadClass(name string) (ir.Class, error) {
 	return class, nil
 }
 
+func (l *BasicFSClassLoader) LoadedClass(name string) ir.Class {
+	loader, ok := l.loaded.Load(name)
+	if !ok {
+		return nil
+	}
+	class, err := loader.(func() (*vm.Class, error))()
+	if err != nil {
+		return nil
+	}
+	return class
+}
+
 func (l *BasicFSClassLoader) AvaliablePackages() []string {
 	packages := make([]string, 0, 10)
 	WalkDir(l.fs, ".", func(path string, entry fs.DirEntry, err error) error {

@@ -146,6 +146,10 @@ var (
 		EndType: Double,
 	}
 
+	DescClass = &Desc{
+		EndType: Class,
+		Class:   "java/lang/Class",
+	}
 	DescClassArray = &Desc{
 		ArrDim:  1,
 		EndType: Class,

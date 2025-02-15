@@ -26,7 +26,7 @@ type VM struct {
 	carrierThread     *Ref
 	currentThread     *Ref
 	interruptNotifier chan struct{}
-	throwing ir.Ref
+	throwing          ir.Ref
 
 	stringPool sync.Map
 
@@ -44,8 +44,11 @@ type preloadClasses struct {
 	javaLangString       *Class
 	javaLangString_value ir.Field
 
-	javaLangClass             *Class
-	javaLangClass_classLoader ir.Field
+	javaLangClass               *Class
+	javaLangClass_classLoader   ir.Field
+	javaLangClass_componentType ir.Field
+
+	javaLangClassLoader *Class
 
 	javaLangThread             *Class
 	javaLangThread_interrupted ir.Field
@@ -58,6 +61,9 @@ type preloadClasses struct {
 	javaLangSystem_initPhase3 ir.Method
 
 	javaLangRefFinalizer *Class
+
+	javaLangReflectField  *Class
+	javaLangReflectMethod *Class
 
 	javaLangInvokeMethodHandlesLookup              *Class
 	javaLangInvokeMethodHandlesLookup_lookupClass  ir.Field
@@ -97,7 +103,7 @@ func (p *preloadClasses) load(vm *VM) {
 	if p.javaLangObject, err = vm.loadClass("java/lang/Object"); err != nil {
 		panic(err)
 	}
-	p.javaLangObject_toString = p.javaLangObject.GetMethodByNameAndType("toString", "()Ljava/lang/String;")
+	p.javaLangObject_toString = p.javaLangObject.GetMethodByNameAndType(vm, "toString", "()Ljava/lang/String;")
 
 	if p.javaLangString, err = vm.loadClass("java/lang/String"); err != nil {
 		panic(err)
@@ -107,14 +113,19 @@ func (p *preloadClasses) load(vm *VM) {
 	if p.javaLangSystem, err = vm.loadClass("java/lang/System"); err != nil {
 		panic(err)
 	}
-	p.javaLangSystem_initPhase1 = p.javaLangSystem.GetMethodByNameAndType("initPhase1", "()V")
-	p.javaLangSystem_initPhase2 = p.javaLangSystem.GetMethodByNameAndType("initPhase2", "(ZZ)I")
-	p.javaLangSystem_initPhase3 = p.javaLangSystem.GetMethodByNameAndType("initPhase3", "()V")
+	p.javaLangSystem_initPhase1 = p.javaLangSystem.GetMethodByNameAndType(vm, "initPhase1", "()V")
+	p.javaLangSystem_initPhase2 = p.javaLangSystem.GetMethodByNameAndType(vm, "initPhase2", "(ZZ)I")
+	p.javaLangSystem_initPhase3 = p.javaLangSystem.GetMethodByNameAndType(vm, "initPhase3", "()V")
 
 	if p.javaLangClass, err = vm.loadClass("java/lang/Class"); err != nil {
 		panic(err)
 	}
 	p.javaLangClass_classLoader = p.javaLangClass.GetFieldByName("classLoader")
+	p.javaLangClass_componentType = p.javaLangClass.GetFieldByName("componentType")
+
+	if p.javaLangClassLoader, err = vm.loadClass("java/lang/ClassLoader"); err != nil {
+		panic(err)
+	}
 
 	if p.javaLangThread, err = vm.loadClass("java/lang/Thread"); err != nil {
 		panic(err)
@@ -132,6 +143,13 @@ func (p *preloadClasses) load(vm *VM) {
 	p.javaLangThrowable_detailMessage = p.javaLangThrowable.GetFieldByName("detailMessage")
 
 	if p.javaLangRefFinalizer, err = vm.loadClass("java/lang/ref/Finalizer"); err != nil {
+		panic(err)
+	}
+
+	if p.javaLangReflectField, err = vm.loadClass("java/lang/reflect/Field"); err != nil {
+		panic(err)
+	}
+	if p.javaLangReflectMethod, err = vm.loadClass("java/lang/reflect/Method"); err != nil {
 		panic(err)
 	}
 
@@ -166,7 +184,7 @@ func (vm *VM) SetupEntryMethod() {
 		panic(err)
 	}
 	entryClass.InitBeforeUse(vm)
-	entryMethod := entryClass.GetMethodByName(vm.opts.EntryMethod).(*Method)
+	entryMethod := entryClass.GetMethodByName(vm, vm.opts.EntryMethod).(*Method)
 	vm.stack = &Stack{
 		class:  entryClass,
 		method: entryMethod,
@@ -185,7 +203,7 @@ func (vm *VM) NewSubVM(thread0 ir.Ref) ir.VM {
 	}
 	thread := thread0.(*Ref)
 	entryClass := thread.Class().(*Class)
-	entryMethod := entryClass.GetMethodByNameAndType("run", "()V").(*Method)
+	entryMethod := entryClass.GetMethodByNameAndType(vm, "run", "()V").(*Method)
 	sub.stack = &Stack{
 		class:  entryClass,
 		method: entryMethod,
@@ -209,7 +227,7 @@ func (vm *VM) NewSubVM(thread0 ir.Ref) ir.VM {
 func (vm *VM) initSystemThread() {
 	systemThreadGroup := vm.New(vm.javaLangThreadGroup)
 	vm.stack.PushRef(systemThreadGroup)
-	vm.Invoke(vm.javaLangThreadGroup.GetMethodByNameAndType("<init>", "()V"))
+	vm.Invoke(vm.javaLangThreadGroup.GetMethodByNameAndType(vm, "<init>", "()V"))
 	if err := vm.RunStack(); err != nil {
 		panic(err)
 	}
@@ -226,7 +244,7 @@ func (vm *VM) initSystemThread() {
 	vm.stack.PushRef(nil)
 	vm.stack.PushInt64(0)
 	vm.stack.PushRef(nil)
-	vm.Invoke(vm.javaLangThread.GetMethodByNameAndType("<init>", "(Ljava/lang/ThreadGroup;Ljava/lang/String;ILjava/lang/Runnable;JLjava/security/AccessControlContext;)V"))
+	vm.Invoke(vm.javaLangThread.GetMethodByNameAndType(vm, "<init>", "(Ljava/lang/ThreadGroup;Ljava/lang/String;ILjava/lang/Runnable;JLjava/security/AccessControlContext;)V"))
 	if err := vm.RunStack(); err != nil {
 		panic(err)
 	}
@@ -284,8 +302,8 @@ func (vm *VM) Step() error {
 		fmt.Println()
 	}
 	defer func() {
-		if vm.Throwing() != nil {
-			panic(vm.Throwing())
+		if throwing := vm.Throwing(); throwing != nil {
+			panic(throwing)
 		}
 	}()
 	defer func() {
@@ -293,7 +311,9 @@ func (vm *VM) Step() error {
 			if vm.Throwing() != nil {
 				return
 			}
-			printStack()
+			if vm.creator == nil {
+				printStack()
+			}
 			panic(err)
 		}
 	}()
@@ -310,9 +330,12 @@ func (vm *VM) Step() error {
 		vm.stack.pc = vm.nextPc
 		vm.nextPc = vm.stack.pc.Next
 		vm.step++
-		fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, vm.step, vm.stack.pc.IC, vm.stack.pc.Next)
+		if vm.creator == nil {
+			fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, vm.step, vm.stack.pc.IC, vm.stack.pc.Next)
+			fmt.Println(vm.stack.GoString())
+		}
 		err = vm.stack.pc.IC.Execute(vm)
-		if vm.stack == nil {
+		if vm.stack == nil && vm.creator != nil {
 			vm.creator.createdMux.Lock()
 			delete(vm.creator.created, vm)
 			vm.creator.createdMux.Unlock()
@@ -408,6 +431,9 @@ func (vm *VM) GetStringClass() ir.Class {
 }
 
 func (vm *VM) GetString(ref ir.Ref) string {
+	if ref == nil || ref == (*Ref)(nil) {
+		return "<null>"
+	}
 	if !vm.javaLangString.IsInstance(ref) {
 		panic("ref is not a java/lang/String")
 	}

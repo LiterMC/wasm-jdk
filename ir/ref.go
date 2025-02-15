@@ -1,6 +1,7 @@
 package ir
 
 import (
+	"iter"
 	"reflect"
 	"unsafe"
 
@@ -15,6 +16,7 @@ type Ref interface {
 	UserData() *any
 	Data() unsafe.Pointer
 	GetRefArr() []unsafe.Pointer
+	GetByteArr() []byte
 	GetInt8Arr() []int8
 	GetInt16Arr() []int16
 	GetInt32Arr() []int32
@@ -34,6 +36,7 @@ type Class interface {
 	ArrayDim() int
 	Elem() Class
 	Reflect() reflect.Type
+	AsRef(VM) Ref
 
 	Modifiers() int32
 	Super() Class
@@ -42,21 +45,24 @@ type Class interface {
 	IsAssignableFrom(Class) bool
 	IsInstance(Ref) bool
 
-	GetAndPushConst(uint16, Stack) error
-	GetField(uint16) Field
+	GetAndPushConst(VM, uint16, Stack) error
+	GetFields() iter.Seq[Field]
+	GetField(VM, uint16) Field
 	GetFieldByName(string) Field
-	GetMethod(uint16) Method
-	GetMethodByName(string) Method
-	GetMethodByNameAndType(name, typ string) Method
+	GetMethods() iter.Seq[Method]
+	GetMethod(VM, uint16) Method
+	GetMethodByName(VM, string) Method
+	GetMethodByNameAndType(vm VM, name, typ string) Method
 }
 
 type Field interface {
 	Name() string
 	Offset() int64
-
 	GetDeclaringClass() Class
+	Modifiers() int32
 	IsStatic() bool
 
+	AsRef(VM) Ref
 	GetPointer(Ref) unsafe.Pointer
 	GetAndPush(Stack) error
 	PopAndSet(Stack) error
@@ -65,7 +71,9 @@ type Field interface {
 type Method interface {
 	Name() string
 	Desc() *desc.MethodDesc
-
 	GetDeclaringClass() Class
+	Modifiers() int32
 	IsStatic() bool
+
+	AsRef(VM) Ref
 }

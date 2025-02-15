@@ -67,6 +67,10 @@ func (m *Method) Desc() *desc.MethodDesc {
 	return m.desc
 }
 
+func (m *Method) Modifiers() int32 {
+	return (int32)(m.AccessFlags)
+}
+
 func (m *Method) IsStatic() bool {
 	return m.AccessFlags.Has(AccStatic)
 }

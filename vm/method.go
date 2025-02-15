@@ -3,6 +3,7 @@ package vm
 import (
 	"fmt"
 	"slices"
+	"sync/atomic"
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
@@ -16,6 +17,8 @@ type Method struct {
 	*jcls.Method
 	class  *Class
 	native NativeMethodCallback
+
+	methodRef atomic.Pointer[Ref]
 }
 
 var _ ir.Method = (*Method)(nil)
@@ -143,7 +146,7 @@ func (vm *VM) InvokeVirtual(method ir.Method) {
 	}
 	this := prev.PopRef().(*Ref)
 	newStack.SetVarRef(0, this)
-	m2 := this.class.GetMethodByDesc(method.Name(), method.Desc()).(*Method)
+	m2 := this.class.GetMethodByDesc(vm, method.Name(), method.Desc()).(*Method)
 	newStack.class = m2.class
 	newStack.method = m2
 	vm.stack = newStack
@@ -167,7 +170,7 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 	if err != nil {
 		return err
 	}
-	bootMethod0 := bootCls.GetMethodByNameAndType(bootMe.Ref.NameAndType.Name, bootMe.Ref.NameAndType.Desc)
+	bootMethod0 := bootCls.GetMethodByNameAndType(vm, bootMe.Ref.NameAndType.Name, bootMe.Ref.NameAndType.Desc)
 	if bootMethod0 == nil {
 		panic("bootstrap method " + bootMe.String() + " is nil")
 	}

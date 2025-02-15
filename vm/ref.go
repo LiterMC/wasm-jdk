@@ -127,6 +127,13 @@ func (r *Ref) GetRefArr() []unsafe.Pointer {
 	return unsafe.Slice((*unsafe.Pointer)(r.data), r.arrayLen)
 }
 
+func (r *Ref) GetByteArr() []byte {
+	if r.desc.ElemType().Size() != 1 {
+		panic("Underlying array is not int8")
+	}
+	return unsafe.Slice((*byte)(r.data), r.arrayLen)
+}
+
 func (r *Ref) GetInt8Arr() []int8 {
 	if r.desc.ElemType().Size() != 1 {
 		panic("Underlying array is not int8")

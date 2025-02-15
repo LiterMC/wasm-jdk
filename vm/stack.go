@@ -24,6 +24,9 @@ type Stack struct {
 var _ ir.Stack = (*Stack)(nil)
 
 func (s *Stack) Prev() ir.Stack {
+	if s.prev == nil {
+		return nil
+	}
 	return s.prev
 }
 
@@ -393,11 +396,15 @@ func (fi *StackFrameInfo) String() string {
 	if fi.Method.AccessFlags.Has(jcls.AccNative) {
 		sb.WriteString("native")
 	} else {
-		line := fi.Method.Code.GetLine((uint16)(fi.PC.Offset))
+		var offset int32 = -1
+		if fi.PC != nil {
+			offset = fi.PC.Offset
+		}
+		line := fi.Method.Code.GetLine((uint16)(offset))
 		if line >= 0 {
 			fmt.Fprintf(&sb, "%d", line)
 		} else {
-			fmt.Fprintf(&sb, "0x%04x", fi.PC.Offset)
+			fmt.Fprintf(&sb, "0x%04x", offset)
 		}
 	}
 	sb.WriteByte(')')

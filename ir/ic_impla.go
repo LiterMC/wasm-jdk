@@ -234,7 +234,7 @@ type ICgetfield struct {
 func (*ICgetfield) Op() ops.Op { return ops.Getfield }
 func (ic *ICgetfield) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ic.Field)
+	field := vm.GetCurrentClass().GetField(vm, ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -252,7 +252,7 @@ type ICgetstatic struct {
 func (*ICgetstatic) Op() ops.Op { return ops.Getstatic }
 func (ic *ICgetstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ic.Field)
+	field := vm.GetCurrentClass().GetField(vm, ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -299,7 +299,7 @@ type ICinvokeinterface struct {
 
 func (*ICinvokeinterface) Op() ops.Op { return ops.Invokeinterface }
 func (ic *ICinvokeinterface) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ic.Method)
+	method := vm.GetCurrentClass().GetMethod(vm, ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -317,7 +317,7 @@ type ICinvokespecial struct {
 
 func (*ICinvokespecial) Op() ops.Op { return ops.Invokespecial }
 func (ic *ICinvokespecial) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ic.Method)
+	method := vm.GetCurrentClass().GetMethod(vm, ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -335,7 +335,7 @@ type ICinvokestatic struct {
 
 func (*ICinvokestatic) Op() ops.Op { return ops.Invokestatic }
 func (ic *ICinvokestatic) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ic.Method)
+	method := vm.GetCurrentClass().GetMethod(vm, ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -353,7 +353,7 @@ type ICinvokevirtual struct {
 
 func (*ICinvokevirtual) Op() ops.Op { return ops.Invokevirtual }
 func (ic *ICinvokevirtual) Execute(vm VM) error {
-	method := vm.GetCurrentClass().GetMethod(ic.Method)
+	method := vm.GetCurrentClass().GetMethod(vm, ic.Method)
 	if method == nil {
 		return errs.NoSuchMethodError
 	}
@@ -437,7 +437,7 @@ type ICputfield struct {
 func (*ICputfield) Op() ops.Op { return ops.Putfield }
 func (ic *ICputfield) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ic.Field)
+	field := vm.GetCurrentClass().GetField(vm, ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}
@@ -455,7 +455,7 @@ type ICputstatic struct {
 func (*ICputstatic) Op() ops.Op { return ops.Putstatic }
 func (ic *ICputstatic) Execute(vm VM) error {
 	stack := vm.GetStack()
-	field := vm.GetCurrentClass().GetField(ic.Field)
+	field := vm.GetCurrentClass().GetField(vm, ic.Field)
 	if field == nil {
 		return errs.NoSuchFieldError
 	}

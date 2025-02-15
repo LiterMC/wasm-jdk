@@ -15,6 +15,8 @@ type Field struct {
 	offset uintptr
 	typ    ir.Class
 	class  *Class
+
+	fieldRef atomic.Pointer[Ref]
 }
 
 var _ ir.Field = (*Field)(nil)

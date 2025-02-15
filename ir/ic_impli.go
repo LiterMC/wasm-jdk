@@ -410,7 +410,7 @@ type ICldc struct {
 
 func (*ICldc) Op() ops.Op { return ops.Ldc }
 func (ic *ICldc) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst((uint16)(ic.Index), vm.GetStack())
+	return vm.GetCurrentClass().GetAndPushConst(vm, (uint16)(ic.Index), vm.GetStack())
 }
 
 type ICldc_w struct {
@@ -419,5 +419,5 @@ type ICldc_w struct {
 
 func (*ICldc_w) Op() ops.Op { return ops.Ldc_w }
 func (ic *ICldc_w) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst(ic.Index, vm.GetStack())
+	return vm.GetCurrentClass().GetAndPushConst(vm, ic.Index, vm.GetStack())
 }

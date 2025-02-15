@@ -131,7 +131,7 @@ type ICldc2_w struct {
 
 func (*ICldc2_w) Op() ops.Op { return ops.Ldc2_w }
 func (ic *ICldc2_w) Execute(vm VM) error {
-	return vm.GetCurrentClass().GetAndPushConst(ic.Index, vm.GetStack())
+	return vm.GetCurrentClass().GetAndPushConst(vm, ic.Index, vm.GetStack())
 }
 
 type ICldiv struct{}

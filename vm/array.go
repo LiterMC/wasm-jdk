@@ -29,10 +29,16 @@ func (vm *VM) getArrayMethodByName(ref *jcls.ConstantRef) *Method {
 	return vm.getArrayMethod(arrCls, ref.NameAndType.Name)
 }
 
-func (vm *VM) getArrayMethod(cls *Class, name string) *Method {
+func (*VM) getArrayMethod(cls *Class, name string) *Method {
 	arrDesc := cls.Desc()
 	elemTyp := arrDesc.ElemType()
 	switch name {
+	case "getClass":
+		return &Method{
+			Method: jcls.NewMethod(jcls.AccPublic|jcls.AccFinal|jcls.AccNative, "getClass", &desc.MethodDesc{Output: desc.DescClass}, nil),
+			class:  cls,
+			native: nativeArrayClass,
+		}
 	case "clone":
 		switch elemTyp {
 		case desc.Boolean:
@@ -104,6 +110,13 @@ var (
 		native: int64ArrayClone,
 	}
 )
+
+func nativeArrayClass(vm ir.VM) error {
+	stack := vm.GetStack()
+	arrRef := stack.GetVarRef(0)
+	stack.PushRef(arrRef.Class().AsRef(vm))
+	return nil
+}
 
 func int8ArrayClone(vm ir.VM) error {
 	stack := vm.GetStack()

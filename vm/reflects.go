@@ -115,16 +115,20 @@ func (vm *VM) GetClassFromDesc(dc *desc.Desc) (*Class, error) {
 	return elem.NewArrayClass(dc.ArrDim), nil
 }
 
-func (vm *VM) GetClassRef(cls ir.Class) ir.Ref {
-	class := cls.(*Class)
-	ref0 := class.classRef.Load()
+func (c *Class) AsRef(vm0 ir.VM) ir.Ref {
+	vm := vm0.(*VM)
+	ref0 := c.classRef.Load()
 	if ref0 == nil {
-		ref := vm.New(vm.javaLangClass).(*Ref)
+		ref := vm0.New(vm.javaLangClass).(*Ref)
 		classLoaderPtr := (**Ref)(vm.javaLangClass_classLoader.GetPointer(ref))
+		componentTypePtr := (**Ref)(vm.javaLangClass_componentType.GetPointer(ref))
 		*classLoaderPtr = nil // TODO
-		*ref.UserData() = class
-		class.classRef.CompareAndSwap(nil, ref)
-		ref0 = class.classRef.Load()
+		if c.arrayDim > 0 {
+			*componentTypePtr = c.elem.AsRef(vm0).(*Ref)
+		}
+		*ref.UserData() = c
+		c.classRef.CompareAndSwap(nil, ref)
+		ref0 = c.classRef.Load()
 	}
 	return ref0
 }
@@ -133,10 +137,79 @@ func (vm *VM) NewLookup() ir.Ref {
 	ref := vm.New(vm.javaLangInvokeMethodHandlesLookup)
 	lookupClassPtr := (**Ref)(vm.javaLangInvokeMethodHandlesLookup_lookupClass.GetPointer(ref))
 	allowedModesPtr := (*int32)(vm.javaLangInvokeMethodHandlesLookup_allowedModes.GetPointer(ref))
-	class := vm.GetClassRef(vm.GetCurrentClass())
+	class := vm.GetCurrentClass().AsRef(vm)
 	*lookupClassPtr = class.(*Ref)
 	*allowedModesPtr = -1 // TRUSTED
 	return ref
+}
+
+func (f *Field) AsRef(vm0 ir.VM) ir.Ref {
+	vm := vm0.(*VM)
+	ref0 := f.fieldRef.Load()
+	if ref0 == nil {
+		ref := vm0.New(vm.javaLangReflectField).(*Ref)
+		*ref.UserData() = f
+		stack := vm0.GetStack()
+		stack.PushRef(ref)
+		stack.PushRef(f.class.AsRef(vm0))
+		stack.PushRef(vm.GetStringInternOrNew(f.Name()))
+		stack.PushRef(f.typ.AsRef(vm0))
+		stack.PushInt32(f.Modifiers())
+		stack.Push(0)
+		stack.PushInt32((int32)(f.typ.Desc().Type().Slot()))
+		stack.PushRef(vm0.NewString(f.typ.Desc().String()))
+		stack.PushRef(nil)
+		if err := vm.RunStack(); err != nil {
+			panic(err)
+		}
+
+		f.fieldRef.CompareAndSwap(nil, ref)
+		ref0 = f.fieldRef.Load()
+	}
+	return ref0
+}
+
+func (m *Method) AsRef(vm0 ir.VM) ir.Ref {
+	vm := vm0.(*VM)
+	ref0 := m.methodRef.Load()
+	if ref0 == nil {
+		dc := m.Desc()
+		inClsRef := vm.NewArray(desc.DescClassArray, (int32)(len(dc.Inputs)))
+		inClsArr := inClsRef.GetRefArr()
+		for i, in := range dc.Inputs {
+			inCls, err := vm.GetClassFromDesc(in)
+			if err != nil {
+				panic(err)
+			}
+			inClsArr[i] = vm.RefToPtr(inCls.AsRef(vm0))
+		}
+		outCls, err := vm.GetClassFromDesc(dc.Output)
+		if err != nil {
+			panic(err)
+		}
+
+		ref := vm0.New(vm.javaLangReflectMethod).(*Ref)
+		*ref.UserData() = m
+		stack := vm0.GetStack()
+		stack.PushRef(ref)
+		stack.PushRef(m.class.AsRef(vm0))
+		stack.PushRef(vm.GetStringInternOrNew(m.Name()))
+		stack.PushRef(inClsRef)
+		stack.PushRef(outCls.AsRef(vm0))
+		stack.PushInt32(m.Modifiers())
+		stack.PushInt32(1)
+		stack.PushRef(vm0.NewString(dc.String()))
+		stack.PushRef(nil)
+		stack.PushRef(nil)
+		stack.PushRef(nil)
+		if err := vm.RunStack(); err != nil {
+			panic(err)
+		}
+
+		m.methodRef.CompareAndSwap(nil, ref)
+		ref0 = m.methodRef.Load()
+	}
+	return ref0
 }
 
 func (vm *VM) NewMethodHandle(method *jcls.ConstantMethodHandle) ir.Ref {
@@ -157,7 +230,7 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 	if err != nil {
 		panic(err)
 	}
-	*rtypePtr = vm.RefToPtr(vm.GetClassRef(outCls))
+	*rtypePtr = vm.RefToPtr(outCls.AsRef(vm))
 	ptypesRef := vm.NewArray(desc.DescClassArray, (int32)(len(md.Inputs)))
 	ptypesArr := ptypesRef.GetRefArr()
 	for i, in := range md.Inputs {
@@ -165,7 +238,7 @@ func (vm *VM) NewMethodType(dc string) ir.Ref {
 		if err != nil {
 			panic(err)
 		}
-		ptypesArr[i] = vm.RefToPtr(vm.GetClassRef(inCls))
+		ptypesArr[i] = vm.RefToPtr(inCls.AsRef(vm))
 	}
 	*ptypesPtr = vm.RefToPtr(ptypesRef)
 	return ref

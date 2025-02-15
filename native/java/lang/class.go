@@ -112,7 +112,7 @@ func Class_isPrimitive(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	dc := this.Desc()
-	if dc.ArrDim == 0 && dc.EndType != desc.Array && dc.EndType != desc.Class {
+	if dc.ArrDim <= 0 && !dc.EndType.IsRef() {
 		stack.PushInt32(1)
 	} else {
 		stack.PushInt32(0)

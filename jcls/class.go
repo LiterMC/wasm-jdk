@@ -207,6 +207,10 @@ func (c *Class) Desc() *desc.Desc {
 	return c.ThisDesc
 }
 
+func (c *Class) Modifiers() int32 {
+	return (int32)(c.AccessFlags)
+}
+
 func (c *Class) IsInterface() bool {
 	return c.AccessFlags.Has(AccInterface)
 }

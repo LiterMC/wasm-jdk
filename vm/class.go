@@ -2,6 +2,7 @@ package vm
 
 import (
 	"fmt"
+	"iter"
 	"reflect"
 	"strings"
 	"sync"
@@ -32,8 +33,8 @@ type Class struct {
 	staticInit *Method
 	staticData unsafe.Pointer
 
-	loadedFieldAccesors map[uint16]func() *Field
-	loadedMethods       map[uint16]func() *Method
+	loadedFieldAccesors map[uint16]func(ir.VM) *Field
+	loadedMethods       map[uint16]func(ir.VM) *Method
 	loadedDynamics      map[uint16]*dynamicInfo
 }
 
@@ -62,7 +63,7 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 	if c.super == nil {
 		fields[0] = reflect.StructField{
 			Name: "S",
-			Type: reflect.TypeOf(false),
+			Type: reflect.TypeOf(struct{}{}),
 		}
 	} else {
 		fields[0] = reflect.StructField{
@@ -173,8 +174,8 @@ func (c *Class) initFM() {
 		}
 	}
 
-	c.loadedFieldAccesors = make(map[uint16]func() *Field)
-	c.loadedMethods = make(map[uint16]func() *Method)
+	c.loadedFieldAccesors = make(map[uint16]func(ir.VM) *Field)
+	c.loadedMethods = make(map[uint16]func(ir.VM) *Method)
 	c.loadedDynamics = make(map[uint16]*dynamicInfo)
 	c.scanCodes()
 
@@ -228,10 +229,6 @@ func (c *Class) Desc() *desc.Desc {
 
 func (c *Class) Reflect() reflect.Type {
 	return c.refType
-}
-
-func (c *Class) Modifiers() int32 {
-	return (int32)(c.Class.AccessFlags)
 }
 
 func (c *Class) Super() ir.Class {
@@ -295,15 +292,14 @@ func (c *Class) IsAssignableFrom(k ir.Class) bool {
 }
 
 func (c *Class) IsInstance(r ir.Ref) bool {
-	if r == nil {
+	if r == nil || r == (*Ref)(nil) {
 		return true
 	}
 	return c.IsAssignableFrom(r.Class())
 }
 
-func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
+func (c *Class) GetAndPushConst(vm ir.VM, i uint16, s ir.Stack) error {
 	v := c.ConstPool[i-1]
-	fmt.Printf("pushing const %#v\n", v)
 	switch v := v.(type) {
 	case *jcls.ConstantInteger:
 		s.Push(v.Value)
@@ -314,22 +310,36 @@ func (c *Class) GetAndPushConst(i uint16, s ir.Stack) error {
 	case *jcls.ConstantDouble:
 		s.Push64(v.Value)
 	case *jcls.ConstantString:
-		s.PushRef(c.initVM.Load().GetStringInternOrNew(v.Utf8))
+		s.PushRef(vm.GetStringInternOrNew(v.Utf8))
 	case *jcls.ConstantClass:
-		vm := c.initVM.Load()
-		class, err := vm.getClassFromDescString(v.Name)
+		class, err := vm.(*VM).getClassFromDescString(v.Name)
 		if err != nil {
 			return err
 		}
-		s.PushRef(vm.GetClassRef(class))
+		s.PushRef(class.AsRef(vm))
 	default:
 		return fmt.Errorf("Unexpected constant type %T", v)
 	}
 	return nil
 }
 
-func (c *Class) GetField(i uint16) ir.Field {
-	return c.loadedFieldAccesors[i]()
+func (c *Class) ForEachField(yield func(ir.Field) bool) {
+	for i := range len(c.Fields) {
+		if !yield(&c.Fields[i]) {
+			return
+		}
+	}
+	if c.super != nil {
+		c.super.(*Class).ForEachField(yield)
+	}
+}
+
+func (c *Class) GetFields() iter.Seq[ir.Field] {
+	return c.ForEachField
+}
+
+func (c *Class) GetField(vm ir.VM, i uint16) ir.Field {
+	return c.loadedFieldAccesors[i](vm)
 }
 
 func (c *Class) GetFieldByName(name string) ir.Field {
@@ -342,29 +352,44 @@ func (c *Class) GetFieldByName(name string) ir.Field {
 	return nil
 }
 
-func (c *Class) GetMethod(i uint16) ir.Method {
-	return c.loadedMethods[i]()
+func (c *Class) ForEachMethod(yield func(ir.Method) bool) {
+	for i := range len(c.Methods) {
+		if !yield(&c.Methods[i]) {
+			return
+		}
+	}
+	if c.super != nil {
+		c.super.(*Class).ForEachMethod(yield)
+	}
 }
 
-func (c *Class) GetMethodByName(location string) ir.Method {
+func (c *Class) GetMethods() iter.Seq[ir.Method] {
+	return c.ForEachMethod
+}
+
+func (c *Class) GetMethod(vm ir.VM, i uint16) ir.Method {
+	return c.loadedMethods[i](vm)
+}
+
+func (c *Class) GetMethodByName(vm ir.VM, location string) ir.Method {
 	i := strings.IndexByte(location, desc.Method)
 	if i < 0 {
 		panic("method name missing descriptor")
 	}
-	return c.GetMethodByNameAndType(location[:i], location[i:])
+	return c.GetMethodByNameAndType(vm, location[:i], location[i:])
 }
 
-func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
+func (c *Class) GetMethodByNameAndType(vm ir.VM, name, typ string) ir.Method {
 	dc, err := desc.ParseMethodDesc(typ)
 	if err != nil {
 		panic(err)
 	}
-	return c.GetMethodByDesc(name, dc)
+	return c.GetMethodByDesc(vm, name, dc)
 }
 
-func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
+func (c *Class) GetMethodByDesc(vm ir.VM, name string, dc *desc.MethodDesc) ir.Method {
 	if c.arrayDim > 0 {
-		return c.initVM.Load().getArrayMethod(c, name)
+		return vm.(*VM).getArrayMethod(c, name)
 	}
 	x := c
 	for {
@@ -422,20 +447,20 @@ func (c *Class) loadFieldGetter(ind uint16, static bool) {
 	if !ok || ref.ConstTag != jcls.TagFieldref {
 		panic(fmt.Errorf("cannot load class: constant at %d is not a field ref", ind-1))
 	}
-	f := c.loadField(ref, false)
+	f := c.loadField(c.initVM.Load(), ref, false)
 	if f != nil {
 		if f.IsStatic() != static {
 			panic(fmt.Errorf("field status %v not match getfield/getstatic command", f.IsStatic()))
 		}
-		c.loadedFieldAccesors[ind] = func() *Field { return f }
+		c.loadedFieldAccesors[ind] = func(ir.VM) *Field { return f }
 	} else {
-		c.loadedFieldAccesors[ind] = sync.OnceValue(func() *Field {
-			return c.loadField(ref, true)
+		c.loadedFieldAccesors[ind] = OnceApply(func(vm ir.VM) *Field {
+			return c.loadField(vm, ref, true)
 		})
 	}
 }
 
-func (c *Class) loadField(ref *jcls.ConstantRef, canLoadClass bool) *Field {
+func (c *Class) loadField(vm ir.VM, ref *jcls.ConstantRef, canLoadClass bool) *Field {
 	var x *Class
 	if ref.Class.Name == c.Name() {
 		x = c
@@ -445,7 +470,7 @@ func (c *Class) loadField(ref *jcls.ConstantRef, canLoadClass bool) *Field {
 			panic(err)
 		}
 		x = k.(*Class)
-		x.InitBeforeUse(c.initVM.Load())
+		x.InitBeforeUse(vm.(*VM))
 	} else {
 		return nil
 	}
@@ -474,32 +499,31 @@ func (c *Class) loadMethodGetter(ind uint16) {
 		panic(fmt.Errorf("cannot load class: constant at %d is not a method reference", ind-1))
 	}
 	if ref.Class.Name[0] == '[' {
-		vm := c.initVM.Load()
 		if ref.Class.Name[len(ref.Class.Name)-1] == ';' {
 			// lazy load class
-			c.loadedMethods[ind] = sync.OnceValue(func() *Method {
-				return vm.getArrayMethodByName(ref)
+			c.loadedMethods[ind] = OnceApply(func(vm ir.VM) *Method {
+				return vm.(*VM).getArrayMethodByName(ref)
 			})
 		} else {
-			arrayMethod := vm.getArrayMethodByName(ref)
-			c.loadedMethods[ind] = func() *Method {
+			arrayMethod := ((*VM)(nil)).getArrayMethodByName(ref)
+			c.loadedMethods[ind] = func(ir.VM) *Method {
 				return arrayMethod
 			}
 		}
 	} else {
-		c.loadedMethods[ind] = sync.OnceValue(func() *Method {
-			return c.loadMethod(ref)
+		c.loadedMethods[ind] = OnceApply(func(vm ir.VM) *Method {
+			return c.loadMethod(vm, ref)
 		})
 	}
 }
 
-func (c *Class) loadMethod(ref *jcls.ConstantRef) *Method {
+func (c *Class) loadMethod(vm ir.VM, ref *jcls.ConstantRef) *Method {
 	k, err := c.loader.LoadClass(ref.Class.Name)
 	if err != nil {
 		panic(err)
 	}
 	x := k.(*Class)
-	x.InitBeforeUse(c.initVM.Load())
+	x.InitBeforeUse(vm.(*VM))
 	method := x.loadMethod0(ref)
 	if method == nil {
 		panic(fmt.Errorf("cannot load class: missing method %s", ref))

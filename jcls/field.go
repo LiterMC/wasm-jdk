@@ -48,6 +48,10 @@ func (f *Field) Name() string {
 	return f.name
 }
 
+func (f *Field) Modifiers() int32 {
+	return (int32)(f.AccessFlags)
+}
+
 func (f *Field) IsStatic() bool {
 	return f.AccessFlags.Has(AccStatic)
 }
