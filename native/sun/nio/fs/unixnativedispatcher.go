@@ -98,6 +98,7 @@ func UnixNativeDispatcher_stat0(vm ir.VM) error {
 	pathAddress := stack.GetVarInt64(0)
 	path := cutil.GoString(pathAddress)
 	println("path:", path)
+	stack.PushInt32(0)
 	return nil
 }
 

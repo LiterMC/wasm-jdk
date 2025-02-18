@@ -44,8 +44,10 @@ func (vm *VM) LoadNativeMethod(method ir.Method, native NativeMethodCallback) {
 
 func (vm *VM) Invoke(method ir.Method) {
 	m := method.(*Method)
-	fmt.Println("\n==> invoking", m.Location())
-	defer fmt.Println("   post invoke", m.Location())
+	if vm.creator == nil {
+		fmt.Println("\n==> invoking", m.Location())
+		defer fmt.Println("   post invoke", m.Location())
+	}
 	prev := vm.stack
 	prev.pc = vm.nextPc
 	isNative := m.AccessFlags.Has(jcls.AccNative)
@@ -84,8 +86,10 @@ func (vm *VM) Invoke(method ir.Method) {
 
 func (vm *VM) InvokeStatic(method ir.Method) {
 	m := method.(*Method)
-	fmt.Println("\n==> invoking static " + m.Location())
-	defer fmt.Println("   post invoke static " + m.Location())
+	if vm.creator == nil {
+		fmt.Println("\n==> invoking static " + m.Location())
+		defer fmt.Println("   post invoke static " + m.Location())
+	}
 	prev := vm.stack
 	prev.pc = vm.nextPc
 	if m.AccessFlags.Has(jcls.AccNative) {
@@ -121,8 +125,10 @@ func (vm *VM) InvokeStatic(method ir.Method) {
 
 func (vm *VM) InvokeVirtual(method ir.Method) {
 	m := method.(*Method)
-	fmt.Println("\n==> invoking virtual " + m.Location())
-	defer fmt.Println("   post invoke virtual " + m.Location())
+	if vm.creator == nil {
+		fmt.Println("\n==> invoking virtual " + m.Location())
+		defer fmt.Println("   post invoke virtual " + m.Location())
+	}
 	prev := vm.stack
 	prev.pc = vm.nextPc
 	newStack := &Stack{
@@ -174,8 +180,10 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 	if bootMethod0 == nil {
 		panic("bootstrap method " + bootMe.String() + " is nil")
 	}
-	fmt.Println("==> invoking dynamic " + bootMe.String())
-	defer fmt.Println("   post invoke dynamic " + bootMe.String())
+	if vm.creator == nil {
+		fmt.Println("\n==> invoking dynamic " + bootMe.String())
+		defer fmt.Println("   post invoke dynamic " + bootMe.String())
+	}
 	bootMethod := bootMethod0.(*Method)
 	prev := vm.stack
 	vm.stack = &Stack{

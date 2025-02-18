@@ -504,8 +504,10 @@ func (vm *VM) GetCurrentMethod() ir.Method {
 
 func (vm *VM) Return() {
 	returned := vm.stack
-	fmt.Println("<== returning " + returned.class.Name() + "." + returned.method.Name() + returned.method.Desc().String())
-	fmt.Println()
+	if vm.creator == nil {
+		fmt.Println("<== returning", returned.class.Name() + "." + returned.method.Name() + returned.method.Desc().String())
+		fmt.Println()
+	}
 	vm.stack = returned.prev
 	if vm.stack == nil {
 		return

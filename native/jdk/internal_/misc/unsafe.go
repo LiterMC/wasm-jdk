@@ -168,7 +168,11 @@ func Unsafe_putByte(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
 	ptr := unsafe.Add(getRefData(ref), offset)
-	atomic.StoreUint32((*uint32)(ptr), value)
+	if ref == nil {
+		*(*int8)(ptr) = (int8)(value)
+	} else {
+		atomic.StoreUint32((*uint32)(ptr), value)
+	}
 	return nil
 }
 
