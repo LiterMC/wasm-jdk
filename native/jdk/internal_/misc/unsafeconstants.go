@@ -4,6 +4,7 @@ import (
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/ir"
+	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
 var (
@@ -31,6 +32,7 @@ func InitUnsafeConstants(vm ir.VM) {
 	if err != nil {
 		panic(err)
 	}
+	cls.(*jvm.Class).InitBeforeUse(vm.(*jvm.VM))
 	addrSizePtr := (*int32)(cls.GetFieldByName("ADDRESS_SIZE0").GetPointer(nil))
 	pageSizePtr := (*int32)(cls.GetFieldByName("PAGE_SIZE").GetPointer(nil))
 	bigEndianPtr := (*int32)(cls.GetFieldByName("BIG_ENDIAN").GetPointer(nil))

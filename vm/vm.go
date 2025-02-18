@@ -331,8 +331,8 @@ func (vm *VM) Step() error {
 		vm.nextPc = vm.stack.pc.Next
 		vm.step++
 		if vm.creator == nil {
-			fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, vm.step, vm.stack.pc.IC, vm.stack.pc.Next)
 			fmt.Println(vm.stack.GoString())
+			fmt.Printf(" == step: %04x: %06d: %#v --> %#v\n", vm.stack.pc.Offset, vm.step, vm.stack.pc.IC, vm.stack.pc.Next)
 		}
 		err = vm.stack.pc.IC.Execute(vm)
 		if vm.stack == nil && vm.creator != nil {

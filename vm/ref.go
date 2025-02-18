@@ -116,6 +116,10 @@ func (r *Ref) Data() unsafe.Pointer {
 	return r.data
 }
 
+func (r *Ref) String() string {
+	return fmt.Sprintf("<Ref 0x%08x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
+}
+
 func (r *Ref) GoString() string {
 	return fmt.Sprintf("<Ref 0x%08x type=%s data=%p>", (uint32)(r.identity), r.desc, r.data)
 }

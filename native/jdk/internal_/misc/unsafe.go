@@ -2,10 +2,10 @@ package jdk_internal_misc
 
 import (
 	"fmt"
-	"runtime"
 	"sync/atomic"
 	"unsafe"
 
+	"github.com/LiterMC/wasm-jdk/cutil"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/native"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
@@ -93,12 +93,7 @@ func Unsafe_getInt(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -109,12 +104,7 @@ func Unsafe_putInt(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -124,12 +114,7 @@ func Unsafe_getReference(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.PushRef((*jvm.Ref)(atomic.LoadPointer((*unsafe.Pointer)(ptr))))
 	return nil
 }
@@ -140,12 +125,7 @@ func Unsafe_putReference(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := asJvmRef(stack.GetVarRef(4))
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StorePointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(value))
 	return nil
 }
@@ -155,12 +135,7 @@ func Unsafe_getBoolean(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -171,12 +146,7 @@ func Unsafe_putBoolean(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -186,12 +156,7 @@ func Unsafe_getByte(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -202,12 +167,7 @@ func Unsafe_putByte(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -217,12 +177,7 @@ func Unsafe_getShort(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -233,12 +188,7 @@ func Unsafe_putShort(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -248,12 +198,7 @@ func Unsafe_getChar(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -264,12 +209,7 @@ func Unsafe_putChar(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -279,12 +219,7 @@ func Unsafe_getLong(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push64(atomic.LoadUint64((*uint64)(ptr)))
 	return nil
 }
@@ -295,12 +230,7 @@ func Unsafe_putLong(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar64(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint64((*uint64)(ptr), value)
 	return nil
 }
@@ -310,12 +240,7 @@ func Unsafe_getFloat(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push(atomic.LoadUint32((*uint32)(ptr)))
 	return nil
 }
@@ -326,12 +251,7 @@ func Unsafe_putFloat(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint32((*uint32)(ptr), value)
 	return nil
 }
@@ -341,12 +261,7 @@ func Unsafe_getDouble(vm ir.VM) error {
 	stack := vm.GetStack()
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	stack.Push64(atomic.LoadUint64((*uint64)(ptr)))
 	return nil
 }
@@ -357,12 +272,7 @@ func Unsafe_putDouble(vm ir.VM) error {
 	ref := stack.GetVarRef(1)
 	offset := stack.GetVarInt64(2)
 	value := stack.GetVar64(4)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	atomic.StoreUint64((*uint64)(ptr), value)
 	return nil
 }
@@ -425,12 +335,7 @@ func Unsafe_compareAndSetReference(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := asJvmRef(stack.GetVarRef(4))
 	value := asJvmRef(stack.GetVarRef(5))
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	if atomic.CompareAndSwapPointer((*unsafe.Pointer)(ptr), (unsafe.Pointer)(expected), (unsafe.Pointer)(value)) {
 		stack.Push(1)
 	} else {
@@ -446,7 +351,7 @@ func Unsafe_compareAndExchangeReference(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := asJvmRef(stack.GetVarRef(4))
 	value := asJvmRef(stack.GetVarRef(5))
-	ptr := (*unsafe.Pointer)(unsafe.Add(ref.Data(), offset))
+	ptr := (*unsafe.Pointer)(unsafe.Add(getRefData(ref), offset))
 	old := atomic.LoadPointer(ptr)
 	for {
 		if atomic.CompareAndSwapPointer(ptr, (unsafe.Pointer)(expected), (unsafe.Pointer)(value)) {
@@ -468,12 +373,7 @@ func Unsafe_compareAndSetInt(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := stack.GetVar(4)
 	value := stack.GetVar(5)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	if atomic.CompareAndSwapUint32((*uint32)(ptr), expected, value) {
 		stack.Push(1)
 	} else {
@@ -489,7 +389,7 @@ func Unsafe_compareAndExchangeInt(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := stack.GetVar(4)
 	value := stack.GetVar(5)
-	ptr := (*uint32)(unsafe.Add(ref.Data(), offset))
+	ptr := (*uint32)(unsafe.Add(getRefData(ref), offset))
 	old := atomic.LoadUint32(ptr)
 	for {
 		if atomic.CompareAndSwapUint32(ptr, expected, value) {
@@ -511,12 +411,7 @@ func Unsafe_compareAndSetLong(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := stack.GetVar64(4)
 	value := stack.GetVar64(6)
-	var ptr unsafe.Pointer
-	if ref == nil {
-		ptr = (unsafe.Pointer)((uintptr)(offset))
-	} else {
-		ptr = unsafe.Add(ref.Data(), offset)
-	}
+	ptr := unsafe.Add(getRefData(ref), offset)
 	if atomic.CompareAndSwapUint64((*uint64)(ptr), expected, value) {
 		stack.Push64(1)
 	} else {
@@ -532,7 +427,7 @@ func Unsafe_compareAndExchangeLong(vm ir.VM) error {
 	offset := stack.GetVarInt64(2)
 	expected := stack.GetVar64(4)
 	value := stack.GetVar64(6)
-	ptr := (*uint64)(unsafe.Add(ref.Data(), offset))
+	ptr := (*uint64)(unsafe.Add(getRefData(ref), offset))
 	old := atomic.LoadUint64(ptr)
 	for {
 		if atomic.CompareAndSwapUint64(ptr, expected, value) {
@@ -569,71 +464,21 @@ func Unsafe_fullFence(vm ir.VM) error {
 	return nil
 }
 
-type runtimePinner struct {
-	pinner unsafe.Pointer
-}
-
-type pinnedMemoryHeader struct {
-	pinner runtime.Pinner
-	length int
-	data   [0]byte
-}
-
-const memoryHeaderOffset = (int)(unsafe.Offsetof(pinnedMemoryHeader{}.data))
-
-func allocMemory(length int) uintptr {
-	ptr := (unsafe.Pointer)(unsafe.SliceData(make([]byte, length+memoryHeaderOffset)))
-	header := (*pinnedMemoryHeader)(ptr)
-	header.pinner.Pin(header)
-	header.pinner.Pin((*runtimePinner)((unsafe.Pointer)(&header.pinner)).pinner)
-	header.length = length
-	return (uintptr)(unsafe.Add(ptr, memoryHeaderOffset))
-}
-
-func reallocMemory(address uintptr, length int) uintptr {
-	ptr := unsafe.Add((unsafe.Pointer)(address), -memoryHeaderOffset)
-	header := (*pinnedMemoryHeader)(ptr)
-	need := length - header.length
-	if need <= 0 {
-		return address
-	}
-	slice := unsafe.Slice((*byte)(ptr), header.length)
-	slice = append(slice, make([]byte, need)...)
-	ptr = (unsafe.Pointer)(unsafe.SliceData(slice))
-	ppinner := (*runtimePinner)((unsafe.Pointer)(&header.pinner)).pinner
-	header.pinner.Unpin()
-	header.pinner.Pin(header)
-	header.pinner.Pin(ppinner)
-	return (uintptr)(unsafe.Add(ptr, memoryHeaderOffset))
-}
-
-func freeMemory(address uintptr) {
-	ptr := unsafe.Add((unsafe.Pointer)(address), -memoryHeaderOffset)
-	header := (*pinnedMemoryHeader)(ptr)
-	header.pinner.Unpin()
-}
-
 // private native long allocateMemory0(long bytes);
 func Unsafe_allocateMemory0(vm ir.VM) error {
-	if true {
-		panic("TODO: investigate if allocateMemory is safe here")
-	}
 	stack := vm.GetStack()
 	bytes := stack.GetVarInt64(1)
-	ptr := allocMemory((int)(bytes))
+	ptr := cutil.AllocMemory((int)(bytes))
 	stack.Push64((uint64)(ptr))
 	return nil
 }
 
 // private native long reallocateMemory0(long address, long bytes);
 func Unsafe_reallocateMemory0(vm ir.VM) error {
-	if true {
-		panic("TODO: investigate if allocateMemory is safe here")
-	}
 	stack := vm.GetStack()
 	address := (uintptr)(stack.GetVar64(1))
 	bytes := stack.GetVarInt64(2)
-	address = reallocMemory(address, (int)(bytes))
+	address = cutil.ReallocMemory(address, (int)(bytes))
 	stack.Push64((uint64)(address))
 	return nil
 }
@@ -642,7 +487,7 @@ func Unsafe_reallocateMemory0(vm ir.VM) error {
 func Unsafe_freeMemory0(vm ir.VM) error {
 	stack := vm.GetStack()
 	address := (uintptr)(stack.GetVar64(1))
-	freeMemory(address)
+	cutil.FreeMemory(address)
 	return nil
 }
 
@@ -656,7 +501,7 @@ func Unsafe_setMemory0(vm ir.VM) error {
 	if bytes == 0 {
 		return nil
 	}
-	ptr := (*byte)(unsafe.Add(ref.Data(), offset))
+	ptr := (*byte)(unsafe.Add(getRefData(ref), offset))
 	slice := unsafe.Slice(ptr, bytes)
 	memset(slice, value)
 	return nil
@@ -670,6 +515,13 @@ func memset(slice []byte, v byte) {
 	}
 }
 
+func getRefData(ref ir.Ref) unsafe.Pointer {
+	if ref == nil {
+		return nil
+	}
+	return ref.Data()
+}
+
 // private native void copyMemory0(Object srcBase, long srcOffset, Object destBase, long destOffset, long bytes);
 func Unsafe_copyMemory0(vm ir.VM) error {
 	stack := vm.GetStack()
@@ -681,8 +533,8 @@ func Unsafe_copyMemory0(vm ir.VM) error {
 	if bytes == 0 {
 		return nil
 	}
-	srcPtr := (*byte)(unsafe.Add(srcRef.Data(), srcOffset))
-	destPtr := (*byte)(unsafe.Add(destRef.Data(), destOffset))
+	srcPtr := (*byte)(unsafe.Add(getRefData(srcRef), srcOffset))
+	destPtr := (*byte)(unsafe.Add(getRefData(destRef), destOffset))
 	copy(unsafe.Slice(destPtr, bytes), unsafe.Slice(srcPtr, bytes))
 	return nil
 }
@@ -700,8 +552,8 @@ func Unsafe_copySwapMemory0(vm ir.VM) error {
 		return nil
 	}
 	if elemSize <= 4 {
-		srcPtr := unsafe.Add(srcRef.Data(), srcOffset)
-		destPtr := unsafe.Add(destRef.Data(), destOffset)
+		srcPtr := unsafe.Add(getRefData(srcRef), srcOffset)
+		destPtr := unsafe.Add(getRefData(destRef), destOffset)
 		length := (bytes + 3) / 4
 		for i := range length {
 			v := (*uint32)(unsafe.Add(srcPtr, i*4))
@@ -709,8 +561,8 @@ func Unsafe_copySwapMemory0(vm ir.VM) error {
 			atomic.StoreUint32(v, old)
 		}
 	} else if elemSize == 8 {
-		srcPtr := unsafe.Add(srcRef.Data(), srcOffset)
-		destPtr := unsafe.Add(destRef.Data(), destOffset)
+		srcPtr := unsafe.Add(getRefData(srcRef), srcOffset)
+		destPtr := unsafe.Add(getRefData(destRef), destOffset)
 		length := (bytes + 7) / 8
 		for i := range length {
 			v := (*uint64)(unsafe.Add(srcPtr, i*8))

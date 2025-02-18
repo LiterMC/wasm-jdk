@@ -28,9 +28,10 @@ func OnceApply[T1, T2 any](f func(T1) T2) func(T1) T2 {
 	}
 	return func(in T1) T2 {
 		if !done.Load() {
-			input.Store(&in)
+			if input.CompareAndSwap(nil, &in) {
+				defer input.Store(nil)
+			}
 			once.Do(g)
-			input.Store(nil)
 		}
 		if !valid {
 			panic(p)
