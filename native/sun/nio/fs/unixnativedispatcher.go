@@ -1,7 +1,10 @@
 package sun_nio_fs
 
 import (
+	"errors"
+	"io/fs"
 	"os"
+	"syscall"
 
 	"github.com/LiterMC/wasm-jdk/cutil"
 	"github.com/LiterMC/wasm-jdk/desc"
@@ -92,14 +95,96 @@ func UnixNativeDispatcher_getcwd(vm ir.VM) error {
 // private static native byte[] realpath0(long pathAddress) throws UnixException;
 // private static native void symlink0(long name1, long name2) throws UnixException;
 
+type jUnixFileAttributes struct {
+	st_mode           int32
+	st_ino            int64
+	st_dev            int64
+	st_rdev           int64
+	st_nlink          int32
+	st_uid            int32
+	st_gid            int32
+	st_size           int64
+	st_atime_sec      int64
+	st_atime_nsec     int64
+	st_mtime_sec      int64
+	st_mtime_nsec     int64
+	st_ctime_sec      int64
+	st_ctime_nsec     int64
+	st_birthtime_sec  int64
+	st_birthtime_nsec int64
+}
+
 // private static native int stat0(long pathAddress, UnixFileAttributes attrs);
 func UnixNativeDispatcher_stat0(vm ir.VM) error {
 	stack := vm.GetStack()
 	pathAddress := stack.GetVarInt64(0)
+	attrsRef := stack.GetVarRef(2)
 	path := cutil.GoString(pathAddress)
-	println("path:", path)
+	stat, err := os.Stat(path)
+	if err != nil {
+		var errno syscall.Errno
+		if errors.As(err, &errno) {
+			stack.PushInt32((int32)(errno))
+		} else {
+			stack.PushInt32(-1)
+		}
+		return nil
+	}
+	attrs := (*jUnixFileAttributes)(attrsRef.Data())
+	attrs.st_mode = fileModeToStMode(stat.Mode())
+	attrs.st_size = stat.Size()
+	attrs.st_mtime_sec = stat.ModTime().Unix()
+	attrs.st_mtime_nsec = (int64)(stat.ModTime().Nanosecond())
 	stack.PushInt32(0)
 	return nil
+}
+
+func fileModeToStMode(mode fs.FileMode) int32 {
+	const (
+		S_IFMT   = 0000370000
+		S_IFSOCK = 0000140000
+		S_IFLNK  = 0000120000
+		S_IFREG  = 0000100000
+		S_IFBLK  = 0000060000
+		S_IFDIR  = 0000040000
+		S_IFCHR  = 0000020000
+		S_IFIFO  = 0000010000
+
+		S_ISUID = 0004000
+		S_ISGID = 0002000
+		S_ISVTX = 0001000
+	)
+	var flags int32 = (int32)(mode & fs.ModePerm)
+
+	if mode&fs.ModeDir != 0 {
+		flags |= S_IFDIR
+	} else if mode&fs.ModeSymlink != 0 {
+		flags |= S_IFLNK
+	} else if mode&fs.ModeDevice != 0 {
+		if mode&fs.ModeCharDevice != 0 {
+			flags |= S_IFCHR
+		} else {
+			flags |= S_IFBLK
+		}
+	} else if mode&fs.ModeNamedPipe != 0 {
+		flags |= S_IFIFO
+	} else if mode&fs.ModeSocket != 0 {
+		flags |= S_IFSOCK
+	} else if mode&fs.ModeIrregular == 0 {
+		flags |= S_IFREG
+	}
+
+	if mode&fs.ModeSetuid != 0 {
+		flags |= S_ISUID
+	}
+	if mode&fs.ModeSetgid != 0 {
+		flags |= S_ISGID
+	}
+	if mode&fs.ModeSticky != 0 {
+		flags |= S_ISVTX
+	}
+
+	return flags
 }
 
 // private static native void lstat0(long pathAddress, UnixFileAttributes attrs) throws UnixException;
