@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	stdpath "path"
 	"strings"
-	"sync"
 
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
@@ -13,44 +12,23 @@ import (
 )
 
 type BasicFSClassLoader struct {
-	fs     fs.FS
-	loaded sync.Map
+	fs       fs.FS
+	location string
 }
 
-func NewBasicFSClassLoader(fs fs.FS) ir.ClassLoader {
+func NewBasicFSClassLoader(fs fs.FS, location string) BasicClassLoader {
 	return &BasicFSClassLoader{
-		fs: fs,
+		fs:       fs,
+		location: location,
 	}
 }
 
-func (l *BasicFSClassLoader) LoadClass(name string) (ir.Class, error) {
-	loader, ok := l.loaded.Load(name)
-	if !ok {
-		loader, _ = l.loaded.LoadOrStore(name, sync.OnceValues(func() (*vm.Class, error) {
-			return loadClassFromFS(l, l.fs, name)
-		}))
-	}
-	class, err := loader.(func() (*vm.Class, error))()
-	if err != nil {
-		return nil, err
-	}
-	return class, nil
-}
-
-func (l *BasicFSClassLoader) LoadedClass(name string) ir.Class {
-	loader, ok := l.loaded.Load(name)
-	if !ok {
-		return nil
-	}
-	class, err := loader.(func() (*vm.Class, error))()
-	if err != nil {
-		return nil
-	}
-	return class
+func (l *BasicFSClassLoader) LoadClass(loader ir.ClassLoader, name string) (ir.Class, error) {
+	return loadClassFromFS(loader, l.fs, name)
 }
 
 func (l *BasicFSClassLoader) AvaliablePackages() []string {
-	packages := make([]string, 0, 10)
+	packages := make([]string, 0, 3)
 	WalkDir(l.fs, ".", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil || entry.IsDir() {
 			return nil
@@ -70,7 +48,7 @@ func (l *BasicFSClassLoader) PackageLocation(name string) string {
 		return ""
 	}
 	if stat.IsDir() {
-		return "file://" + name
+		return l.location + name
 	}
 	return ""
 }

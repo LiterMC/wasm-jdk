@@ -62,7 +62,6 @@ func AllocMemory(length int) uintptr {
 	pinner, header.pinnerInd = allocPinner()
 	pinner.Pin(header)
 
-	println("AllocMemory:", ptr, (uintptr)(unsafe.Add(ptr, memoryHeaderOffset)))
 	return (uintptr)(unsafe.Add(ptr, memoryHeaderOffset))
 }
 

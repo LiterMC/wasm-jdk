@@ -8,6 +8,7 @@ import (
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/native"
+	"github.com/LiterMC/wasm-jdk/properties"
 
 	misc "github.com/LiterMC/wasm-jdk/native/jdk/internal_/misc"
 )
@@ -17,18 +18,15 @@ func init() {
 	native.RegisterDefaultNative("jdk/internal/util/SystemProps$Raw.platformProperties()[Ljava/lang/String;", SystemProps_Raw_platformProperties)
 }
 
-var vmProperties = []string{
-	"java.home", "/java",
-}
-
 // private static native String[] vmProperties();
 func SystemProps_Raw_vmProperties(vm ir.VM) error {
-	propertiesRef := vm.NewArray(desc.DescStringArray, (int32)(len(vmProperties)))
-	properties := propertiesRef.GetRefArr()
-	for i, v := range vmProperties {
-		properties[i] = vm.RefToPtr(vm.NewString(v))
+	propkvs := properties.GetPropKVArray()
+	propsRef := vm.NewArray(desc.DescStringArray, (int32)(len(propkvs)))
+	props := propsRef.GetRefArr()
+	for i, v := range propkvs {
+		props[i] = vm.RefToPtr(vm.NewString(v))
 	}
-	vm.GetStack().PushRef(propertiesRef)
+	vm.GetStack().PushRef(propsRef)
 	return nil
 }
 

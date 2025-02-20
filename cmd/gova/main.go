@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/classloader"
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/properties"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
 
 	"github.com/LiterMC/wasm-jdk/native"
@@ -18,22 +20,33 @@ func main() {
 	class := os.Args[1]
 	method := "main"
 	class = strings.ReplaceAll(class, ".", "/")
-	ws, err := os.Getwd()
+
+	workingDir, err := os.Getwd()
 	if err != nil {
 		panic(err)
 	}
+	properties.SetProp("java.home", workingDir)
+
 	fmt.Println("EntryClass:", class)
 	fmt.Println("EntryMethod:", method)
-	cl := classloader.NewBasicFSClassLoader(os.DirFS(ws))
+
+	modulesDir := filepath.Join(workingDir, "modules")
+
+	cl := classloader.WrapAsSyncedClassLoader(classloader.NewMultiClassLoader(
+		classloader.NewExplodeModuleClassLoader(os.DirFS(modulesDir), "file://"+modulesDir),
+		classloader.NewBasicFSClassLoader(os.DirFS(workingDir), "file://"+workingDir),
+	))
 	vm := jvm.NewVM(&jvm.Options{
 		Loader:      cl,
 		EntryClass:  class,
 		EntryMethod: "main([Ljava/lang/String;)V",
 	})
+
 	fmt.Println("Loading native library ...")
 	misc.InitUnsafeConstants(vm)
 	native.LoadDefaultNatives(vm, cl)
 	vm.SetupEntryMethod()
+
 	{
 		arr := vm.NewArray(desc.DescStringArray, (int32)(len(os.Args)-2))
 		refs := arr.GetRefArr()
