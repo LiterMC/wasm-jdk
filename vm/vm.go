@@ -405,6 +405,13 @@ func (vm *VM) NewObjectArray(cls ir.Class, length int32) ir.Ref {
 	return newRefArray(class.NewArrayClass(1), length)
 }
 
+// Alloc an array with the class as the elements' type
+func (vm *VM) NewObjectMultiDimArray(cls ir.Class, lengths []int32) ir.Ref {
+	class := cls.(*Class)
+	class.InitBeforeUse(vm)
+	return newMultiDimArray(class, lengths)
+}
+
 func (vm *VM) RefToPtr(ref ir.Ref) unsafe.Pointer {
 	if ref == nil {
 		return nil

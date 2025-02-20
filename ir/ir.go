@@ -36,6 +36,7 @@ type VM interface {
 	NewArray(*desc.Desc, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
 	NewObjectArray(Class, int32) Ref
+	NewObjectMultiDimArray(Class, []int32) Ref
 
 	RefToPtr(Ref) unsafe.Pointer
 	PtrToRef(unsafe.Pointer) Ref

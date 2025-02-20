@@ -254,6 +254,9 @@ func (c *Class) IsAssignableFrom(k ir.Class) bool {
 	if (c == nil || kk == nil) && c != kk {
 		return false
 	}
+	if c == k {
+		return true
+	}
 	if c.arrayDim != 0 {
 		if c.arrayDim != kk.arrayDim {
 			return false
@@ -264,9 +267,6 @@ func (c *Class) IsAssignableFrom(k ir.Class) bool {
 		return c.elem.IsAssignableFrom(kk.elem)
 	}
 	if !c.IsInterface() {
-		if c == k {
-			return true
-		}
 		if c.AccessFlags.Has(jcls.AccFinal) {
 			return false
 		}
