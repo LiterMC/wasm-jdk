@@ -1,9 +1,14 @@
 package java_lang
 
 import (
+	"strings"
+	"unsafe"
+
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/native"
+	"github.com/LiterMC/wasm-jdk/native/helper"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
@@ -53,7 +58,26 @@ func Class_registerNatives(vm ir.VM) error {
 // private static native Class<?> forName0(String name, boolean initialize, ClassLoader loader, Class<?> caller);
 func Class_forName0(vm ir.VM) error {
 	stack := vm.GetStack()
-	_ = stack
+	name := vm.GetString(stack.GetVarRef(0))
+	initialize := stack.GetVar(1) != 0
+	loaderRef := stack.GetVarRef(2)
+	caller := stack.GetVarRef(3)
+	var loader ir.ClassLoader
+	if loaderRef == nil {
+		loader = vm.GetClassLoader()
+	} else {
+		loader = (*loaderRef.UserData()).(ir.ClassLoader)
+	}
+	classPath := strings.ReplaceAll(name, ".", "/")
+	class, err := loader.LoadClass(classPath)
+	if err != nil {
+		return &errs.ClassNotFoundException{Class: classPath, Cause: err}
+	}
+	if initialize {
+		class.(*jvm.Class).InitBeforeUse(vm.(*jvm.VM))
+	}
+	_ = caller
+	stack.PushRef(class.AsRef(vm))
 	return nil
 }
 
@@ -63,9 +87,9 @@ func Class_isInstance(vm ir.VM) error {
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	obj := stack.GetVarRef(1)
 	if this.IsInstance(obj) {
-		stack.PushInt32(1)
+		stack.Push(1)
 	} else {
-		stack.PushInt32(0)
+		stack.Push(0)
 	}
 	return nil
 }
@@ -76,9 +100,9 @@ func Class_isAssignableFrom(vm ir.VM) error {
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	cls := (*stack.GetVarRef(1).UserData()).(ir.Class)
 	if this.IsAssignableFrom(cls) {
-		stack.PushInt32(1)
+		stack.Push(1)
 	} else {
-		stack.PushInt32(0)
+		stack.Push(0)
 	}
 	return nil
 }
@@ -88,9 +112,9 @@ func Class_isInterface(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	if this.IsInterface() {
-		stack.PushInt32(1)
+		stack.Push(1)
 	} else {
-		stack.PushInt32(0)
+		stack.Push(0)
 	}
 	return nil
 }
@@ -100,9 +124,9 @@ func Class_isArray(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	if this.ArrayDim() > 0 {
-		stack.PushInt32(1)
+		stack.Push(1)
 	} else {
-		stack.PushInt32(0)
+		stack.Push(0)
 	}
 	return nil
 }
@@ -113,9 +137,9 @@ func Class_isPrimitive(vm ir.VM) error {
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	dc := this.Desc()
 	if dc.ArrDim <= 0 && !dc.EndType.IsRef() {
-		stack.PushInt32(1)
+		stack.Push(1)
 	} else {
-		stack.PushInt32(0)
+		stack.Push(0)
 	}
 	return nil
 }
@@ -176,6 +200,9 @@ func Class_setSigners(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -184,6 +211,9 @@ func Class_getEnclosingMethod0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -192,6 +222,9 @@ func Class_getDeclaringClass0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -200,6 +233,9 @@ func Class_getSimpleBinaryName0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -208,6 +244,9 @@ func Class_getProtectionDomain0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -249,6 +288,9 @@ func Class_getGenericSignature0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -257,6 +299,9 @@ func Class_getRawAnnotations(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -265,14 +310,17 @@ func Class_getRawTypeAnnotations(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
 // native ConstantPool getConstantPool();
 func Class_getConstantPool(vm ir.VM) error {
 	stack := vm.GetStack()
-	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
+	this := (*stack.GetVarRef(0).UserData()).(*jvm.Class)
+	stack.PushRef(this.GetConstantPool(vm.(*jvm.VM)))
 	return nil
 }
 
@@ -281,6 +329,9 @@ func Class_getDeclaredFields0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -288,7 +339,18 @@ func Class_getDeclaredFields0(vm ir.VM) error {
 func Class_getDeclaredMethods0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
+	publicOnly := stack.GetVar(1) != 0
+	methods := make([]unsafe.Pointer, 0)
+	for method := range this.GetMethods() {
+		if !method.IsConstructor() && method.Name() != "<clinit>" {
+			if !publicOnly || method.IsPublic() {
+				methods = append(methods, vm.RefToPtr(method.AsRef(vm)))
+			}
+		}
+	}
+	methodsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_JavaLangReflectMethod(), (int32)(len(methods)))
+	copy(methodsRef.GetRefArr(), methods)
+	stack.PushRef(methodsRef)
 	return nil
 }
 
@@ -296,7 +358,18 @@ func Class_getDeclaredMethods0(vm ir.VM) error {
 func Class_getDeclaredConstructors0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
+	publicOnly := stack.GetVar(1) != 0
+	constructors := make([]unsafe.Pointer, 0)
+	for method := range this.GetMethods() {
+		if method.IsConstructor() {
+			if !publicOnly || method.IsPublic() {
+				constructors = append(constructors, vm.RefToPtr(method.AsRef(vm)))
+			}
+		}
+	}
+	constructorsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_JavaLangReflectMethod(), (int32)(len(constructors)))
+	copy(constructorsRef.GetRefArr(), constructors)
+	stack.PushRef(constructorsRef)
 	return nil
 }
 
@@ -305,6 +378,9 @@ func Class_getDeclaredClasses0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -313,6 +389,9 @@ func Class_getRecordComponents0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -321,6 +400,9 @@ func Class_isRecord0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -338,6 +420,9 @@ func Class_getNestHost0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -346,6 +431,9 @@ func Class_getNestMembers0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -354,6 +442,10 @@ func Class_isHidden(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	// if true {
+	// 	panic("not implemented")
+	// }
+	stack.Push(0)
 	return nil
 }
 
@@ -362,6 +454,9 @@ func Class_getPermittedSubclasses0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -370,6 +465,9 @@ func Class_getClassFileVersion0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }
 
@@ -378,5 +476,8 @@ func Class_getClassAccessFlagsRaw0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
 	_ = this
+	if true {
+		panic("not implemented")
+	}
 	return nil
 }

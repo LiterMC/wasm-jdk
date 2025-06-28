@@ -305,6 +305,15 @@ func (s *Stack) IsRef() bool {
 func (s *Stack) GoString() string {
 	var sb strings.Builder
 	sb.WriteString("Stack {\n")
+	sb.WriteString("  Method: ")
+	if s.method == nil {
+		sb.WriteString("nil")
+	} else {
+		sb.WriteString(s.class.Name())
+		sb.WriteByte('.')
+		sb.WriteString(s.method.Name())
+	}
+	sb.WriteByte('\n')
 	sb.WriteString("  Vars:\n")
 	for i, v := range s.vars {
 		fmt.Fprintf(&sb, "    0x%02x: ", i)

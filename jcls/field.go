@@ -52,6 +52,10 @@ func (f *Field) Modifiers() int32 {
 	return (int32)(f.AccessFlags)
 }
 
+func (f *Field) IsPublic() bool {
+	return f.AccessFlags.Has(AccPublic)
+}
+
 func (f *Field) IsStatic() bool {
 	return f.AccessFlags.Has(AccStatic)
 }

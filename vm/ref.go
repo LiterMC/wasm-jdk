@@ -271,3 +271,17 @@ func (r *Ref) Wait0(vm *VM, dur time.Duration) error {
 	r.lock.Lock()
 	return nil
 }
+
+func (r *Ref) Clone(vm ir.VM) ir.Ref {
+	var cloned *Ref
+	if r.arrayLen > 0 {
+		cloned = newRefArray(r.class, r.arrayLen)
+	} else {
+		cloned = newObjectRef(r.class)
+	}
+	cloned.userData = r.userData
+	rData := reflect.NewAt(r.class.refType, r.data)
+	clonedData := reflect.NewAt(r.class.refType, cloned.data)
+	clonedData.Elem().Set(rData.Elem())
+	return cloned
+}

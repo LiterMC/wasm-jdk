@@ -45,6 +45,7 @@ func ClassLoader_defineClass2(vm ir.VM) error {
 //     */
 //
 // static native Class<?> defineClass0(
+//
 //	ClassLoader loader, Class<?> lookup, String name, byte[] b, int off, int len,
 //	ProtectionDomain pd, boolean initialize, int flags, Object classData);
 func ClassLoader_defineClass0(vm ir.VM) error {
@@ -67,9 +68,8 @@ func ClassLoader_findBootstrapClass(vm ir.VM) error {
 // private final native Class<?> findLoadedClass0(String name);
 func ClassLoader_findLoadedClass0(vm ir.VM) error {
 	stack := vm.GetStack()
-	loaderRef := stack.GetVarRef(0)
+	loader := (*stack.GetVarRef(0).UserData()).(ir.ClassLoader)
 	name := vm.GetString(stack.GetVarRef(1))
-	loader := (*loaderRef.UserData()).(ir.ClassLoader)
 	class := loader.LoadedClass(name)
 	if class == nil {
 		stack.PushRef(nil)

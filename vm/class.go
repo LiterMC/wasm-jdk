@@ -60,29 +60,27 @@ func LoadClass(cls *jcls.Class, loader ir.ClassLoader) *Class {
 
 	statics := make([]reflect.StructField, 0, len(c.Class.Fields))
 	fields := make([]reflect.StructField, 1, len(c.Class.Fields)+1)
-	if c.super == nil {
-		fields[0] = reflect.StructField{
-			Name: "S",
-			Type: reflect.TypeOf(struct{}{}),
+	{
+		var reflectSuper reflect.Type
+		if c.super == nil {
+			reflectSuper = reflect.TypeOf(struct{}{})
+		} else {
+			reflectSuper = c.super.Reflect()
 		}
-	} else {
 		fields[0] = reflect.StructField{
 			Name: "S",
-			Type: c.super.Reflect(),
+			Type: reflectSuper,
 		}
 	}
 	for _, f := range c.Class.Fields {
-		fName := "F" + j2goName(f.Name())
+		rf := reflect.StructField{
+			Name: "F" + j2goName(f.Name()),
+			Type: f.Desc.AsReflect(),
+		}
 		if f.IsStatic() {
-			statics = append(statics, reflect.StructField{
-				Name: fName,
-				Type: f.Desc.AsReflect(),
-			})
+			statics = append(statics, rf)
 		} else {
-			fields = append(fields, reflect.StructField{
-				Name: fName,
-				Type: f.Desc.AsReflect(),
-			})
+			fields = append(fields, rf)
 		}
 	}
 	staticType := reflect.StructOf(statics)
@@ -312,7 +310,7 @@ func (c *Class) GetAndPushConst(vm ir.VM, i uint16, s ir.Stack) error {
 	case *jcls.ConstantString:
 		s.PushRef(vm.GetStringInternOrNew(v.Utf8))
 	case *jcls.ConstantClass:
-		class, err := vm.(*VM).getClassFromDescString(v.Name)
+		class, err := vm.(*VM).GetClassByName(v.Name)
 		if err != nil {
 			return err
 		}
@@ -343,13 +341,19 @@ func (c *Class) GetField(vm ir.VM, i uint16) ir.Field {
 }
 
 func (c *Class) GetFieldByName(name string) ir.Field {
-	for i := range len(c.Fields) {
-		f := &c.Fields[i]
-		if f.Name() == name {
-			return f
+	x := c
+	for {
+		for i := range len(x.Fields) {
+			f := &x.Fields[i]
+			if f.Name() == name {
+				return f
+			}
 		}
+		if x.super == nil {
+			return nil
+		}
+		x = x.super.(*Class)
 	}
-	return nil
 }
 
 func (c *Class) ForEachMethod(yield func(ir.Method) bool) {
@@ -371,25 +375,25 @@ func (c *Class) GetMethod(vm ir.VM, i uint16) ir.Method {
 	return c.loadedMethods[i](vm)
 }
 
-func (c *Class) GetMethodByName(vm ir.VM, location string) ir.Method {
+func (c *Class) GetMethodByName(location string) ir.Method {
 	i := strings.IndexByte(location, desc.Method)
 	if i < 0 {
 		panic("method name missing descriptor")
 	}
-	return c.GetMethodByNameAndType(vm, location[:i], location[i:])
+	return c.GetMethodByNameAndType(location[:i], location[i:])
 }
 
-func (c *Class) GetMethodByNameAndType(vm ir.VM, name, typ string) ir.Method {
+func (c *Class) GetMethodByNameAndType(name, typ string) ir.Method {
 	dc, err := desc.ParseMethodDesc(typ)
 	if err != nil {
 		panic(err)
 	}
-	return c.GetMethodByDesc(vm, name, dc)
+	return c.GetMethodByDesc(name, dc)
 }
 
-func (c *Class) GetMethodByDesc(vm ir.VM, name string, dc *desc.MethodDesc) ir.Method {
+func (c *Class) GetMethodByDesc(name string, dc *desc.MethodDesc) ir.Method {
 	if c.arrayDim > 0 {
-		return vm.(*VM).getArrayMethod(c, name)
+		return getArrayMethod(c, name)
 	}
 	x := c
 	for {

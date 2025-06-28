@@ -26,10 +26,10 @@ func (vm *VM) getArrayMethodByName(ref *jcls.ConstantRef) *Method {
 	if err != nil {
 		panic(err)
 	}
-	return vm.getArrayMethod(arrCls, ref.NameAndType.Name)
+	return getArrayMethod(arrCls, ref.NameAndType.Name)
 }
 
-func (*VM) getArrayMethod(cls *Class, name string) *Method {
+func getArrayMethod(cls *Class, name string) *Method {
 	arrDesc := cls.Desc()
 	elemTyp := arrDesc.ElemType()
 	switch name {

@@ -28,6 +28,8 @@ type Ref interface {
 	Notify(VM) error
 	NotifyAll(VM) error
 	Wait(VM, int64) error
+
+	Clone(VM) Ref
 }
 
 type Class interface {
@@ -51,8 +53,8 @@ type Class interface {
 	GetFieldByName(string) Field
 	GetMethods() iter.Seq[Method]
 	GetMethod(VM, uint16) Method
-	GetMethodByName(VM, string) Method
-	GetMethodByNameAndType(vm VM, name, typ string) Method
+	GetMethodByName(string) Method
+	GetMethodByNameAndType(name, typ string) Method
 }
 
 type Field interface {
@@ -60,6 +62,7 @@ type Field interface {
 	Offset() int64
 	GetDeclaringClass() Class
 	Modifiers() int32
+	IsPublic() bool
 	IsStatic() bool
 
 	AsRef(VM) Ref
@@ -73,7 +76,9 @@ type Method interface {
 	Desc() *desc.MethodDesc
 	GetDeclaringClass() Class
 	Modifiers() int32
+	IsPublic() bool
 	IsStatic() bool
+	IsConstructor() bool
 
 	AsRef(VM) Ref
 }

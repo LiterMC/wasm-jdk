@@ -1,9 +1,11 @@
 package vm
 
 import (
+	"fmt"
 	"unsafe"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/jcls"
 )
@@ -65,7 +67,7 @@ var (
 	}
 )
 
-func (vm *VM) getClassFromDescString(name string) (*Class, error) {
+func (vm *VM) GetClassByName(name string) (ir.Class, error) {
 	var dc *desc.Desc
 	if name[0] == '[' {
 		var err error
@@ -86,10 +88,12 @@ func (vm *VM) GetClassFromDesc(dc *desc.Desc) (*Class, error) {
 	switch dc.EndType {
 	case desc.Class:
 		if cls, err := vm.GetClassLoader().LoadClass(dc.Class); err != nil {
-			return nil, err
+			return nil, &errs.ClassNotFoundException{Class: dc.Class, Cause: err}
 		} else {
 			elem = cls.(*Class)
 		}
+	case desc.Void:
+		elem = VoidClass
 	case desc.Boolean:
 		elem = BooleanClass
 	case desc.Byte:
@@ -107,7 +111,7 @@ func (vm *VM) GetClassFromDesc(dc *desc.Desc) (*Class, error) {
 	case desc.Double:
 		elem = DoubleClass
 	default:
-		panic("unexpected EndType")
+		panic(fmt.Errorf("unexpected EndType: %c", dc.EndType))
 	}
 	if dc.ArrDim == 0 {
 		return elem, nil
@@ -115,11 +119,73 @@ func (vm *VM) GetClassFromDesc(dc *desc.Desc) (*Class, error) {
 	return elem.NewArrayClass(dc.ArrDim), nil
 }
 
+func (vm *VM) GetLoadedClassByName(name string) (ir.Class, error) {
+	var dc *desc.Desc
+	if name[0] == '[' {
+		var err error
+		if dc, err = desc.ParseDesc(name); err != nil {
+			return nil, err
+		}
+	} else {
+		dc = &desc.Desc{
+			EndType: desc.Class,
+			Class:   name,
+		}
+	}
+	class := vm.GetLoadedClassFromDesc(dc)
+	if class == nil {
+		return nil, nil
+	}
+	return class, nil
+}
+
+func (vm *VM) GetLoadedClassFromDesc(dc *desc.Desc) *Class {
+	var elem *Class
+	switch dc.EndType {
+	case desc.Class:
+		cls := vm.GetClassLoader().LoadedClass(dc.Class)
+		if cls == nil {
+			return nil
+		}
+		elem = cls.(*Class)
+	case desc.Void:
+		elem = VoidClass
+	case desc.Boolean:
+		elem = BooleanClass
+	case desc.Byte:
+		elem = ByteClass
+	case desc.Char:
+		elem = CharClass
+	case desc.Short:
+		elem = ShortClass
+	case desc.Int:
+		elem = IntClass
+	case desc.Float:
+		elem = FloatClass
+	case desc.Long:
+		elem = LongClass
+	case desc.Double:
+		elem = DoubleClass
+	default:
+		panic(fmt.Errorf("unexpected EndType: %c", dc.EndType))
+	}
+	if dc.ArrDim == 0 {
+		return elem
+	}
+	return elem.NewArrayClass(dc.ArrDim)
+}
+
+func (c *Class) GetConstantPool(vm *VM) ir.Ref {
+	ref := vm.New(vm.jdkInternalReflectConstantPool).(*Ref)
+	*ref.UserData() = &c.ConstPool
+	return ref
+}
+
 func (c *Class) AsRef(vm0 ir.VM) ir.Ref {
 	vm := vm0.(*VM)
 	ref0 := c.classRef.Load()
 	if ref0 == nil {
-		ref := vm0.New(vm.javaLangClass).(*Ref)
+		ref := vm.New(vm.javaLangClass).(*Ref)
 		classLoaderPtr := (**Ref)(vm.javaLangClass_classLoader.GetPointer(ref))
 		componentTypePtr := (**Ref)(vm.javaLangClass_componentType.GetPointer(ref))
 		*classLoaderPtr = nil // TODO
@@ -147,9 +213,9 @@ func (f *Field) AsRef(vm0 ir.VM) ir.Ref {
 	vm := vm0.(*VM)
 	ref0 := f.fieldRef.Load()
 	if ref0 == nil {
-		ref := vm0.New(vm.javaLangReflectField).(*Ref)
+		ref := vm.New(vm.javaLangReflectField).(*Ref)
 		*ref.UserData() = f
-		stack := vm0.GetStack()
+		stack := vm.GetStack()
 		stack.PushRef(ref)
 		stack.PushRef(f.class.AsRef(vm0))
 		stack.PushRef(vm.GetStringInternOrNew(f.Name()))
@@ -157,8 +223,9 @@ func (f *Field) AsRef(vm0 ir.VM) ir.Ref {
 		stack.PushInt32(f.Modifiers())
 		stack.Push(0)
 		stack.PushInt32((int32)(f.typ.Desc().Type().Slot()))
-		stack.PushRef(vm0.NewString(f.typ.Desc().String()))
+		stack.PushRef(vm.NewString(f.typ.Desc().String()))
 		stack.PushRef(nil)
+		vm.Invoke(vm.javaLangReflectField_init)
 		if err := vm.RunStack(); err != nil {
 			panic(err)
 		}
@@ -188,20 +255,52 @@ func (m *Method) AsRef(vm0 ir.VM) ir.Ref {
 			panic(err)
 		}
 
-		ref := vm0.New(vm.javaLangReflectMethod).(*Ref)
+		isConstructor := m.IsConstructor()
+
+		var ref *Ref
+		if isConstructor {
+			ref = vm0.New(vm.javaLangReflectConstructor).(*Ref)
+		} else {
+			ref = vm0.New(vm.javaLangReflectMethod).(*Ref)
+		}
 		*ref.UserData() = m
+
+		exceptionsRef := vm0.NewObjectArray(vm.javaLangClass, (int32)(len(m.Exceptions)))
+		exceptions := exceptionsRef.GetRefArr()
+		for i, name := range m.Exceptions {
+			cls, err := vm.GetClassLoader().LoadClass(name)
+			if err != nil {
+				panic(err)
+			}
+			exceptions[i] = vm.RefToPtr(cls.AsRef(vm))
+		}
+
 		stack := vm0.GetStack()
 		stack.PushRef(ref)
-		stack.PushRef(m.class.AsRef(vm0))
-		stack.PushRef(vm.GetStringInternOrNew(m.Name()))
-		stack.PushRef(inClsRef)
-		stack.PushRef(outCls.AsRef(vm0))
-		stack.PushInt32(m.Modifiers())
-		stack.PushInt32(1)
-		stack.PushRef(vm0.NewString(dc.String()))
-		stack.PushRef(nil)
-		stack.PushRef(nil)
-		stack.PushRef(nil)
+		if isConstructor {
+			stack.PushRef(m.class.AsRef(vm0))
+			stack.PushRef(inClsRef)
+			stack.PushRef(exceptionsRef)
+			stack.PushInt32(m.Modifiers())
+			stack.PushInt32(1)
+			stack.PushRef(vm0.NewString(dc.String()))
+			stack.PushRef(nil)
+			stack.PushRef(nil)
+			vm.Invoke(vm.javaLangReflectConstructor_init)
+		} else {
+			stack.PushRef(m.class.AsRef(vm0))
+			stack.PushRef(vm.GetStringInternOrNew(m.Name()))
+			stack.PushRef(inClsRef)
+			stack.PushRef(outCls.AsRef(vm0))
+			stack.PushRef(exceptionsRef)
+			stack.PushInt32(m.Modifiers())
+			stack.PushInt32(1)
+			stack.PushRef(vm0.NewString(dc.String()))
+			stack.PushRef(nil)
+			stack.PushRef(nil)
+			stack.PushRef(nil)
+			vm.Invoke(vm.javaLangReflectMethod_init)
+		}
 		if err := vm.RunStack(); err != nil {
 			panic(err)
 		}
@@ -213,7 +312,28 @@ func (m *Method) AsRef(vm0 ir.VM) ir.Ref {
 }
 
 func (vm *VM) NewMethodHandle(method *jcls.ConstantMethodHandle) ir.Ref {
-	ref := vm.New(vm.javaLangInvokeMethodHandle)
+	class, err := vm.GetClassByName(method.Ref.Class.Name)
+	if err != nil {
+		panic(err)
+	}
+	method0 := class.GetMethodByNameAndType(method.Ref.NameAndType.Name, method.Ref.NameAndType.Desc)
+	methodRef := method0.AsRef(vm)
+
+	memberNameRef := vm.New(vm.javaLangInvokeMemberName)
+	vm.stack.PushRef(memberNameRef)
+	vm.stack.PushRef(methodRef)
+	vm.Invoke(vm.javaLangInvokeMemberName_init)
+	if err := vm.RunStack(); err != nil {
+		panic(err)
+	}
+
+	vm.stack.PushRef(memberNameRef)
+	vm.InvokeStatic(vm.javaLangInvokeDirectMethodHandle_make)
+	if err := vm.RunStack(); err != nil {
+		panic(err)
+	}
+	ref := vm.stack.PopRef()
+
 	return ref
 }
 

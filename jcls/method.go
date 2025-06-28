@@ -14,6 +14,7 @@ type Method struct {
 	desc        *desc.MethodDesc
 	Attrs       []Attribute
 	Code        *AttrCode
+	Exceptions  []string
 }
 
 func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
@@ -43,8 +44,11 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 			return nil, err
 		}
 		m.Attrs[i] = a
-		if code, ok := a.(*AttrCode); ok {
-			m.Code = code
+		switch a := a.(type) {
+		case *AttrCode:
+			m.Code = a
+		case *AttrExceptions:
+			m.Exceptions = a.Exceptions
 		}
 	}
 	return m, nil
@@ -71,8 +75,16 @@ func (m *Method) Modifiers() int32 {
 	return (int32)(m.AccessFlags)
 }
 
+func (m *Method) IsPublic() bool {
+	return m.AccessFlags.Has(AccPublic)
+}
+
 func (m *Method) IsStatic() bool {
 	return m.AccessFlags.Has(AccStatic)
+}
+
+func (m *Method) IsConstructor() bool {
+	return !m.IsStatic() && m.name == "<init>"
 }
 
 func (m *Method) String() string {

@@ -1,8 +1,10 @@
 package java_lang
 
 import (
+	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
 	"github.com/LiterMC/wasm-jdk/native"
+	"github.com/LiterMC/wasm-jdk/native/helper"
 )
 
 func init() {
@@ -32,8 +34,15 @@ func Object_hashCode(vm ir.VM) error {
 
 // protected native Object clone() throws CloneNotSupportedException;
 func Object_clone(vm ir.VM) error {
-	panic("CloneNotSupportedException")
-	// return nil
+	stack := vm.GetStack()
+	this := stack.GetVarRef(0)
+	class := this.Class()
+	if class.ArrayDim() <= 0 && !vm.(helper.VMHelper).JClass_JavaLangCloneable().IsAssignableFrom(class) {
+		return errs.CloneNotSupportedException
+	}
+	cloned := this.Clone(vm)
+	stack.PushRef(cloned)
+	return nil
 }
 
 // public final native void notify();

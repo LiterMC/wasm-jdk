@@ -136,7 +136,7 @@ func (a *AttrCode) GetLine(pc uint16) int {
 	}
 	e := a.LineNumbers[ind]
 	if e.StartPc > pc {
-		e = a.LineNumbers[ind - 1]
+		e = a.LineNumbers[ind-1]
 	}
 	return (int)(e.LineNum)
 }

@@ -30,11 +30,14 @@ type VM interface {
 	GetStack() Stack
 	Running() bool
 	Step() error
+	RunStack() error
 
 	New(Class) Ref
 	NewString(string) Ref
+	// Alloc an array with the descriptor as the array's type
 	NewArray(*desc.Desc, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
+	// Alloc an array with the class as the array's element's type
 	NewObjectArray(Class, int32) Ref
 	NewObjectMultiDimArray(Class, []int32) Ref
 
@@ -50,7 +53,9 @@ type VM interface {
 
 	GetDesc(uint16) *desc.Desc
 	GetClassByIndex(uint16) (Class, error)
+	GetClassByName(string) (Class, error)
 	GetClass(Ref) Class
+	GetLoadedClassByName(string) (Class, error)
 
 	GetBootLoader() ClassLoader
 	GetClassLoader() ClassLoader

@@ -25,7 +25,7 @@ func ForEachProp(cb func(k string, v string) bool) {
 }
 
 func GetPropKVArray() []string {
-	arr := make([]string, 0, len(properties) * 2)
+	arr := make([]string, 0, len(properties)*2)
 	for k, v := range properties {
 		arr = append(arr, k, v)
 	}

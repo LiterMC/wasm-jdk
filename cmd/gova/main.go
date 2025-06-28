@@ -44,7 +44,7 @@ func main() {
 
 	fmt.Println("Loading native library ...")
 	misc.InitUnsafeConstants(vm)
-	native.LoadDefaultNatives(vm, cl)
+	native.LoadDefaultNatives(vm)
 	vm.SetupEntryMethod()
 
 	{

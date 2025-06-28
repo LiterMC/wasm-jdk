@@ -152,7 +152,7 @@ func (vm *VM) InvokeVirtual(method ir.Method) {
 	}
 	this := prev.PopRef().(*Ref)
 	newStack.SetVarRef(0, this)
-	m2 := this.class.GetMethodByDesc(vm, method.Name(), method.Desc()).(*Method)
+	m2 := this.class.GetMethodByDesc(method.Name(), method.Desc()).(*Method)
 	newStack.class = m2.class
 	newStack.method = m2
 	vm.stack = newStack
@@ -176,7 +176,8 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 	if err != nil {
 		return err
 	}
-	bootMethod0 := bootCls.GetMethodByNameAndType(vm, bootMe.Ref.NameAndType.Name, bootMe.Ref.NameAndType.Desc)
+	bootCls.(*Class).InitBeforeUse(vm)
+	bootMethod0 := bootCls.GetMethodByNameAndType(bootMe.Ref.NameAndType.Name, bootMe.Ref.NameAndType.Desc)
 	if bootMethod0 == nil {
 		panic("bootstrap method " + bootMe.String() + " is nil")
 	}
@@ -185,23 +186,21 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 		defer fmt.Println("   post invoke dynamic " + bootMe.String())
 	}
 	bootMethod := bootMethod0.(*Method)
-	prev := vm.stack
-	vm.stack = &Stack{
-		prev:   prev,
-		class:  bootCls.(*Class),
-		method: bootMethod,
-	}
-	vm.nextPc = bootMethod.Code.Code
 
 	hasVarargs := bootMethod.AccessFlags.Has(jcls.AccVarargs)
 	inputs := bootMethod.Desc().Inputs
 	inputsLen := len(inputs)
-	var varargs []unsafe.Pointer
+	var (
+		args    = make([]unsafe.Pointer, inputsLen)
+		varargs []unsafe.Pointer
+	)
 
-	vm.stack.SetVarRef(0, vm.NewLookup())
-	vm.stack.SetVarRef(1, vm.GetStringInternOrNew(info.info.NameAndType.Name))
-	vm.stack.SetVarRef(2, vm.NewMethodType(info.info.NameAndType.Desc))
+	args[0] = vm.RefToPtr(vm.NewLookup())
+	args[1] = vm.RefToPtr(vm.GetStringInternOrNew(info.info.NameAndType.Name))
+	args[2] = vm.RefToPtr(vm.NewMethodType(info.info.NameAndType.Desc))
+	fmt.Println("info.bootstrap.Args:", info.bootstrap.Args, hasVarargs)
 	for i, arg := range info.bootstrap.Args {
+		fmt.Printf("arg: %d %#v\n", i, arg)
 		var ref ir.Ref
 		switch arg := arg.(type) {
 		case *jcls.ConstantString:
@@ -216,16 +215,31 @@ func (vm *VM) InvokeDynamic(ind uint16) error {
 		if hasVarargs && i+4 >= inputsLen {
 			varargs = append(varargs, vm.RefToPtr(ref))
 		} else {
-			vm.stack.SetVarRef((uint16)(3+i), ref)
+			args[i+3] = vm.RefToPtr(ref)
 		}
 	}
+
+	fmt.Println("invoke dynamic prepare done: ", vm.stack.GoString())
 	if hasVarargs {
 		varargsRef := vm.NewArray(inputs[inputsLen-1], (int32)(len(varargs)))
 		copy(varargsRef.GetRefArr(), varargs)
 		vm.stack.SetVarRef((uint16)(inputsLen-1), varargsRef)
 	}
 
-	return vm.RunStack()
+	prev := vm.stack
+	prev.pc = vm.nextPc
+	vm.stack = &Stack{
+		prev:   prev,
+		class:  bootCls.(*Class),
+		method: bootMethod,
+	}
+	vm.nextPc = bootMethod.Code.Code
+
+	for i, v := range args {
+		vm.stack.SetVarPointer((uint16)(i), v)
+	}
+
+	return nil
 }
 
 // RunStack steps the VM until the current stack pops
