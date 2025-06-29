@@ -48,6 +48,7 @@ type Class interface {
 	IsInstance(Ref) bool
 
 	GetAndPushConst(VM, uint16, Stack) error
+	GetAttr(string) Attribute
 	GetFields() iter.Seq[Field]
 	GetField(VM, uint16) Field
 	GetFieldByName(string) Field
@@ -69,6 +70,10 @@ type Field interface {
 	GetPointer(Ref) unsafe.Pointer
 	GetAndPush(Stack) error
 	PopAndSet(Stack) error
+}
+
+type Attribute interface {
+	Name() string
 }
 
 type Method interface {

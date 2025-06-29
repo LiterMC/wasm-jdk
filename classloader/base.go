@@ -23,6 +23,10 @@ func WrapAsSyncedClassLoader(loader BasicClassLoader) ir.ClassLoader {
 	}
 }
 
+func (l *BasicSyncedClassLoader) DefineClass(class ir.Class) {
+	l.loaded.Store(class.Name(), func() (ir.Class, error) { return class, nil })
+}
+
 func (l *BasicSyncedClassLoader) LoadClass(name string) (ir.Class, error) {
 	loader, ok := l.loaded.Load(name)
 	if !ok {

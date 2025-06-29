@@ -11,14 +11,14 @@ type ResolvedMethodNameData struct {
 
 type MemberName struct {
 	// private Class<?> clazz;       // class in which the member is defined
+	Clazz *jvm.Ref
 	// private String   name;        // may be null if not yet materialized
+	Name *jvm.Ref
 	// private Object   type;        // may be null if not yet materialized
+	Type *jvm.Ref
 	// private int      flags;       // modifier bits; see reflect.Modifier
+	Flags int32
 	// private ResolvedMethodName method;    // cached resolved method information
-	Clazz  *jvm.Ref
-	Name   *jvm.Ref
-	Type   *jvm.Ref
-	Flags  int32
 	Method *jvm.Ref
 }
 

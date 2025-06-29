@@ -5,6 +5,9 @@ import (
 )
 
 type VMHelper interface {
-	JClass_JavaLangCloneable() ir.Class
-	JClass_JavaLangReflectMethod() ir.Class
+	JClass_javaLangCloneable() ir.Class
+	JClass_javaLangReflectMethod() ir.Class
+	JField_javaLangClass_classData() ir.Field
+	JField_javaLangReflectMethod_clazz() ir.Field
+	JField_javaLangReflectMethod_modifiers() ir.Field
 }

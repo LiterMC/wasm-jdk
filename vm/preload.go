@@ -16,6 +16,7 @@ type preloadClasses struct {
 	javaLangString_value ir.Field
 
 	javaLangClass               *Class
+	javaLangClass_classData     ir.Field
 	javaLangClass_classLoader   ir.Field
 	javaLangClass_componentType ir.Field
 
@@ -41,8 +42,10 @@ type preloadClasses struct {
 	javaLangReflectField      *Class
 	javaLangReflectField_init ir.Method
 
-	javaLangReflectMethod      *Class
-	javaLangReflectMethod_init ir.Method
+	javaLangReflectMethod           *Class
+	javaLangReflectMethod_init      ir.Method
+	javaLangReflectMethod_clazz     ir.Field
+	javaLangReflectMethod_modifiers ir.Field
 
 	javaLangInvokeMethodHandlesLookup              *Class
 	javaLangInvokeMethodHandlesLookup_lookupClass  ir.Field
@@ -83,6 +86,7 @@ func (p *preloadClasses) load(vm *VM) {
 	if p.javaLangClass, err = vm.loadClass("java/lang/Class"); err != nil {
 		panic(err)
 	}
+	p.javaLangClass_classData = assertNotNil(p.javaLangClass.GetFieldByName("classData"))
 	p.javaLangClass_classLoader = assertNotNil(p.javaLangClass.GetFieldByName("classLoader"))
 	p.javaLangClass_componentType = assertNotNil(p.javaLangClass.GetFieldByName("componentType"))
 
@@ -127,6 +131,8 @@ func (p *preloadClasses) load(vm *VM) {
 		panic(err)
 	}
 	p.javaLangReflectMethod_init = assertNotNil(p.javaLangReflectMethod.GetMethodByNameAndType("<init>", "(Ljava/lang/Class;Ljava/lang/String;[Ljava/lang/Class;Ljava/lang/Class;[Ljava/lang/Class;IILjava/lang/String;[B[B[B)V"))
+	p.javaLangReflectMethod_clazz = assertNotNil(p.javaLangReflectMethod.GetFieldByName("clazz"))
+	p.javaLangReflectMethod_modifiers = assertNotNil(p.javaLangReflectMethod.GetFieldByName("modifiers"))
 
 	if p.javaLangInvokeMethodHandlesLookup, err = vm.loadClass("java/lang/invoke/MethodHandles$Lookup"); err != nil {
 		panic(err)
@@ -155,17 +161,30 @@ func (p *preloadClasses) load(vm *VM) {
 	}
 }
 
-func assertNotNil[T any](v T) T {
-	if (any)(v) == nil {
+func assertNotNil[T comparable](v T) T {
+	var zero T
+	if v == zero {
 		panic("unexpected nil")
 	}
 	return v
 }
 
-func (p *preloadClasses) JClass_JavaLangCloneable() ir.Class {
+func (p *preloadClasses) JClass_javaLangCloneable() ir.Class {
 	return p.javaLangCloneable
 }
 
-func (p *preloadClasses) JClass_JavaLangReflectMethod() ir.Class {
+func (p *preloadClasses) JClass_javaLangReflectMethod() ir.Class {
 	return p.javaLangReflectMethod
+}
+
+func (p *preloadClasses) JField_javaLangClass_classData() ir.Field {
+	return p.javaLangClass_classData
+}
+
+func (p *preloadClasses) JField_javaLangReflectMethod_clazz() ir.Field {
+	return p.javaLangReflectMethod_clazz
+}
+
+func (p *preloadClasses) JField_javaLangReflectMethod_modifiers() ir.Field {
+	return p.javaLangReflectMethod_modifiers
 }

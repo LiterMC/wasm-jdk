@@ -6,13 +6,14 @@ import (
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/ir"
 )
 
 type Method struct {
 	AccessFlags AccessFlag
 	name        string
 	desc        *desc.MethodDesc
-	Attrs       []Attribute
+	Attrs       []ir.Attribute
 	Code        *AttrCode
 	Exceptions  []string
 }
@@ -37,9 +38,9 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	m.Attrs = make([]Attribute, n)
+	m.Attrs = make([]ir.Attribute, n)
 	for i := range n {
-		var a Attribute
+		var a ir.Attribute
 		if a, err = ParseAttr(r, consts); err != nil {
 			return nil, err
 		}
@@ -54,7 +55,7 @@ func ParseMethod(r io.Reader, consts []ConstantInfo) (*Method, error) {
 	return m, nil
 }
 
-func NewMethod(flags AccessFlag, name string, descriptor *desc.MethodDesc, attrs []Attribute) *Method {
+func NewMethod(flags AccessFlag, name string, descriptor *desc.MethodDesc, attrs []ir.Attribute) *Method {
 	m := new(Method)
 	m.AccessFlags = flags
 	m.name = name
@@ -101,7 +102,7 @@ func (m *Method) String() string {
 	return sb.String()
 }
 
-func (m *Method) GetAttr(name string) Attribute {
+func (m *Method) GetAttr(name string) ir.Attribute {
 	for _, a := range m.Attrs {
 		if a.Name() == name {
 			return a

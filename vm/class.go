@@ -264,6 +264,9 @@ func (c *Class) IsAssignableFrom(k ir.Class) bool {
 		}
 		return c.elem.IsAssignableFrom(kk.elem)
 	}
+	if c.Name() == "java/lang/Object" {
+		return true
+	}
 	if !c.IsInterface() {
 		if c.AccessFlags.Has(jcls.AccFinal) {
 			return false
@@ -337,6 +340,7 @@ func (c *Class) GetFields() iter.Seq[ir.Field] {
 }
 
 func (c *Class) GetField(vm ir.VM, i uint16) ir.Field {
+	c.InitBeforeUse(vm.(*VM))
 	return c.loadedFieldAccesors[i](vm)
 }
 
@@ -372,6 +376,7 @@ func (c *Class) GetMethods() iter.Seq[ir.Method] {
 }
 
 func (c *Class) GetMethod(vm ir.VM, i uint16) ir.Method {
+	c.InitBeforeUse(vm.(*VM))
 	return c.loadedMethods[i](vm)
 }
 
@@ -516,6 +521,7 @@ func (c *Class) loadMethodGetter(ind uint16) {
 		}
 	} else {
 		c.loadedMethods[ind] = OnceApply(func(vm ir.VM) *Method {
+			fmt.Println("loading method:", ind, ref)
 			return c.loadMethod(vm, ref)
 		})
 	}

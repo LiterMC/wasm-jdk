@@ -490,7 +490,7 @@ func (*ParserICmultianewarray) Op() ops.Op { return ops.Multianewarray }
 func (*ParserICmultianewarray) Parse(br *bytes.Reader) (ir.IC, error) {
 	var err error
 	ic := new(ir.ICmultianewarray)
-	if ic.Desc, err = readUint16(br); err != nil {
+	if ic.ArrClass, err = readUint16(br); err != nil {
 		return nil, err
 	}
 	if ic.Dimensions, err = br.ReadByte(); err != nil {

@@ -37,8 +37,11 @@ type VM interface {
 	// Alloc an array with the descriptor as the array's type
 	NewArray(*desc.Desc, int32) Ref
 	NewArrayMultiDim(*desc.Desc, []int32) Ref
+	// Alloc an array with the class as the array's type
+	NewArrayMultiDimWithClass(Class, []int32) Ref
 	// Alloc an array with the class as the array's element's type
 	NewObjectArray(Class, int32) Ref
+	// Alloc an array with the class as the array's element's type
 	NewObjectMultiDimArray(Class, []int32) Ref
 
 	RefToPtr(Ref) unsafe.Pointer

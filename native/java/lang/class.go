@@ -7,6 +7,7 @@ import (
 	"github.com/LiterMC/wasm-jdk/desc"
 	"github.com/LiterMC/wasm-jdk/errs"
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/jcls"
 	"github.com/LiterMC/wasm-jdk/native"
 	"github.com/LiterMC/wasm-jdk/native/helper"
 	jvm "github.com/LiterMC/wasm-jdk/vm"
@@ -210,10 +211,18 @@ func Class_setSigners(vm ir.VM) error {
 func Class_getEnclosingMethod0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
-	if true {
-		panic("not implemented")
+	attr := this.GetAttr("EnclosingMethod")
+	if attr == nil {
+		stack.PushRef(nil)
+		return nil
 	}
+	emAttr := attr.(*jcls.AttrEnclosingMethod)
+	enclosingInfoRef := vm.NewArray(desc.DescObjectArray, 3)
+	enclosingInfoArr := enclosingInfoRef.GetRefArr()
+	enclosingInfoArr[0] = vm.RefToPtr(vm.NewString(emAttr.Class.Name))
+	enclosingInfoArr[1] = vm.RefToPtr(vm.GetStringInternOrNew(emAttr.Method.Name))
+	enclosingInfoArr[2] = vm.RefToPtr(vm.GetStringInternOrNew(emAttr.Method.Desc))
+	stack.PushRef(enclosingInfoRef)
 	return nil
 }
 
@@ -221,10 +230,29 @@ func Class_getEnclosingMethod0(vm ir.VM) error {
 func Class_getDeclaringClass0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
-	if true {
-		panic("not implemented")
+	attr := this.GetAttr("InnerClasses")
+	if attr == nil {
+		stack.PushRef(nil)
+		return nil
 	}
+	thisName := this.Name()
+	icAttr := attr.(*jcls.AttrInnerClasses)
+	var record *jcls.InnerClassRecord
+	for _, rec := range icAttr.Classes {
+		if rec.Class.Name == thisName {
+			record = rec
+			break
+		}
+	}
+	if record == nil {
+		stack.PushRef(nil)
+		return nil
+	}
+	class, err := vm.GetClassByName(record.OuterClass.Name)
+	if err != nil {
+		return err
+	}
+	stack.PushRef(class.AsRef(vm))
 	return nil
 }
 
@@ -232,10 +260,25 @@ func Class_getDeclaringClass0(vm ir.VM) error {
 func Class_getSimpleBinaryName0(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := (*stack.GetVarRef(0).UserData()).(ir.Class)
-	_ = this
-	if true {
-		panic("not implemented")
+	attr := this.GetAttr("InnerClasses")
+	if attr == nil {
+		stack.PushRef(nil)
+		return nil
 	}
+	thisName := this.Name()
+	icAttr := attr.(*jcls.AttrInnerClasses)
+	var record *jcls.InnerClassRecord
+	for _, rec := range icAttr.Classes {
+		if rec.Class.Name == thisName {
+			record = rec
+			break
+		}
+	}
+	if record == nil {
+		stack.PushRef(nil)
+		return nil
+	}
+	stack.PushRef(vm.GetStringInternOrNew(record.Name))
 	return nil
 }
 
@@ -348,7 +391,7 @@ func Class_getDeclaredMethods0(vm ir.VM) error {
 			}
 		}
 	}
-	methodsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_JavaLangReflectMethod(), (int32)(len(methods)))
+	methodsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_javaLangReflectMethod(), (int32)(len(methods)))
 	copy(methodsRef.GetRefArr(), methods)
 	stack.PushRef(methodsRef)
 	return nil
@@ -367,7 +410,7 @@ func Class_getDeclaredConstructors0(vm ir.VM) error {
 			}
 		}
 	}
-	constructorsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_JavaLangReflectMethod(), (int32)(len(constructors)))
+	constructorsRef := vm.NewObjectArray(vm.(helper.VMHelper).JClass_javaLangReflectMethod(), (int32)(len(constructors)))
 	copy(constructorsRef.GetRefArr(), constructors)
 	stack.PushRef(constructorsRef)
 	return nil

@@ -6,13 +6,14 @@ import (
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/ir"
 )
 
 type Field struct {
 	AccessFlags AccessFlag
 	name        string
 	Desc        *desc.Desc
-	Attrs       []Attribute
+	Attrs       []ir.Attribute
 }
 
 func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
@@ -35,7 +36,7 @@ func ParseField(r io.Reader, consts []ConstantInfo) (*Field, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	f.Attrs = make([]Attribute, n)
+	f.Attrs = make([]ir.Attribute, n)
 	for i := range n {
 		if f.Attrs[i], err = ParseAttr(r, consts); err != nil {
 			return nil, err
@@ -75,7 +76,7 @@ func (f *Field) String() string {
 	return sb.String()
 }
 
-func (f *Field) GetAttr(name string) Attribute {
+func (f *Field) GetAttr(name string) ir.Attribute {
 	for _, a := range f.Attrs {
 		if a.Name() == name {
 			return a

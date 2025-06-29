@@ -307,6 +307,7 @@ func (ic *ICinvokeinterface) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
+	// TODO: use interface table instead
 	vm.InvokeVirtual(method)
 	return nil
 }
@@ -361,19 +362,23 @@ func (ic *ICinvokevirtual) Execute(vm VM) error {
 		return errs.IncompatibleClassChangeError
 	}
 	// TODO: access control
+	// TODO: use virtual method table
 	vm.InvokeVirtual(method)
 	return nil
 }
 
 type ICmultianewarray struct {
-	Desc       uint16
+	ArrClass   uint16
 	Dimensions byte
 }
 
 func (*ICmultianewarray) Op() ops.Op { return ops.Multianewarray }
 func (ic *ICmultianewarray) Execute(vm VM) error {
 	stack := vm.GetStack()
-	desc := vm.GetDesc(ic.Desc)
+	class, err := vm.GetClassByIndex(ic.ArrClass)
+	if err != nil {
+		return err
+	}
 	counts := make([]int32, ic.Dimensions)
 	for i := range ic.Dimensions {
 		count := stack.PopInt32()
@@ -382,7 +387,7 @@ func (ic *ICmultianewarray) Execute(vm VM) error {
 		}
 		counts[i] = count
 	}
-	arr := vm.NewArrayMultiDim(desc, counts)
+	arr := vm.NewArrayMultiDimWithClass(class, counts)
 	stack.PushRef(arr)
 	return nil
 }

@@ -32,7 +32,7 @@ type AttrCode struct {
 	MaxLocals   uint16
 	Code        *ir.ICNode
 	Exceptions  []ExceptionHandlers
-	Attrs       []Attribute
+	Attrs       []ir.Attribute
 	LineNumbers []*LineNumberEntry
 }
 
@@ -93,9 +93,9 @@ func (a *AttrCode) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 	if n, err = readUint16(r); err != nil {
 		return err
 	}
-	a.Attrs = make([]Attribute, 0, n)
+	a.Attrs = make([]ir.Attribute, 0, n)
 	for range n {
-		var at Attribute
+		var at ir.Attribute
 		if at, err = ParseAttr(r, consts); err != nil {
 			return err
 		}
@@ -197,13 +197,6 @@ type AttrInnerClasses struct {
 	Classes []*InnerClassRecord
 }
 
-type InnerClassRecord struct {
-	Class      *ConstantClass
-	OuterClass *ConstantClass
-	Name       string
-	Access     AccessFlag
-}
-
 func (*AttrInnerClasses) Name() string { return "InnerClasses" }
 func (a *AttrInnerClasses) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 	n, err := readUint16(r)
@@ -239,6 +232,17 @@ func (a *AttrInnerClasses) Parse(r *bytes.Buffer, consts []ConstantInfo) error {
 }
 func (a *AttrInnerClasses) String() string {
 	return fmt.Sprintf("%#v", a.Classes)
+}
+
+type InnerClassRecord struct {
+	Class      *ConstantClass
+	OuterClass *ConstantClass
+	Name       string
+	Access     AccessFlag
+}
+
+func (r *InnerClassRecord) String() string {
+	return fmt.Sprintf("%s > %s %s %s", r.OuterClass, r.Class, r.Name, r.Access)
 }
 
 type AttrEnclosingMethod struct {

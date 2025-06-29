@@ -3,14 +3,12 @@ package jcls
 import (
 	"bytes"
 	"io"
+
+	"github.com/LiterMC/wasm-jdk/ir"
 )
 
-type Attribute interface {
-	Name() string
-}
-
 type ParsableAttribute interface {
-	Attribute
+	ir.Attribute
 	Parse(r *bytes.Buffer, consts []ConstantInfo) error
 }
 
@@ -25,7 +23,7 @@ func RegisterAttr(newer func() ParsableAttribute) {
 	attributeFactories[name] = newer
 }
 
-func ParseAttr(r io.Reader, consts []ConstantInfo) (Attribute, error) {
+func ParseAttr(r io.Reader, consts []ConstantInfo) (ir.Attribute, error) {
 	nameInd, err := readUint16(r)
 	if err != nil {
 		return nil, err

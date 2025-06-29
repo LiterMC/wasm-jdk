@@ -150,6 +150,11 @@ var (
 		EndType: Class,
 		Class:   "java/lang/Class",
 	}
+	DescObjectArray = &Desc{
+		ArrDim:  1,
+		EndType: Class,
+		Class:   "java/lang/Object",
+	}
 	DescClassArray = &Desc{
 		ArrDim:  1,
 		EndType: Class,

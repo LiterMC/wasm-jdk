@@ -1,8 +1,13 @@
 package java_lang
 
 import (
+	"bytes"
+
 	"github.com/LiterMC/wasm-jdk/ir"
+	"github.com/LiterMC/wasm-jdk/jcls"
 	"github.com/LiterMC/wasm-jdk/native"
+	"github.com/LiterMC/wasm-jdk/native/helper"
+	jvm "github.com/LiterMC/wasm-jdk/vm"
 )
 
 func init() {
@@ -16,6 +21,7 @@ func ClassLoader_registerNatives(vm ir.VM) error {
 	native.LoadNative(vm, "java/lang/ClassLoader.defineClass0(Ljava/lang/ClassLoader;Ljava/lang/Class;Ljava/lang/String;[BIILjava/security/ProtectionDomain;ZILjava/lang/Object;)Ljava/lang/Class;", ClassLoader_defineClass0)
 	native.LoadNative(vm, "java/lang/ClassLoader.findBootstrapClass(Ljava/lang/String;)Ljava/lang/Class;", ClassLoader_findBootstrapClass)
 	native.LoadNative(vm, "java/lang/ClassLoader.findLoadedClass0(Ljava/lang/String;)Ljava/lang/Class;", ClassLoader_findLoadedClass0)
+	native.LoadNative(vm, "java/lang/ClassLoader.retrieveDirectives()Ljava/lang/AssertionStatusDirectives;", ClassLoader_retrieveDirectives)
 	return nil
 }
 
@@ -29,27 +35,67 @@ func ClassLoader_defineClass2(vm ir.VM) error {
 	panic("TODO")
 }
 
-// /**
-//   - Defines a class of the given flags via Lookup.defineClass.
-//     *
-//   - @param loader the defining loader
-//   - @param lookup nest host of the Class to be defined
-//   - @param name the binary name or {@code null} if not findable
-//   - @param b class bytes
-//   - @param off the start offset in {@code b} of the class bytes
-//   - @param len the length of the class bytes
-//   - @param pd protection domain
-//   - @param initialize initialize the class
-//   - @param flags flags
-//   - @param classData class data
-//     */
+// Defines a class of the given flags via Lookup.defineClass.
+// @param loader the defining loader
+// @param lookup nest host of the Class to be defined
+// @param name the binary name or {@code null} if not findable
+// @param b class bytes
+// @param off the start offset in {@code b} of the class bytes
+// @param len the length of the class bytes
+// @param pd protection domain
+// @param initialize initialize the class
+// @param flags flags
+// @param classData class data
 //
-// static native Class<?> defineClass0(
-//
-//	ClassLoader loader, Class<?> lookup, String name, byte[] b, int off, int len,
-//	ProtectionDomain pd, boolean initialize, int flags, Object classData);
+//	static native Class<?> defineClass0(
+//		ClassLoader loader, Class<?> lookup, String name, byte[] b, int off, int len,
+//		ProtectionDomain pd, boolean initialize, int flags, Object classData);
 func ClassLoader_defineClass0(vm ir.VM) error {
-	panic("TODO")
+	stack := vm.GetStack()
+	loaderRef := stack.GetVarRef(0)
+	lookup := stack.GetVarRef(1)
+	name := vm.GetString(stack.GetVarRef(2))
+	bts := stack.GetVarRef(3).GetByteArr()
+	offset := stack.GetVarInt32(4)
+	length := stack.GetVarInt32(5)
+	pd := stack.GetVarRef(6)
+	initialize := stack.GetVar(7) != 0
+	flags := stack.GetVarInt32(8)
+	classData := stack.GetVarRef(9)
+	data := bts[offset : offset+length]
+
+	cls, err := jcls.ParseClass(bytes.NewReader(data))
+	if err != nil {
+		return err
+	}
+
+	cls.AccessFlags = (jcls.AccessFlag)(flags)
+	cls.ThisSym.Name = name
+	cls.ThisDesc.Class = name
+
+	var loader ir.ClassLoader
+	if loaderRef == nil {
+		loader = vm.GetClassLoader()
+	} else {
+		loader = (*loaderRef.UserData()).(ir.ClassLoader)
+	}
+	class := jvm.LoadClass(cls, loader)
+	loader.DefineClass(class)
+
+	classRef := class.AsRef(vm)
+	if classData != nil {
+		classDataPtr := (**jvm.Ref)(vm.(helper.VMHelper).JField_javaLangClass_classData().GetPointer(classRef))
+		*classDataPtr = classData.(*jvm.Ref)
+	}
+
+	if initialize {
+		class.InitBeforeUse(vm.(*jvm.VM))
+	}
+
+	_ = lookup
+	_ = pd
+	stack.PushRef(classRef)
+	return nil
 }
 
 // private static native Class<?> findBootstrapClass(String name);
@@ -80,3 +126,6 @@ func ClassLoader_findLoadedClass0(vm ir.VM) error {
 }
 
 // private static native AssertionStatusDirectives retrieveDirectives();
+func ClassLoader_retrieveDirectives(vm ir.VM) error {
+	panic("TODO")
+}

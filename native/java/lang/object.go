@@ -37,7 +37,7 @@ func Object_clone(vm ir.VM) error {
 	stack := vm.GetStack()
 	this := stack.GetVarRef(0)
 	class := this.Class()
-	if class.ArrayDim() <= 0 && !vm.(helper.VMHelper).JClass_JavaLangCloneable().IsAssignableFrom(class) {
+	if class.ArrayDim() <= 0 && !vm.(helper.VMHelper).JClass_javaLangCloneable().IsAssignableFrom(class) {
 		return errs.CloneNotSupportedException
 	}
 	cloned := this.Clone(vm)

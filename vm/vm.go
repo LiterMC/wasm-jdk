@@ -288,6 +288,13 @@ func (vm *VM) NewArrayMultiDim(dc *desc.Desc, lengths []int32) ir.Ref {
 	return newMultiDimArray(class, lengths)
 }
 
+// Alloc an array with the class as the array's type
+func (vm *VM) NewArrayMultiDimWithClass(cls ir.Class, lengths []int32) ir.Ref {
+	class := cls.(*Class)
+	class.InitBeforeUse(vm)
+	return newMultiDimArray(class, lengths)
+}
+
 // Alloc an array with the class as the elements' type
 func (vm *VM) NewObjectArray(cls ir.Class, length int32) ir.Ref {
 	class := cls.(*Class)
@@ -299,7 +306,7 @@ func (vm *VM) NewObjectArray(cls ir.Class, length int32) ir.Ref {
 func (vm *VM) NewObjectMultiDimArray(cls ir.Class, lengths []int32) ir.Ref {
 	class := cls.(*Class)
 	class.InitBeforeUse(vm)
-	return newMultiDimArray(class, lengths)
+	return newMultiDimArray(class.NewArrayClass(len(lengths)), lengths)
 }
 
 func (vm *VM) RefToPtr(ref ir.Ref) unsafe.Pointer {

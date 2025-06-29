@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/LiterMC/wasm-jdk/desc"
+	"github.com/LiterMC/wasm-jdk/ir"
 )
 
 const ClassMagic uint32 = 0xCAFEBABE
@@ -21,7 +22,7 @@ type Class struct {
 	InterfacesSym []*ConstantClass
 	Fields        []*Field
 	Methods       []*Method
-	Attrs         []Attribute
+	Attrs         []ir.Attribute
 
 	ThisDesc *desc.Desc
 }
@@ -118,7 +119,7 @@ func ParseClass(r io.Reader) (*Class, error) {
 	if n, err = readUint16(r); err != nil {
 		return nil, err
 	}
-	c.Attrs = make([]Attribute, n)
+	c.Attrs = make([]ir.Attribute, n)
 	for i := range n {
 		if c.Attrs[i], err = ParseAttr(r, c.ConstPool); err != nil {
 			return nil, err
@@ -132,7 +133,7 @@ func ParseClass(r io.Reader) (*Class, error) {
 	return c, nil
 }
 
-func NewClass(flags AccessFlag, name string, super string, interfaces []string, fields []*Field, methods []*Method, attrs []Attribute) *Class {
+func NewClass(flags AccessFlag, name string, super string, interfaces []string, fields []*Field, methods []*Method, attrs []ir.Attribute) *Class {
 	c := new(Class)
 	c.AccessFlags = flags
 	c.ThisSym = &ConstantClass{
@@ -142,9 +143,9 @@ func NewClass(flags AccessFlag, name string, super string, interfaces []string, 
 		Name: super,
 	}
 	c.InterfacesSym = make([]*ConstantClass, len(interfaces))
-	for i, name := range interfaces {
+	for i, iname := range interfaces {
 		c.InterfacesSym[i] = &ConstantClass{
-			Name: name,
+			Name: iname,
 		}
 	}
 	c.Fields = fields
@@ -215,7 +216,7 @@ func (c *Class) IsInterface() bool {
 	return c.AccessFlags.Has(AccInterface)
 }
 
-func (c *Class) GetAttr(name string) Attribute {
+func (c *Class) GetAttr(name string) ir.Attribute {
 	for _, a := range c.Attrs {
 		if a.Name() == name {
 			return a
